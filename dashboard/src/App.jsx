@@ -110,20 +110,22 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
-            <StatTile icon="⚡" label="EU delivered power price"
-              value={kpi.power?.value} note={kpi.power?.period}
-              delta={pct(kpi.power?.delta)} deltaGood={kpi.power?.delta < 0} />
-            <StatTile icon="↔" label="EU ÷ US electricity ratio"
-              value={kpi.ratio?.value} note={kpi.ratio?.period}
-              delta={pct(kpi.ratio?.delta)} deltaGood={kpi.ratio?.delta < 0} />
-            <StatTile icon="🚢" label="Trade balance, basket"
-              value={kpi.balance?.value} note="last 12 months, extra-EU"
-              delta={pct(kpi.balance?.delta)} deltaGood={kpi.balance?.delta >= 0} />
-            <StatTile icon="◉" label="Data sources live"
-              value={kpi.sources ? `${kpi.sources.live} / ${kpi.sources.total}` : null}
-              note="agents reporting fresh data" />
-          </div>
+          {tab !== 'Trade' && (
+            <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+              <StatTile icon="⚡" label="EU delivered power price"
+                value={kpi.power?.value} note={kpi.power?.period}
+                delta={pct(kpi.power?.delta)} deltaGood={kpi.power?.delta < 0} />
+              <StatTile icon="↔" label="EU ÷ US electricity ratio"
+                value={kpi.ratio?.value} note={kpi.ratio?.period}
+                delta={pct(kpi.ratio?.delta)} deltaGood={kpi.ratio?.delta < 0} />
+              <StatTile icon="🚢" label="Trade balance, basket"
+                value={kpi.balance?.value} note="last 12 months, extra-EU"
+                delta={pct(kpi.balance?.delta)} deltaGood={kpi.balance?.delta >= 0} />
+              <StatTile icon="◉" label="Data sources live"
+                value={kpi.sources ? `${kpi.sources.live} / ${kpi.sources.total}` : null}
+                note="agents reporting fresh data" />
+            </div>
+          )}
 
           {tab === 'Electricity' && <Electricity fromDate={range.from} />}
           {tab === 'Trade' && (

@@ -2,15 +2,33 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { fetchSeries, fetchIndicators, fetchProducts } from '../api'
 import { useTheme, PRODUCT_SLOTS } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
-import { Card, EmptyState, Legend } from '../components'
+import { Card, EmptyState, Legend, StatTile } from '../components'
 
 const fmtM = v => `${(v / 1e6).toFixed(1)} M€`
 const fmtKt = v => `${(v / 1e3).toFixed(1)} kt`
+
+// last-12-months vs previous-12-months sums, per flow, from monthly series rows
+function windowSums(rows) {
+  const months = [...new Set(rows.map(r => r.period))].sort()
+  const wins = { last: new Set(months.slice(-12)), prev: new Set(months.slice(-24, -12)) }
+  const sum = (win, flow) => rows
+    .filter(r => wins[win].has(r.period) && (!flow || r.flow === flow))
+    .reduce((a, r) => a + Number(r.value), 0)
+  return {
+    months: months.slice(-12),
+    exp: { last: sum('last', 'export'), prev: sum('prev', 'export') },
+    imp: { last: sum('last', 'import'), prev: sum('prev', 'import') },
+  }
+}
+
+const deltaPct = (last, prev) => (prev ? (last - prev) / Math.abs(prev) * 100 : null)
+const pct = d => d == null ? null : `${d >= 0 ? '' : '-'}${Math.abs(d).toFixed(1)} %`
 
 export default function Trade({ fromDate, product, productLabel, confirmed }) {
   const theme = useTheme()
   const [balance, setBalance] = useState(null)
   const [flows, setFlows] = useState(null)
+  const [kpiRows, setKpiRows] = useState(null)
   const [allBalance, setAllBalance] = useState(null)
   const [basket, setBasket] = useState([])
   const [error, setError] = useState(null)
@@ -23,13 +41,16 @@ export default function Trade({ fromDate, product, productLabel, confirmed }) {
 
   useEffect(() => {
     if (!product) return
-    setBalance(null); setFlows(null)
+    setBalance(null); setFlows(null); setKpiRows(null)
     Promise.all([
       fetchIndicators({ indicator_id: 'trade_balance', product }),
-      fetchSeries({ series_id: 'trade.quantity', geo: 'EU27_2020', partner: 'EXTRA_EU', product, from: fromDate }),
-    ]).then(([bal, qty]) => {
+      // unfiltered: KPI windows always need the most recent 24 months
+      fetchSeries({ series_id: 'trade.quantity', geo: 'EU27_2020', partner: 'EXTRA_EU', product }),
+      fetchSeries({ series_id: 'trade.value', geo: 'EU27_2020', partner: 'EXTRA_EU', product }),
+    ]).then(([bal, qty, val]) => {
       setBalance(bal.rows.filter(r => !fromDate || r.period_start >= fromDate))
-      setFlows(qty.rows)
+      setFlows(qty.rows.filter(r => !fromDate || r.period_start >= fromDate))
+      setKpiRows({ qty: qty.rows, val: val.rows })
     }).catch(e => setError(String(e)))
   }, [product, fromDate])
 
@@ -95,6 +116,26 @@ export default function Trade({ fromDate, product, productLabel, confirmed }) {
     return { items, months }
   }, [allBalance, basket])
 
+  // product-specific KPI tiles: last 12 months vs previous 12, from full history
+  const tiles = useMemo(() => {
+    if (!kpiRows) return null
+    const q = windowSums(kpiRows.qty)
+    const v = windowSums(kpiRows.val)
+    const balLast = v.exp.last - v.imp.last
+    const balPrev = v.exp.prev - v.imp.prev
+    const unitLast = q.imp.last ? v.imp.last / q.imp.last : null
+    const unitPrev = q.imp.prev ? v.imp.prev / q.imp.prev : null
+    return {
+      window: q.months.length ? `${q.months[0]} → ${q.months[q.months.length - 1]}` : '',
+      balance: { value: fmtM(balLast), delta: deltaPct(balLast, balPrev) },
+      exports: { value: fmtKt(q.exp.last), delta: deltaPct(q.exp.last, q.exp.prev) },
+      imports: { value: fmtKt(q.imp.last), delta: deltaPct(q.imp.last, q.imp.prev) },
+      unit: unitLast != null
+        ? { value: `${unitLast.toFixed(0)} €/t`, delta: deltaPct(unitLast, unitPrev) }
+        : null,
+    }
+  }, [kpiRows])
+
   if (error) return <EmptyState>Failed to load: {error}</EmptyState>
   if (!product || !balance || !flows) return <EmptyState>Loading…</EmptyState>
 
@@ -103,6 +144,22 @@ export default function Trade({ fromDate, product, productLabel, confirmed }) {
 
   return (
     <>
+      {tiles && (
+        <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+          <StatTile icon="⚖" label="Net balance, 12 months"
+            value={tiles.balance.value} note={tiles.window}
+            delta={pct(tiles.balance.delta)} deltaGood={tiles.balance.delta >= 0} />
+          <StatTile icon="→" label="Exports, 12 months"
+            value={tiles.exports.value} note="extra-EU, tonnage"
+            delta={pct(tiles.exports.delta)} deltaGood={tiles.exports.delta >= 0} />
+          <StatTile icon="←" label="Imports, 12 months"
+            value={tiles.imports.value} note="extra-EU, tonnage"
+            delta={pct(tiles.imports.delta)} deltaGood={tiles.imports.delta < 0} />
+          <StatTile icon="€" label="Import unit value"
+            value={tiles.unit?.value} note="12-month average"
+            delta={pct(tiles.unit?.delta)} deltaGood={tiles.unit?.delta >= 0} />
+        </div>
+      )}
       <Card sourceRows={flows}
         title={`Extra-EU trade balance — ${productLabel}`}
         subtitle={`Monthly exports − imports, € value. Positive = net exporter.${unconfirmedNote}`}>
