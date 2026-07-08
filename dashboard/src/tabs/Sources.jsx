@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { fetchHealth, fetchProducts } from '../api'
-import { EmptyState } from '../components'
+import { useTheme } from '../theme'
+import { Card, EmptyState } from '../components'
 
 // Status colors ship with icon + label, never color alone (dataviz rule).
 const STATUS = {
@@ -11,7 +12,8 @@ const STATUS = {
   running: { icon: '◌', role: 'warning', label: 'running' },
 }
 
-export default function Sources({ theme }) {
+export default function Sources() {
+  const theme = useTheme()
   const [health, setHealth] = useState(null)
   const [products, setProducts] = useState(null)
   const [error, setError] = useState(null)
@@ -22,24 +24,20 @@ export default function Sources({ theme }) {
       .catch(e => setError(String(e)))
   }, [])
 
-  if (error) return <EmptyState theme={theme}>Failed to load: {error}</EmptyState>
-  if (!health) return <EmptyState theme={theme}>Loading…</EmptyState>
+  if (error) return <EmptyState>Failed to load: {error}</EmptyState>
+  if (!health) return <EmptyState>Loading…</EmptyState>
 
-  const th = { textAlign: 'left', padding: '8px 12px', fontSize: 11, color: theme.inkMuted,
-               fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+  const th = { textAlign: 'left', padding: '9px 12px', fontSize: 10.5, color: theme.inkMuted,
+               fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
                borderBottom: `1px solid ${theme.grid}` }
-  const td = { padding: '8px 12px', fontSize: 13, color: theme.ink,
+  const td = { padding: '9px 12px', fontSize: 13, color: theme.ink,
                borderBottom: `1px solid ${theme.grid}` }
 
   return (
     <>
-      <div style={{ background: theme.surface, border: `1px solid ${theme.border}`,
-                    borderRadius: 8, padding: '16px 20px', marginBottom: 20 }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: theme.ink }}>Source health</div>
-        <div style={{ fontSize: 12, color: theme.inkSecondary, marginTop: 2 }}>
-          Each source is isolated — a broken source marks its own metrics stale, never the observatory.
-        </div>
-        <table style={{ borderCollapse: 'collapse', width: '100%', marginTop: 12 }}>
+      <Card title="Source health"
+        subtitle="Each source is isolated — a broken source marks its own metrics stale, never the observatory.">
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
             <th style={th}>Agent</th><th style={th}>Status</th><th style={th}>Last run</th>
             <th style={th}>Rows</th><th style={th}>Quarantined</th><th style={th}>Notes</th>
@@ -59,7 +57,7 @@ export default function Sources({ theme }) {
                   </td>
                   <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{a.rows_ingested}</td>
                   <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{a.rows_quarantined}</td>
-                  <td style={{ ...td, fontSize: 11, color: theme.inkSecondary, maxWidth: 380,
+                  <td style={{ ...td, fontSize: 11, color: theme.inkSecondary, maxWidth: 360,
                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {a.notes || ''}
                   </td>
@@ -68,16 +66,11 @@ export default function Sources({ theme }) {
             })}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      <div style={{ background: theme.surface, border: `1px solid ${theme.border}`,
-                    borderRadius: 8, padding: '16px 20px' }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: theme.ink }}>Product basket — code confirmation</div>
-        <div style={{ fontSize: 12, color: theme.inkSecondary, marginTop: 2 }}>
-          Codes are configuration, surfaced for review (spec §3.5). Unconfirmed codes must be
-          verified against the current CN8/HS nomenclature in config/product_basket.yaml.
-        </div>
-        <table style={{ borderCollapse: 'collapse', width: '100%', marginTop: 12 }}>
+      <Card title="Product basket — code confirmation"
+        subtitle="Codes are configuration, surfaced for review (spec §3.5). Verify against current CN8/HS nomenclature in config/product_basket.yaml.">
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
             <th style={th}>Code</th><th style={th}>Nomenclature</th>
             <th style={th}>Product</th><th style={th}>Confirmed</th>
@@ -97,7 +90,7 @@ export default function Sources({ theme }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
     </>
   )
 }

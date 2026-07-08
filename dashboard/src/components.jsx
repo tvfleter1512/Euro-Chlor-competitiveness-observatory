@@ -1,8 +1,33 @@
-// Shared chart chrome: card, provenance chips, legend, empty state, tooltip.
+// Shared chrome: cards, stat tiles, legend, provenance chips, empty states.
 import React, { useState } from 'react'
+import { useTheme, FONT } from './theme'
+
+export function Card({ title, subtitle, children, sourceRows, right }) {
+  const theme = useTheme()
+  return (
+    <div style={{
+      background: theme.surface, border: `1px solid ${theme.border}`,
+      borderRadius: 16, padding: '20px 24px 14px', boxShadow: theme.shadow,
+      marginBottom: 20,
+    }}>
+      {(title || right) && (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 650, color: theme.ink }}>{title}</div>
+            {subtitle && <div style={{ fontSize: 12, color: theme.inkSecondary, marginTop: 3 }}>{subtitle}</div>}
+          </div>
+          {right}
+        </div>
+      )}
+      <div style={{ marginTop: 14 }}>{children}</div>
+      <SourceChips rows={sourceRows} />
+    </div>
+  )
+}
 
 // Provenance chips (spec §8: every figure carries source + retrieved date).
-export function SourceChips({ rows, theme }) {
+export function SourceChips({ rows }) {
+  const theme = useTheme()
   const [open, setOpen] = useState(false)
   if (!rows?.length) return null
   const seen = new Map()
@@ -12,15 +37,16 @@ export function SourceChips({ rows, theme }) {
     if (r.quality_flag === 'estimated') seen.get(key).estimated = true
   }
   return (
-    <div style={{ marginTop: 8 }}>
+    <div style={{ marginTop: 10 }}>
       <button onClick={() => setOpen(!open)} style={{
-        background: 'none', border: `1px solid ${theme.border}`, borderRadius: 12,
-        color: theme.inkMuted, fontSize: 11, padding: '2px 10px', cursor: 'pointer',
+        background: 'none', border: `1px solid ${theme.border}`, borderRadius: 999,
+        color: theme.inkMuted, fontSize: 11, padding: '3px 12px', cursor: 'pointer',
+        fontFamily: FONT,
       }}>
         {open ? '▾' : '▸'} Sources ({seen.size})
       </button>
       {open && [...seen.values()].map((s, i) => (
-        <div key={i} style={{ fontSize: 11, color: theme.inkSecondary, marginTop: 4 }}>
+        <div key={i} style={{ fontSize: 11, color: theme.inkSecondary, marginTop: 5 }}>
           <strong>{s.source}</strong> — {s.source_dataset} · retrieved{' '}
           {String(s.retrieved_at).slice(0, 10)}
           {s.estimated && <span style={{ color: theme.status.serious }}> · ⚠ includes estimated values</span>}
@@ -30,33 +56,40 @@ export function SourceChips({ rows, theme }) {
   )
 }
 
-export function ChartCard({ title, subtitle, children, theme, sourceRows }) {
+// KPI stat tile (Flup style): icon chip, muted label, big value, signed delta.
+export function StatTile({ label, value, delta, deltaGood, icon, note }) {
+  const theme = useTheme()
+  const deltaColor = delta == null ? theme.inkMuted : deltaGood ? theme.good : theme.bad
   return (
     <div style={{
       background: theme.surface, border: `1px solid ${theme.border}`,
-      borderRadius: 8, padding: '16px 20px 12px', marginBottom: 20,
+      borderRadius: 16, padding: '16px 20px', boxShadow: theme.shadow, flex: 1, minWidth: 190,
     }}>
-      <div style={{ fontSize: 15, fontWeight: 600, color: theme.ink }}>{title}</div>
-      {subtitle && <div style={{ fontSize: 12, color: theme.inkSecondary, marginTop: 2 }}>{subtitle}</div>}
-      <div style={{ marginTop: 12 }}>{children}</div>
-      <SourceChips rows={sourceRows} theme={theme} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{
+          width: 26, height: 26, borderRadius: 8, background: theme.accentSoft,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          color: theme.accentText, fontSize: 13,
+        }}>{icon}</span>
+        <span style={{ fontSize: 12.5, color: theme.inkSecondary }}>{label}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 10 }}>
+        <span style={{ fontSize: 26, fontWeight: 700, color: theme.ink }}>{value ?? '—'}</span>
+        {delta != null && (
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: deltaColor }}>
+            {delta.startsWith('-') ? '↘' : '↗'} {delta.replace('-', '')}
+          </span>
+        )}
+      </div>
+      {note && <div style={{ fontSize: 11, color: theme.inkMuted, marginTop: 4 }}>{note}</div>}
     </div>
   )
 }
 
-export function EmptyState({ theme, children }) {
+export function Legend({ items }) {
+  const theme = useTheme()
   return (
-    <div style={{
-      padding: '32px 16px', textAlign: 'center', fontSize: 13,
-      color: theme.inkMuted, border: `1px dashed ${theme.grid}`, borderRadius: 6,
-    }}>{children}</div>
-  )
-}
-
-// Legend: colored key beside text in ink (text never wears the series color).
-export function Legend({ items, theme }) {
-  return (
-    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
+    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
       {items.map(({ label, color }) => (
         <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
           fontSize: 12, color: theme.inkSecondary }}>
@@ -68,23 +101,12 @@ export function Legend({ items, theme }) {
   )
 }
 
-export function makeTooltip(theme, formatter) {
-  return function CustomTooltip({ active, payload, label }) {
-    if (!active || !payload?.length) return null
-    return (
-      <div style={{
-        background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 6,
-        padding: '8px 12px', fontSize: 12, color: theme.ink, boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-      }}>
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>{label}</div>
-        {payload.filter(p => p.value != null).map((p) => (
-          <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 4, background: p.color || p.fill }} />
-            <span style={{ color: theme.inkSecondary }}>{p.name}:</span>
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatter(p.value)}</span>
-          </div>
-        ))}
-      </div>
-    )
-  }
+export function EmptyState({ children }) {
+  const theme = useTheme()
+  return (
+    <div style={{
+      padding: '36px 16px', textAlign: 'center', fontSize: 13,
+      color: theme.inkMuted, border: `1px dashed ${theme.grid}`, borderRadius: 12,
+    }}>{children}</div>
+  )
 }

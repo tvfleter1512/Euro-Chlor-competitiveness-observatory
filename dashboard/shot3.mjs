@@ -1,0 +1,11 @@
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+await page.goto('http://localhost:8300/', { waitUntil: 'networkidle' });
+await page.waitForTimeout(2000);
+const dir = process.env.SHOTDIR;
+await page.screenshot({ path: `${dir}/v2_electricity.png`, fullPage: true });
+await page.getByRole('button', { name: 'Trade', exact: true }).click();
+await page.waitForTimeout(2500);
+await page.screenshot({ path: `${dir}/v2_trade.png`, fullPage: true });
+await browser.close();

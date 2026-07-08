@@ -20,7 +20,7 @@ ingestion agents (isolated, one per source)
         ▼
 processing: normalisation (config/conversions.yaml) → benchmarking (config/indicators.yaml)
         ▼
-FastAPI (/api/*) → React+Recharts dashboard (electricity · trade · sources)
+FastAPI (/api/*) → React + Apache ECharts dashboard (electricity · trade · sources)
 ```
 
 - **Provenance-first**: rows missing source/dataset/reference-period/retrieved-at are
