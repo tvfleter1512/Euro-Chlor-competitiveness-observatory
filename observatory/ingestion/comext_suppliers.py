@@ -29,19 +29,14 @@ class ComextSupplierAgent(IngestionAgent):
         with httpx.Client(timeout=240) as client:
             for product in basket:
                 for cn8 in product["cn8"]:
-                    # imports from all partners (no partner filter)
-                    url = (f"{BASE}?format=JSON&lang=en&freq=M&reporter=EU27_2020"
-                           f"&product={cn8}&flow=1&sinceTimePeriod={HISTORY_START}-01")
-                    resp = client.get(url)
-                    resp.raise_for_status()
-                    payloads.append((url, resp.json()))
-                    # intra-EU exports (extra-EU exports come from comext_trade)
-                    url2 = (f"{BASE}?format=JSON&lang=en&freq=M&reporter=EU27_2020"
-                            f"&product={cn8}&flow=2&partner=INT_EU27_2020"
-                            f"&sinceTimePeriod={HISTORY_START}-01")
-                    resp2 = client.get(url2)
-                    resp2.raise_for_status()
-                    payloads.append((url2, resp2.json()))
+                    # all partners, both flows — individual countries AND the
+                    # INT_/EXT_EU27_2020 aggregates come back in one response
+                    for flow in ("1", "2"):
+                        url = (f"{BASE}?format=JSON&lang=en&freq=M&reporter=EU27_2020"
+                               f"&product={cn8}&flow={flow}&sinceTimePeriod={HISTORY_START}-01")
+                        resp = client.get(url)
+                        resp.raise_for_status()
+                        payloads.append((url, resp.json()))
         return payloads
 
     def parse(self, payloads):

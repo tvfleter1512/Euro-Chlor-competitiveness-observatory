@@ -34,8 +34,7 @@ def _monthly_exports(conn, product):
     rows = conn.execute(
         """SELECT partner_geo_id, period, value FROM v_series_latest
            WHERE series_id = 'trade.value' AND geo_id = 'EU27_2020'
-             AND product_code = %s AND flow = 'export'
-             AND partner_geo_id IN ('INTRA_EU', 'EXTRA_EU')""",
+             AND product_code = %s AND flow = 'export'""",
         (product,),
     ).fetchall()
     return rows
@@ -83,7 +82,14 @@ def compute(conn, run_id: int) -> int:
                     if r["period"] in win and r["partner_geo_id"] not in non_suppliers:
                         by_supplier[r["partner_geo_id"]] += float(r["value"])
                 supplier_total = sum(by_supplier.values())
-                exp_total = sum(float(r["value"]) for r in exports if r["period"] in win)
+                exp_total = sum(float(r["value"]) for r in exports
+                                if r["period"] in win
+                                and r["partner_geo_id"] in ("INTRA_EU", "EXTRA_EU"))
+                by_destination = defaultdict(float)
+                for r in exports:
+                    if r["period"] in win and r["partner_geo_id"] not in non_suppliers:
+                        by_destination[r["partner_geo_id"]] += float(r["value"])
+                destination_total = sum(by_destination.values())
 
                 values = {}
                 if supplier_total > 0:
@@ -95,6 +101,7 @@ def compute(conn, run_id: int) -> int:
                     values["cdi3_substitution"] = extra_imp / exp_total
 
                 top = sorted(by_supplier.items(), key=lambda kv: -kv[1])[:10]
+                top_dest = sorted(by_destination.items(), key=lambda kv: -kv[1])[:10]
                 inputs = {
                     "citation": cfg["citation"],
                     "window": label,
@@ -106,6 +113,11 @@ def compute(conn, run_id: int) -> int:
                         {"geo": g, "value_eur": v,
                          "share": v / supplier_total if supplier_total else None}
                         for g, v in top],
+                    "supplier_total_eur": supplier_total,
+                    "top_destinations": [
+                        {"geo": g, "value_eur": v,
+                         "share": v / destination_total if destination_total else None}
+                        for g, v in top_dest],
                     "source": "Eurostat Comext DS-045409 (partner detail)",
                 }
 
