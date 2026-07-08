@@ -7,38 +7,38 @@ products:
     name: "Caustic soda, solid (NaOH)"
     hs6: "281511"
     cn8: ["28151100"]
-    confirmed: false
+    confirmed: true
   - key: caustic_liquid
     name: "Caustic soda, aqueous (lye)"
     hs6: "281512"
     cn8: ["28151200"]
-    confirmed: false
+    confirmed: true
   - key: chlorine
     name: "Chlorine"
     hs6: "280110"
     cn8: ["28011000"]
-    confirmed: false
+    confirmed: true
     note: "Minimal trade; included for completeness."
   - key: hydrochloric_acid
     name: "Hydrochloric acid"
     hs6: "280610"
     cn8: ["28061000"]
-    confirmed: false
+    confirmed: true
   - key: edc
     name: "EDC (1,2-dichloroethane)"
     hs6: "290315"
     cn8: ["29031500"]
-    confirmed: false
+    confirmed: true
   - key: vcm
     name: "VCM (vinyl chloride monomer)"
     hs6: "290321"
     cn8: ["29032100"]
-    confirmed: false
+    confirmed: true
   - key: pvc
     name: "PVC (polyvinyl chloride)"
     hs6: "390410"
     cn8: ["39041000"]
-    confirmed: false
+    confirmed: true
   - key: pvc_plasticised
     name: "PVC, plasticised/non-plasticised mixtures"
     hs6: "390421"
@@ -48,9 +48,9 @@ products:
     name: "Sodium hypochlorite / bleach"
     hs6: "282890"
     cn8: ["28289000"]
-    confirmed: false
+    confirmed: true
   - key: chlorates
     name: "Sodium chlorate"
     hs6: "282911"
     cn8: ["28291100"]
-    confirmed: false
+    confirmed: true
