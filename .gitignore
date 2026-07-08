@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+node_modules/
+dashboard/dist/
+.pytest_cache/
+*.egg-info/
+pgdata/
+logs/
+data/eurochlor_drop/*
+!data/eurochlor_drop/TEMPLATE.csv
+!data/eurochlor_drop/README.md
+logs_api.log

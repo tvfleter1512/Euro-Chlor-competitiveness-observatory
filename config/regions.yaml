@@ -1,0 +1,43 @@
+# Geography registry. EU is benchmarked against the comparator set below.
+# ENTSO-E bidding-zone EIC codes are human-confirmable config (spec §3.5).
+eu:
+  geo_id: EU27_2020
+  name: "European Union (27, 2020 composition)"
+  # Member states pulled individually from Eurostat nrg_pc_205 for the country detail view
+  detail_countries: [DE, FR, NL, BE, ES, IT, PL]
+
+comparators:
+  - geo_id: US
+    name: "United States"
+    power_source: eia            # official industrial retail price
+  - geo_id: CN
+    name: "China"
+    power_source: proxy          # published tariffs / modelled proxy, quality_flag=estimated
+  - geo_id: GULF
+    name: "Gulf (GCC)"
+    power_source: proxy
+  - geo_id: IN
+    name: "India"
+    power_source: proxy
+
+entsoe_bidding_zones:
+  - geo_id: DE_LU
+    name: "Germany-Luxembourg"
+    eic: "10Y1001A1001A82H"
+  - geo_id: FR
+    name: "France"
+    eic: "10YFR-RTE------C"
+  - geo_id: NL
+    name: "Netherlands"
+    eic: "10YNL----------L"
+  - geo_id: BE
+    name: "Belgium"
+    eic: "10YBE----------2"
+
+# Comtrade numeric reporter/partner codes (UN M49) for the comparator set
+comtrade_reporters:
+  US: "842"
+  CN: "156"
+  IN: "699"
+  SA: "682"    # Saudi Arabia — Gulf constituent
+  AE: "784"    # United Arab Emirates — Gulf constituent

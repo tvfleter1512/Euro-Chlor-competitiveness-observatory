@@ -1,0 +1,53 @@
+# Competitiveness indicators (spec §9) — versioned, auditable formulas.
+# The benchmarking agent computes exactly what is declared here and stores
+# methodology_version with every output row.
+indicators:
+  electricity_cost_ratio:
+    methodology_version: "v1.0"
+    name: "Electricity cost ratio (EU vs comparator)"
+    formula: "EU industrial delivered EUR/MWh ÷ comparator industrial delivered EUR/MWh, per period"
+    inputs: ["power.industrial_delivered"]
+    unit: "ratio"
+    note: "Delivered price, not wholesale. Comparator rows flagged 'estimated' propagate the flag."
+
+  trade_balance:
+    methodology_version: "v1.0"
+    name: "Embedded-chlorine trade balance"
+    formula: "exports_eur − imports_eur per product per period, EU27 vs extra-EU"
+    inputs: ["trade.value"]
+    unit: "EUR"
+
+  trade_balance_quantity:
+    methodology_version: "v1.0"
+    name: "Embedded-chlorine trade balance (quantity)"
+    formula: "exports_t − imports_t per product per period, EU27 vs extra-EU"
+    inputs: ["trade.quantity"]
+    unit: "t"
+
+  utilisation_gap:
+    methodology_version: "v1.0"
+    name: "Utilisation gap (EU − comparator)"
+    formula: "EU operating rate − comparator operating rate, percentage points"
+    inputs: ["production.utilisation"]
+    unit: "pp"
+    status: phase2
+
+  carbon_cost_exposure:
+    methodology_version: "v1.0"
+    name: "Carbon cost exposure net of indirect-cost compensation"
+    formula: "EUA_price × electricity_intensity_benchmark × (1 − aid_intensity), benchmark read from benchmark_constant table with citation"
+    inputs: ["carbon.eua_price", "benchmark_constant"]
+    unit: "EUR/t"
+    status: phase2
+
+  composite_index:
+    methodology_version: "v1.0"
+    name: "Composite competitiveness index"
+    formula: "weighted blend of available component indicators; weights below are published config"
+    weights:
+      electricity_cost_ratio: 0.4
+      trade_balance: 0.3
+      utilisation_gap: 0.2
+      carbon_cost_exposure: 0.1
+    note: "v1 computes only from components with data; renormalises weights over available components and labels the output accordingly."
+    status: phase2

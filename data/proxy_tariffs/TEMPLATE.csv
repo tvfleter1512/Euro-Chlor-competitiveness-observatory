@@ -1,0 +1,2 @@
+geo_id,period,value,currency,unit,band,tax_treatment,source,source_dataset,reference_period,source_url,notes
+CN,2024,95.0,USD,USD/MWh,,incl_levies,EXAMPLE — CEC published tariff,EXAMPLE Jiangsu industrial tariff schedule 2024,2024,https://example,delete this example row before use

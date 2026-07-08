@@ -1,0 +1,29 @@
+# Observatory schedule — each source at its natural cadence (spec §6).
+# Install with:  crontab ops/crontab.example   (after adjusting paths)
+# All agents are idempotent and vintage-versioned; re-running is always safe.
+P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
+
+# FX monthly averages — early morning daily (cheap; keeps current month fresh)
+20 6 * * *   $P --agent ecb_fx
+
+# ENTSO-E day-ahead — daily after price publication (~13:00-15:00 CET)
+30 16 * * *  $P --agent entsoe_power
+
+# EIA US industrial price — monthly
+40 7 3 * *   $P --agent eia_power
+
+# Eurostat nrg_pc_205 — semi-annual release; monthly check is ample
+50 7 5 * *   $P --agent eurostat_power
+
+# Comext trade — monthly, after the mid-month reference-period update
+0 8 16 * *   $P --agent comext_trade
+
+# UN Comtrade — monthly (annual data, but reporters trickle in)
+15 8 17 * *  $P --agent comtrade_trade
+
+# File-drop agents — daily pickup of any new curated/member files
+0 7 * * *    $P --agent proxy_power
+5 7 * * *    $P --agent eurochlor_drop
+
+# Recompute all indicators nightly (fast; depends on everything above)
+0 22 * * *   $P --benchmarks

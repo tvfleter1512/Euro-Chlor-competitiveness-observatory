@@ -1,0 +1,26 @@
+# Documented conversion registry (spec §5.2). Every transformation the
+# normalisation agent applies is declared here — nothing is converted in code
+# that is not inspectable in this file.
+units:
+  kwh_per_mwh: 1000
+  # Comext quantities arrive in 100 kg; normalised to tonnes
+  comext_100kg_to_tonne: 0.1
+
+caustic:
+  # NaOH 50% solution <-> dry (100%) basis. confirmed: standard stoichiometric basis.
+  dry_to_50pct_factor: 2.0
+  confirmed: true
+
+ecu:
+  # Electrochemical unit composition per tonne of chlorine.
+  # CONFIRM: standard industry convention, verify against Euro Chlor reference.
+  t_cl2: 1.0
+  t_naoh_dry: 1.128
+  t_h2: 0.028
+  confirmed: false
+
+currency:
+  reporting: EUR
+  fx_source: "ECB reference rates (data-api.ecb.europa.eu, EXR dataflow)"
+  # monthly series are converted with the monthly-average rate of the reference period
+  vintage_rule: monthly_average

@@ -1,0 +1,24 @@
+# Per-metric source-of-truth hierarchy (spec §2.2) — confirmed by owner 2026-07-08.
+# When sources disagree, the first listed wins; the rest are cross-checks.
+metrics:
+  eu_production_capacity:
+    authoritative: eurochlor_internal
+    cross_check: [external_estimates]
+  trade_eu_reporters:
+    authoritative: eurostat_comext
+    cross_check: [un_comtrade_mirror]
+  trade_non_eu_reporters:
+    authoritative: un_comtrade
+    cross_check: [partner_mirror]
+  ets_benchmarks:
+    authoritative: source_communication_text   # Communication 2021/C 528/01 (prior: 2020/C 317/04)
+    cross_check: []
+  eu_industrial_power_price:
+    authoritative: eurostat_nrg_pc_205
+    cross_check: [entsoe_wholesale_context]
+  us_industrial_power_price:
+    authoritative: eia
+    cross_check: []
+  cn_gulf_in_power_price:
+    authoritative: curated_proxy_tariffs       # always quality_flag=estimated
+    cross_check: []
