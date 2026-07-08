@@ -1,6 +1,6 @@
 # Product basket — tradable carriers of chlor-alkali competitiveness (spec Appendix A).
-# ALL codes start as confirmed: false. The Trade agent ingests them but the dashboard
-# marks unconfirmed codes; flip to true after human verification against current CN8/HS.
+# Codes start as confirmed: false; flip to true after human verification against
+# current CN8/HS. All codes below validated by owner 2026-07-08.
 # cn8: codes used against Eurostat Comext. hs6: roll-up used against UN Comtrade.
 products:
   - key: caustic_solid
@@ -35,15 +35,20 @@ products:
     cn8: ["29032100"]
     confirmed: true
   - key: pvc
-    name: "PVC (polyvinyl chloride)"
+    name: "PVC, not mixed with other substances (primary forms)"
     hs6: "390410"
     cn8: ["39041000"]
     confirmed: true
-  - key: pvc_plasticised
-    name: "PVC, plasticised/non-plasticised mixtures"
+  - key: pvc_mixed_nonplast
+    name: "PVC, non-plasticised, mixed (primary forms)"
     hs6: "390421"
-    cn8: ["39042100", "39042200"]
-    confirmed: false
+    cn8: ["39042100"]
+    confirmed: true   # validated by owner 2026-07-08
+  - key: pvc_mixed_plast
+    name: "PVC, plasticised, mixed (primary forms)"
+    hs6: "390422"
+    cn8: ["39042200"]
+    confirmed: true   # validated by owner 2026-07-08
   - key: hypochlorite
     name: "Sodium hypochlorite / bleach"
     hs6: "282890"
