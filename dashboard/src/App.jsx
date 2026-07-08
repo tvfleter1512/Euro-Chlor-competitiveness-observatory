@@ -5,7 +5,10 @@ import { StatTile } from './components'
 import Sidebar from './Sidebar'
 import Electricity from './tabs/Electricity'
 import Trade from './tabs/Trade'
+import Dependency from './tabs/Dependency'
 import Sources from './tabs/Sources'
+
+const PRODUCT_TABS = ['Trade', 'Dependency']
 
 const RANGES = [
   { label: 'Since 2015', from: '2015-01-01' },
@@ -95,7 +98,7 @@ export default function App() {
                 <button key={r.label} style={pill(range.label === r.label)}
                         onClick={() => setRange(r)}>{r.label}</button>
               ))}
-              {tab === 'Trade' && basket.length > 0 && (
+              {PRODUCT_TABS.includes(tab) && basket.length > 0 && (
                 <select value={product || ''} onChange={e => setProduct(e.target.value)}
                   style={{ padding: '7px 12px', fontSize: 12.5, fontFamily: FONT,
                            background: theme.surface, color: theme.ink, fontWeight: 550,
@@ -110,7 +113,7 @@ export default function App() {
             </div>
           </div>
 
-          {tab !== 'Trade' && (
+          {!PRODUCT_TABS.includes(tab) && (
             <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
               <StatTile icon="⚡" label="EU delivered power price"
                 value={kpi.power?.value} note={kpi.power?.period}
@@ -131,6 +134,9 @@ export default function App() {
           {tab === 'Trade' && (
             <Trade fromDate={range.from} product={product}
                    productLabel={selected?.name || product} confirmed={selected?.confirmed} />
+          )}
+          {tab === 'Dependency' && (
+            <Dependency product={product} productLabel={selected?.name || product} />
           )}
           {tab === 'Sources' && <Sources />}
         </main>

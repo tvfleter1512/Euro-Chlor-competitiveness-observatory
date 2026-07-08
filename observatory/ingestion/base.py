@@ -55,6 +55,8 @@ class IngestionAgent(ABC):
                     )
                 conn.commit()
                 rows = self.parse(payloads)
+                if hasattr(self, "pre_insert"):
+                    self.pre_insert(conn, rows)   # e.g. upsert dim_geo for new partners
                 inserted, quarantined = provenance.insert_rows(conn, run_id, self.name, rows)
                 status = "success" if quarantined == 0 else "partial"
                 db.finish_run(conn, run_id, status, inserted, quarantined)

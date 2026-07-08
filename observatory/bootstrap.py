@@ -26,6 +26,7 @@ SERIES = [
 GEOS = [
     ("EU27_2020", "European Union (27)", "region"),
     ("EXTRA_EU", "Extra-EU27 aggregate", "region"),
+    ("INTRA_EU", "Intra-EU27 aggregate", "region"),
     ("GULF", "Gulf (GCC)", "region"),
     ("WORLD", "World", "world"),
     ("US", "United States", "country"), ("CN", "China", "country"),

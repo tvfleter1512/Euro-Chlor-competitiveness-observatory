@@ -1,0 +1,42 @@
+# Core Dependency Indicators (CDI) — EU Commission strategic-dependency screening.
+# Methodology as described by the owner (2026-07-08), following the Commission's
+# screening logic. Thresholds below are the ones applied in the Commission's
+# exercise (SWD(2021) 352 final, 'Strategic dependencies and capacities');
+# CONFIRM against the source document before external publication.
+methodology_version: "v1.0"
+citation: "European Commission SWD(2021) 352 final — screening methodology; thresholds as applied in Commission dependency screening"
+confirmed: false
+
+# Rolling assessment window for the headline classification (months)
+window_months: 12
+
+indicators:
+  cdi1_hhi:
+    name: "CDI 1 — Import concentration (HHI)"
+    formula: "sum(si^2) over extra-EU supplier countries i, si = share of country i in extra-EU import value"
+    threshold: 0.4        # HHI above this = concentrated supply
+  cdi2_reliance:
+    name: "CDI 2 — Reliance on extra-EU imports"
+    formula: "extra-EU import value / (extra-EU + intra-EU import value)"
+    threshold: 0.5        # more than half of EU imports from outside the EU
+  cdi3_substitution:
+    name: "CDI 3 — Limited EU substitution capacity"
+    formula: "extra-EU import value / (intra-EU + extra-EU export value)"
+    threshold: 1.0        # imports exceed what EU supply (proxied by EU exports) could substitute
+
+# criteria_met (of 3) -> classification
+classes:
+  3: fully_dependent
+  2: high_dependency
+  1: moderate_dependency
+  0: low_dependency
+
+# EU27 member codes as they appear as Comext partners (intra-EU flows) —
+# excluded from the extra-EU supplier set when computing the HHI.
+eu_member_partners: [AT, BE, BG, HR, CY, CZ, DK, EE, FI, FR, DE, GR, EL, HU, IE,
+                     IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE]
+
+# Non-country partner codes excluded from the supplier set (aggregates & specials).
+# QV/QW/QY/QZ ('not specified') are kept as suppliers — they are real trade.
+excluded_partners: [WORLD, EXT_EU27_2020, INT_EU27_2020, EXT_EU, INT_EU,
+                    EXT_EA, INT_EA, EXT_EA21, INT_EA21, QR, QS]

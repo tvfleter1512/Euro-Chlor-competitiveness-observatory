@@ -9,6 +9,7 @@ import logging
 from collections import defaultdict
 
 from observatory import db
+from observatory.processing import dependency
 from observatory.processing import normalisation as norm
 from observatory.settings import load_config
 
@@ -145,6 +146,7 @@ def run() -> dict:
             conn.execute("DELETE FROM fact_indicator")
             n = compute_electricity_cost_ratio(conn, run_id, cfg)
             n += compute_trade_balance(conn, run_id, cfg)
+            n += dependency.compute(conn, run_id)
             conn.commit()
             db.finish_run(conn, run_id, "success", n)
             return {"agent": "benchmarking", "status": "success", "indicators": n}

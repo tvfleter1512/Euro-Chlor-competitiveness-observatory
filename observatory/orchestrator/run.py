@@ -20,6 +20,7 @@ from observatory.ingestion.eia_power import EIAPowerAgent
 from observatory.ingestion.entsoe_power import EntsoePowerAgent
 from observatory.ingestion.proxy_power import ProxyPowerAgent
 from observatory.ingestion.comext_trade import ComextTradeAgent
+from observatory.ingestion.comext_suppliers import ComextSupplierAgent
 from observatory.ingestion.comtrade_trade import ComtradeTradeAgent
 from observatory.ingestion.eurochlor_drop import EuroChlorDropAgent
 from observatory.processing import benchmarking
@@ -31,6 +32,7 @@ AGENTS = [  # execution order = dependency order
     EntsoePowerAgent(),
     ProxyPowerAgent(),
     ComextTradeAgent(),
+    ComextSupplierAgent(),
     ComtradeTradeAgent(),
     EuroChlorDropAgent(),
 ]
