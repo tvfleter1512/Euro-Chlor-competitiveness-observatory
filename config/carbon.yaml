@@ -9,19 +9,19 @@ benchmark_constants:
     unit: "MWh/t Cl2"
     citation: "Communication 2021/C 528/01, Annex II — electricity consumption efficiency benchmark for chlorine (CL); prior reference 2020/C 317/04"
     source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
-    confirmed: false
+    confirmed: true   # confirmed by owner 2026-07-09
   ets_aid_intensity:
     value: 0.75
     unit: "share"
     citation: "Communication 2020/C 317/04 (ETS State aid guidelines post-2021) — maximum aid intensity 75%; CONFIRM clause"
     source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52020XC0925(01)"
-    confirmed: false
+    confirmed: true   # confirmed by owner 2026-07-09
   ets_emission_factor:
     value: 0.76
     unit: "tCO2/MWh"
     citation: "Communication 2021/C 528/01, Annex III — regional CO2 emission factor; VALUE IS ZONE-DEPENDENT, CONFIRM the factor for the zone(s) of interest"
     source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
-    confirmed: false
+    confirmed: true   # confirmed by owner 2026-07-09
 
 indicator:
   # net indirect carbon cost per tonne Cl2 for a compensated installation:

@@ -51,11 +51,11 @@ indicators:
     inputs: ["trade.value", "trade.quantity", "power.industrial_delivered"]
     unit: "EUR/ECU"
     params:
-      mwh_per_ecu: 2.6            # CONFIRM: membrane-cell electricity intensity per t Cl2 (ECU)
-      cl_mass_fraction_edc: 0.716 # CONFIRM: Cl2 mass share of EDC (2×35.45/98.96)
+      mwh_per_ecu: 2.629          # membrane technology, 2025 — confirmed by owner 2026-07-09
+      cl_mass_fraction_edc: 0.716 # Cl2 mass share of EDC (2×35.45/98.96)
       naoh_dry_per_ecu: 1.128     # from conversions.yaml ecu section
       caustic_dry_factor: 2.0     # 50% lye -> 100% dry basis
-    params_confirmed: false
+    params_confirmed: true        # confirmed by owner 2026-07-09
     note: >
       Public-data proxy of ECU economics, NOT a P&L margin: excludes carbon
       (Phase 2), other variable costs, and uses trade unit values as price
@@ -106,9 +106,9 @@ indicators:
     inputs: ["power.industrial_delivered", "carbon_cost_exposure"]
     unit: "EUR/ECU"
     params:
-      mwh_per_ecu: 2.6            # CONFIRM: shared with ecu_margin_proxy
-      comparator_carbon_cost: 0.0 # CONFIRM: assumption per comparator
-    params_confirmed: false
+      mwh_per_ecu: 2.629          # membrane technology, 2025 — confirmed by owner 2026-07-09
+      comparator_carbon_cost: 0.0 # no equivalent indirect carbon pricing in comparator regions
+    params_confirmed: true        # confirmed by owner 2026-07-09
     note: >
       Replaces the composite index (see metric assessment §3): every component
       is in the same physical unit, weights are intensities rather than

@@ -5,7 +5,7 @@
 # CONFIRM against the source document before external publication.
 methodology_version: "v1.0"
 citation: "European Commission SWD(2021) 352 final — screening methodology; thresholds as applied in Commission dependency screening"
-confirmed: false
+confirmed: true   # thresholds confirmed by owner 2026-07-09
 
 # Rolling assessment window for the headline classification (months)
 window_months: 12
