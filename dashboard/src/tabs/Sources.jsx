@@ -68,12 +68,13 @@ export default function Sources() {
         </table>
       </Card>
 
-      <Card title="Product basket — code confirmation"
-        subtitle="Codes are configuration, surfaced for review (spec §3.5). Verify against current CN8/HS nomenclature in config/product_basket.yaml.">
+      <Card title="Product basket — code confirmation & CBAM status"
+        subtitle="Codes are configuration, surfaced for review (spec §3.5). CBAM: whole basket excluded from Regulation (EU) 2023/956 Annex I at launch — Commission review of extension to organic chemicals/polymers due end-2027; EU carbon costs currently face no border adjustment.">
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
             <th style={th}>Code</th><th style={th}>Nomenclature</th>
             <th style={th}>Product</th><th style={th}>Confirmed</th>
+            <th style={th}>CBAM</th>
           </tr></thead>
           <tbody>
             {(products || []).map(p => (
@@ -85,6 +86,9 @@ export default function Sources() {
                   {p.confirmed
                     ? <span><span style={{ color: theme.status.good, marginRight: 6 }}>●</span>confirmed</span>
                     : <span><span style={{ color: theme.status.warning, marginRight: 6 }}>◐</span>pending review</span>}
+                </td>
+                <td style={{ ...td, fontSize: 11.5, color: theme.inkSecondary, whiteSpace: 'nowrap' }}>
+                  excluded · review 2027
                 </td>
               </tr>
             ))}

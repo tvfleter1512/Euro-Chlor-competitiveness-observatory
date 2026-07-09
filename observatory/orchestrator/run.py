@@ -26,6 +26,8 @@ from observatory.ingestion.eurochlor_drop import EuroChlorDropAgent
 from observatory.ingestion.eurochlor_web import EuroChlorWebAgent
 from observatory.ingestion.gas_prices import GasPriceAgent
 from observatory.ingestion.sunsirs_china import SunSirsChinaAgent
+from observatory.ingestion.eua_price import EUAPriceAgent
+from observatory.ingestion.eurostat_demand import EurostatDemandAgent
 from observatory.processing import benchmarking
 
 AGENTS = [  # execution order = dependency order
@@ -41,6 +43,8 @@ AGENTS = [  # execution order = dependency order
     EuroChlorWebAgent(),
     GasPriceAgent(),
     SunSirsChinaAgent(),
+    EUAPriceAgent(),
+    EurostatDemandAgent(),
 ]
 
 

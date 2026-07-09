@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { fetchSeries, fetchIndicators } from '../api'
+import { fetchSeries, fetchIndicators, fetchCapacityEvents } from '../api'
 import { useTheme, GEO_LABEL } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, StatTile } from '../components'
@@ -39,11 +39,21 @@ export default function Industry({ fromDate }) {
       fetchSeries({ series_id: 'gas.hub_price', from: fromDate }),
       fetchIndicators({ indicator_id: 'ecu_margin_proxy' }),
       fetchSeries({ series_id: 'price.caustic_spot_cn', geo: 'CN' }),
-    ]).then(([prod, util, stocks, gas, margin, cn]) => {
+      fetchSeries({ series_id: 'carbon.eua_price', from: fromDate }),
+      fetchIndicators({ indicator_id: 'carbon_cost_exposure' }),
+      fetchSeries({ series_id: 'demand.construction_output', from: fromDate }),
+      fetchSeries({ series_id: 'demand.paper_production', from: fromDate }),
+      fetchSeries({ series_id: 'demand.chemicals_production', from: fromDate }),
+      fetchCapacityEvents(),
+    ]).then(([prod, util, stocks, gas, margin, cn, eua, carbon, constr, paper, chem, events]) => {
       setData({
         prod: prod.rows, util: util.rows, stocks: stocks.rows, gas: gas.rows,
         margin: margin.rows.filter(r => !fromDate || r.period_start >= fromDate),
         cn: cn.rows,
+        eua: eua.rows,
+        carbon: carbon.rows.filter(r => !fromDate || r.period_start >= fromDate),
+        demand: { constr: constr.rows, paper: paper.rows, chem: chem.rows },
+        events: events.events,
       })
     }).catch(e => setError(String(e)))
   }, [fromDate])
@@ -63,6 +73,31 @@ export default function Industry({ fromDate }) {
       series: [
         lineSeries('EU (TTF-based)', grab('EU27_2020'), theme.series.s1, theme),
         lineSeries('US Henry Hub', grab('US'), theme.series.s2, theme),
+      ],
+    }
+  }, [data, theme])
+
+  const demandOption = useMemo(() => {
+    if (!data?.demand) return null
+    const { constr, paper, chem } = data.demand
+    if (!constr.length && !paper.length && !chem.length) return null
+    const base = baseOption(theme)
+    const periods = [...new Set([...constr, ...paper, ...chem].map(r => r.period))].sort()
+    const grab = (rows) => {
+      const m = new Map(rows.map(r => [r.period, Number(r.value)]))
+      return periods.map(p => m.get(p) ?? null)
+    }
+    return {
+      ...base,
+      xAxis: { ...base.xAxis, data: periods },
+      tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : Number(v).toFixed(1) },
+      series: [
+        lineSeries('Construction (PVC demand)', grab(constr), theme.series.s1, theme),
+        lineSeries('Paper (caustic demand)', grab(paper), theme.series.s2, theme),
+        lineSeries('Chemicals (context)', grab(chem), theme.series.s5, theme),
+        { type: 'line', data: [], markLine: {
+            silent: true, symbol: 'none', data: [{ yAxis: 100 }],
+            lineStyle: { color: theme.axis, type: 'dashed', width: 1 }, label: { show: false } } },
       ],
     }
   }, [data, theme])
@@ -155,7 +190,84 @@ export default function Industry({ fromDate }) {
                            valueFmt: v => `${Number(v).toFixed(0)} RMB/t` })
             : <EmptyState>No SunSirs rows yet — runs daily via cron.</EmptyState>}
         </Card>
+
+        <Card title="EUA carbon price" subtitle="Monthly average of daily secondary-market closes, EUR/tCO2 (ICAP)."
+          sourceRows={data.eua}>
+          {data.eua?.length
+            ? simpleLine({ rows: data.eua, theme, color: theme.series.s5, unit: 'EUR/tCO2',
+                           valueFmt: v => `${Number(v).toFixed(1)} €/tCO2` })
+            : <EmptyState>No EUA data.</EmptyState>}
+        </Card>
+        <Card title="Indirect carbon cost per tonne Cl2"
+          subtitle="EUA × emission factor × 1.846 MWh/t × (1 − 75% aid). Net of MAX compensation — uncompensated member states face ~4× this. Constants cited to Communication 2021/C 528/01, pending confirmation."
+          sourceRows={data.carbon?.slice(-1).map(r => ({
+            source: 'ICAP EUA + Communication 2021/C 528/01 constants',
+            source_dataset: 'carbon_cost_exposure v1.0',
+            retrieved_at: r.computed_at, quality_flag: 'estimated',
+          }))}>
+          {data.carbon?.length
+            ? simpleLine({ rows: data.carbon, theme, color: theme.series.s6, unit: 'EUR/t Cl2',
+                           valueFmt: v => `${Number(v).toFixed(1)} €/t` })
+            : <EmptyState>Awaiting EUA data + confirmed constants.</EmptyState>}
+        </Card>
       </div>
+
+      <Card title="Demand-side indicators — customers vs competitiveness"
+        subtitle="EU27 output indices, 2021 = 100, seasonally adjusted (Eurostat STS). Falling demand can mask competitiveness moves in the trade balance."
+        sourceRows={[...(data.demand?.constr || []), ...(data.demand?.paper || [])]}
+        right={demandOption && <Legend items={[
+          { label: 'Construction (PVC demand)', color: theme.series.s1 },
+          { label: 'Paper (caustic demand)', color: theme.series.s2 },
+          { label: 'Chemicals (context)', color: theme.series.s5 },
+        ]} />}>
+        {demandOption ? <EChart option={demandOption} height={260} theme={theme} />
+          : <EmptyState>No demand data.</EmptyState>}
+      </Card>
+
+      <Card title="Capacity events"
+        subtitle="Curated tracker: closures, curtailments, conversions, expansions (assessment §2.5). Each row links its source; entries pending human confirmation are marked ◐.">
+        {data.events?.length ? (
+          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead><tr>
+              {['Date', 'Region', 'Company / site', 'Type', 'Product', 'kt/yr', 'What happened', ''].map(h => (
+                <th key={h} style={{ textAlign: 'left', padding: '8px 10px', fontSize: 10.5,
+                  color: theme.inkMuted, fontWeight: 700, textTransform: 'uppercase',
+                  letterSpacing: '0.06em', borderBottom: `1px solid ${theme.grid}` }}>{h}</th>
+              ))}
+            </tr></thead>
+            <tbody>
+              {data.events.map((e, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '8px 10px', fontSize: 12.5, color: theme.ink,
+                               borderBottom: `1px solid ${theme.grid}`, fontVariantNumeric: 'tabular-nums',
+                               whiteSpace: 'nowrap' }}>{e.confirmed ? '' : '◐ '}{e.date}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 12.5, color: theme.ink,
+                               borderBottom: `1px solid ${theme.grid}` }}>{e.region}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 12.5, color: theme.ink,
+                               borderBottom: `1px solid ${theme.grid}` }}>
+                    <strong>{e.company}</strong> — {e.site}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 12, fontWeight: 650,
+                               borderBottom: `1px solid ${theme.grid}`,
+                               color: ['closure', 'curtailment'].includes(e.type) ? theme.bad
+                                    : e.type === 'conversion' ? theme.inkSecondary : theme.good }}>
+                    {e.type}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 12.5, color: theme.inkSecondary,
+                               borderBottom: `1px solid ${theme.grid}` }}>{e.product}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 12.5, color: theme.ink,
+                               borderBottom: `1px solid ${theme.grid}`, fontVariantNumeric: 'tabular-nums' }}>
+                    {e.capacity_kt_yr ?? '—'}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 12, color: theme.inkSecondary,
+                               borderBottom: `1px solid ${theme.grid}` }}>{e.note}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 12,
+                               borderBottom: `1px solid ${theme.grid}` }}>
+                    <a href={e.source_url} target="_blank" rel="noreferrer"
+                       style={{ color: theme.accentText }}>source ↗</a></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : <EmptyState>No events in config/capacity_events.yaml yet.</EmptyState>}
+      </Card>
     </>
   )
 }

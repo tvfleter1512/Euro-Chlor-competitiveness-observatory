@@ -34,5 +34,9 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 # SunSirs China caustic spot — daily (page only shows ~6 days; cron accumulates)
 15 7 * * *   $P --agent sunsirs_china
 
+# EUA price (ICAP) + demand-side indicators (Eurostat STS) — monthly
+0 9 6 * *    $P --agent eua_price
+10 9 6 * *   $P --agent eurostat_demand
+
 # Recompute all indicators nightly (fast; depends on everything above)
 0 22 * * *   $P --benchmarks

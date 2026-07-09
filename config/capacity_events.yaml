@@ -1,0 +1,182 @@
+# Capacity-events tracker (assessment §2.5) — curated, dated, every row sourced.
+# Maintained manually (~1h/month): add announcements of closures, curtailments,
+# conversions, expansions with a press-release/trade-press URL. Initial set
+# researched + URL-verified by AI agent 2026-07-09; flip confirmed: true after
+# human review of each source. Dashboard renders newest first.
+events:
+  - date: "2026-03"
+    region: US
+    country: "United States"
+    company: "Shintech (Shin-Etsu)"
+    site: "Plaquemine, Louisiana"
+    type: expansion
+    product: caustic
+    capacity_kt_yr: 310
+    note: "$3.4bn phased expansion: fourth chlor-alkali/VCM unit (310 kt/yr caustic, 500 kt/yr VCM) + second ethylene unit; first phase 2030 (announcement date)"
+    source_url: "https://www.manufacturingdive.com/news/pvc-giant-shintech-invest-34b-plaquemine-louisiana-expansion/814172/"
+    confirmed: false
+  - date: "2026-02"
+    region: OTHER
+    country: "Thailand"
+    company: "AGC Vinythai"
+    site: "Map Ta Phut / Rayong"
+    type: expansion
+    product: caustic
+    capacity_kt_yr: 220
+    note: "Expanded chlor-alkali plant commissioned (~220 kt/yr caustic added); PVC capacity 300 -> 700 kt/yr (commissioning date)"
+    source_url: "https://www.chemengonline.com/agc-vinythai-commissions-expanded-chlor-alkali-plant-in-thailand/"
+    confirmed: false
+  - date: "2025-12"
+    region: US
+    country: "United States"
+    company: "Westlake"
+    site: "Lake Charles South, Louisiana"
+    type: closure
+    product: chlorine
+    capacity_kt_yr: 374
+    note: "Diaphragm chlor-alkali unit shut (825m lb/yr chlorine, 910m lb/yr caustic), part of $415m closure program (announced & effective Dec 2025)"
+    source_url: "https://www.icis.com/explore/resources/news/2025/12/15/11164293/westlake-to-shut-down-us-pvc-chlor-alkali-styrene-plants-in-december/"
+    confirmed: false
+  - date: "2025-12"
+    region: US
+    country: "United States"
+    company: "Westlake"
+    site: "Aberdeen, Mississippi + Lake Charles North, Louisiana"
+    type: closure
+    product: PVC
+    capacity_kt_yr: 454
+    note: "Aberdeen suspension-PVC plant (~454 kt/yr) and Lake Charles North VCM (~413 kt/yr) shut alongside chlor-alkali and styrene units (Dec 2025)"
+    source_url: "https://www.icis.com/explore/resources/news/2025/12/15/11164293/westlake-to-shut-down-us-pvc-chlor-alkali-styrene-plants-in-december/"
+    confirmed: false
+  - date: "2025-12"
+    region: EU
+    country: "United Kingdom"
+    company: "Vynova"
+    site: "Runcorn"
+    type: closure
+    product: chlorine
+    capacity_kt_yr: null
+    note: "Vynova Runcorn (membrane chlorine/caustic JV with INEOS Inovyn, plus EDC) entered administration 16 Dec 2025, ~90 jobs at risk"
+    source_url: "https://www.chesterstandard.co.uk/news/25949650.jobs-risk-vynova-runcorn-goes-administration/"
+    confirmed: false
+  - date: "2025-10"
+    region: EU
+    country: "Germany"
+    company: "INEOS Inovyn"
+    site: "Rheinberg"
+    type: closure
+    product: chlorine
+    capacity_kt_yr: null
+    note: "Intention to close the electrochemical (chlor-alkali) and Allylics/epichlorohydrin units, ~175 jobs; PVC continues at the site (announcement date)"
+    source_url: "https://www.ineos.com/news/shared-news/ineos-to-close-two-rheinberg-plants-as-europes-chemical-industry-hits-breaking-point/"
+    confirmed: false
+  - date: "2025-07"
+    region: EU
+    country: "Germany"
+    company: "Dow"
+    site: "Schkopau"
+    type: closure
+    product: chlorine
+    capacity_kt_yr: null
+    note: "Board-approved shutdown of chlor-alkali & vinyl (CAV) assets, expected 4Q27, alongside Böhlen cracker closure (announcement date)"
+    source_url: "https://investors.dow.com/en/news/news-details/2025/Dow-will-shut-down-three-upstream-European-assets-in-response-to-structural-challenges-in-the-region/default.aspx"
+    confirmed: false
+  - date: "2025-07"
+    region: EU
+    country: "Netherlands"
+    company: "Vynova"
+    site: "Beek"
+    type: closure
+    product: PVC
+    capacity_kt_yr: 225
+    note: "Intention to cease PVC production (225 kt/yr) by Nov 2025 — European overcapacity, weak demand, low-cost imports (announcement date)"
+    source_url: "https://www.vynova-group.com/press-releases/announcement-intention-vynova-beek"
+    confirmed: false
+  - date: "2025-03"
+    region: EU
+    country: "France"
+    company: "Kem One"
+    site: "Fos-sur-Mer"
+    type: conversion
+    product: chlorine
+    capacity_kt_yr: null
+    note: "ELYSE project: diaphragm -> membrane electrolysis conversion operational; ~50 kt/yr CO2 cut, better caustic quality (effective date)"
+    source_url: "https://www.kemone.com/en/2025/03/26/kem-one-propels-its-fos-sur-mer-site-among-europes-best-2/"
+    confirmed: false
+  - date: "2025-01"
+    region: EU
+    country: "Czech Republic"
+    company: "Spolana (Orlen Unipetrol)"
+    site: "Neratovice"
+    type: closure
+    product: PVC
+    capacity_kt_yr: 135
+    note: "135 kt/yr PVC plant shut during H1 2025 — no longer competitive; site pivots to sulphuric acid (announcement date)"
+    source_url: "https://www.argusmedia.com/en/news-and-insights/latest-market-news/2646503-spolana-to-shut-its-czech-pvc-production"
+    confirmed: false
+  - date: "2024-12"
+    region: US
+    country: "United States"
+    company: "Olin"
+    site: "Freeport, Texas"
+    type: closure
+    product: chlorine
+    capacity_kt_yr: 450
+    note: "~450k ECU tons asbestos-diaphragm capacity serving Dow's Freeport PO unit to shut, aligned with Dow's PO closure end-2025 (announcement date)"
+    source_url: "https://www.icis.com/explore/resources/news/2024/12/12/11059242/olin-to-shut-diaphragm-chloralkali-capacity-that-serves-dow-s-freeport-po-unit/"
+    confirmed: false
+  - date: "2024-07"
+    region: US
+    country: "United States"
+    company: "OxyChem (Occidental)"
+    site: "Battleground, La Porte, Texas"
+    type: conversion
+    product: chlorine
+    capacity_kt_yr: null
+    note: "$1.1bn diaphragm -> membrane conversion + expansion (3,000+ cells); completion targeted 2026 (article date, under construction)"
+    source_url: "https://downstreamcalendar.com/oxychem-breaks-ground-now-approved-proposed-1-1-billion-overhaul-and-expansion-project-info-and-location-map/"
+    confirmed: false
+  - date: "2023-02"
+    region: EU
+    country: "Spain"
+    company: "Covestro"
+    site: "Tarragona"
+    type: new_plant
+    product: chlorine
+    capacity_kt_yr: null
+    note: "€200m world-scale chlorine plant started up, ODC oxygen-depolarized-cathode tech, up to 25% lower energy use (startup date)"
+    source_url: "https://www.covestro.com/press/covestro-successfully-starts-up-a-new-world-scale-chlorine-plant-in-tarragona/"
+    confirmed: false
+  - date: "2022-08"
+    region: US
+    country: "United States"
+    company: "Olin"
+    site: "Freeport, Texas"
+    type: closure
+    product: chlorine
+    capacity_kt_yr: 225
+    note: "Permanent shutdown of ~225k ECU tons diaphragm capacity by end-2022; total Olin diaphragm rationalisation >1m ECU tons since 2021 (announcement date)"
+    source_url: "https://www.prnewswire.com/news-releases/olin-announces-chlor-alkali-capacity-reduction-301611603.html"
+    confirmed: false
+  - date: "2022-06"
+    region: US
+    country: "United States"
+    company: "Olin"
+    site: "Freeport, Texas"
+    type: curtailment
+    product: EDC/VCM
+    capacity_kt_yr: null
+    note: "Temporary curtailment of significant EDC/chlor-alkali production — weak demand, high Texas power costs (announcement date)"
+    source_url: "https://www.prnewswire.com/news-releases/olin-provides-operations-update-301567922.html"
+    confirmed: false
+  - date: "2021-10"
+    region: US
+    country: "United States"
+    company: "Olin"
+    site: "McIntosh, Alabama"
+    type: closure
+    product: chlorine
+    capacity_kt_yr: 200
+    note: "Permanent shutdown of remaining diaphragm capacity (~200k ECU tons) by end Q3 2022, on top of 200k already shut Q1 2021 (announcement date)"
+    source_url: "https://www.prnewswire.com/news-releases/olin-to-shut-down-additional-chlor-alkali-capacity-301405043.html"
+    confirmed: false

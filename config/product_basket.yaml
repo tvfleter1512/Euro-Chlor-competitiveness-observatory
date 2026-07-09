@@ -2,6 +2,12 @@
 # Codes start as confirmed: false; flip to true after human verification against
 # current CN8/HS. All codes below validated by owner 2026-07-08.
 # cn8: codes used against Eurostat Comext. hs6: roll-up used against UN Comtrade.
+#
+# cbam_status applies to the WHOLE basket per Regulation (EU) 2023/956 Annex I:
+# organic chemicals & polymers excluded at launch; Commission review of the
+# extension due end-2027 (see config/carbon.yaml cbam section). Per-product
+# overrides possible here if the Annex changes.
+cbam_status_default: excluded_annex_I
 products:
   - key: caustic_solid
     name: "Caustic soda, solid (NaOH)"

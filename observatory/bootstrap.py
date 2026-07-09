@@ -28,7 +28,14 @@ SERIES = [
      "EU (IMF Europe/TTF-based) vs US (Henry Hub), USD/MMBtu."),
     ("price.caustic_spot_cn", "China caustic soda spot price (32% ion-membrane)", "price",
      "SunSirs daily spot, RMB/t."),
-    ("carbon.eua_price", "EUA carbon price", "carbon", "Phase 2."),
+    ("carbon.eua_price", "EUA carbon price", "carbon",
+     "ICAP secondary-market monthly average, EUR/tCO2."),
+    ("demand.construction_output", "EU construction output", "demand",
+     "Eurostat sts_copr_m, PVC demand proxy, index 2021=100."),
+    ("demand.paper_production", "EU paper industry production", "demand",
+     "Eurostat sts_inpr_m C17, caustic/chlorate demand proxy."),
+    ("demand.chemicals_production", "EU chemicals production", "demand",
+     "Eurostat sts_inpr_m C20, own-industry context."),
 ]
 
 GEOS = [
@@ -74,6 +81,16 @@ def bootstrap() -> None:
                    VALUES (%s,'HS6',%s,%s,%s) ON CONFLICT (product_code) DO UPDATE
                    SET name = EXCLUDED.name, confirmed = EXCLUDED.confirmed""",
                 (product["hs6"], product["name"], product["hs6"], product["confirmed"]))
+        # legal-text constants: seeded from config/carbon.yaml with citation;
+        # a human flips confirmed in the config after checking the source text
+        for key, spec in load_config("carbon")["benchmark_constants"].items():
+            conn.execute(
+                """INSERT INTO benchmark_constant (key, value, unit, citation, source_url, confirmed)
+                   VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (key) DO UPDATE
+                   SET value = EXCLUDED.value, citation = EXCLUDED.citation,
+                       source_url = EXCLUDED.source_url, confirmed = EXCLUDED.confirmed""",
+                (key, spec["value"], spec["unit"], spec["citation"],
+                 spec.get("source_url"), spec["confirmed"]))
         conn.commit()
     log.info("bootstrap complete")
 

@@ -94,6 +94,22 @@ def meta_indicators():
     return load_config("indicators")
 
 
+@app.get("/api/meta/carbon")
+def meta_carbon():
+    with db.get_conn() as conn:
+        constants = conn.execute("SELECT * FROM benchmark_constant ORDER BY key").fetchall()
+    return {"constants": constants, "config": load_config("carbon")}
+
+
+@app.get("/api/meta/capacity-events")
+def meta_capacity_events():
+    try:
+        events = load_config("capacity_events")["events"]
+    except FileNotFoundError:
+        events = []
+    return {"events": sorted(events, key=lambda e: e["date"], reverse=True)}
+
+
 @app.get("/api/quarantine")
 def quarantine(limit: int = 200):
     with db.get_conn() as conn:
