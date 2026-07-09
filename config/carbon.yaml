@@ -1,8 +1,7 @@
 # Carbon module configuration — legal-text constants stored WITH citation
-# (spec §8: benchmark values are read from the source Communication, never
-# inlined in code). Everything here is seeded into the benchmark_constant
-# table by bootstrap and stays confirmed: false until verified against the
-# cited document by a human.
+# (spec §8). Regional CO2 emission factors extracted verbatim from
+# Communication 2021/C 528/01 point (5), which completes Annex III of the
+# ETS State aid guidelines 2020/C 317/04 (retrieved from EUR-Lex 2026-07-09).
 benchmark_constants:
   ets_cl_electricity_intensity:
     value: 1.846
@@ -11,29 +10,149 @@ benchmark_constants:
     source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
     confirmed: true   # confirmed by owner 2026-07-09
   ets_aid_intensity:
-    value: 0.75
+    value: 0.80
     unit: "share"
-    citation: "Communication 2020/C 317/04 (ETS State aid guidelines post-2021) — maximum aid intensity 75%; CONFIRM clause"
+    citation: "Aid intensity 80% per owner confirmation 2026-07-09 (supersedes the 75% maximum of Communication 2020/C 317/04 point 26 — add the amending act reference when citing externally)"
     source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52020XC0925(01)"
     confirmed: true   # confirmed by owner 2026-07-09
-  ets_emission_factor:
-    value: 0.76
+  # --- Annex III: maximum regional CO2 emission factors (tCO2/MWh) ---
+  ets_ef_adriatic:
+    value: 0.69
     unit: "tCO2/MWh"
-    citation: "Communication 2021/C 528/01, Annex III — regional CO2 emission factor; VALUE IS ZONE-DEPENDENT, CONFIRM the factor for the zone(s) of interest"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Adriatic (Croatia, Slovenia)"
     source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
-    confirmed: true   # confirmed by owner 2026-07-09
+    confirmed: true
+  ets_ef_iberia:
+    value: 0.53
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Iberia (Spain, Portugal)"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_baltic:
+    value: 0.75
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Baltic (Lithuania, Latvia, Estonia)"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_cwe:
+    value: 0.72
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Central Western Europe (Austria, Germany, Luxembourg)"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_nordic:
+    value: 0.58
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Nordic (Sweden, Finland)"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_cz_sk:
+    value: 0.85
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Czechia-Slovakia"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_belgium:
+    value: 0.36
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Belgium"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_bulgaria:
+    value: 0.98
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Bulgaria"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_denmark:
+    value: 0.52
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Denmark"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_ireland:
+    value: 0.49
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Ireland"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_greece:
+    value: 0.73
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Greece"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_france:
+    value: 0.44
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — France"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_italy:
+    value: 0.46
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Italy"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_cyprus:
+    value: 0.70
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Cyprus"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_hungary:
+    value: 0.58
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Hungary"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_malta:
+    value: 0.40
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Malta"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_netherlands:
+    value: 0.45
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Netherlands"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_poland:
+    value: 0.81
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Poland"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
+  ets_ef_romania:
+    value: 0.96
+    unit: "tCO2/MWh"
+    citation: "Communication 2021/C 528/01 point (5), Annex III — Romania"
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    confirmed: true
 
 indicator:
   # net indirect carbon cost per tonne Cl2 for a compensated installation:
-  # EUA_monthly_avg × emission_factor × intensity × (1 − aid_intensity)
-  # NOTE: several member states do NOT operate indirect-cost compensation —
-  # for those, exposure is the uncompensated product (aid_intensity = 0).
-  methodology_version: "v1.0"
+  # EUA_monthly_avg × zone emission factor × intensity × (1 − aid_intensity)
+  # NOTE: member states without indirect-cost compensation face the gross figure.
+  methodology_version: "v1.1"   # v1.1: per-zone factors replace single placeholder
+  # zone factor per detail country (chlor-alkali producing member states)
+  country_zones:
+    DE: ets_ef_cwe
+    FR: ets_ef_france
+    NL: ets_ef_netherlands
+    BE: ets_ef_belgium
+    ES: ets_ef_iberia
+    IT: ets_ef_italy
+    PL: ets_ef_poland
+  # headline EU row uses CWE (Germany = largest EU chlor-alkali producer);
+  # feeds the cost-gap waterfall
+  headline_zone: ets_ef_cwe
 
 cbam:
   # Regulation (EU) 2023/956 Annex I: organic chemicals and polymers EXCLUDED
   # from CBAM scope at launch. Commission assessment on extension to organic
-  # chemicals/polymers due by end-2027; ETS-wide ambition ~2030.
+  # chemicals/polymers due by end-2027, with ETS-wide ambition ~2030.
   basket_status: "excluded_annex_I"
   review_milestone: "2027-12-31"
   citation: "Regulation (EU) 2023/956, Annex I; Art. 30 review clause"

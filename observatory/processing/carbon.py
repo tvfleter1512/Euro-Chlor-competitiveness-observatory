@@ -1,11 +1,13 @@
-"""Carbon cost exposure indicator (spec §9.5, assessment §2.8).
+"""Carbon cost exposure indicator (spec §9.5) — v1.1, per-zone regional factors.
 
 Net indirect carbon cost per tonne Cl2:
-    EUA_monthly × emission_factor × electricity_intensity × (1 − aid_intensity)
+    EUA_monthly × zone_emission_factor × electricity_intensity × (1 − aid_intensity)
 
-All three constants come from the benchmark_constant table (seeded from
-config/carbon.yaml WITH citations to the source Communications). If any is
-missing the indicator is skipped — never a remembered number.
+Computed per chlor-alkali member state using its Annex III regional CO2 factor
+(Communication 2021/C 528/01 point (5)), plus one EU27 headline row using the
+configured headline zone (CWE — feeds the cost-gap waterfall). All constants
+come from the benchmark_constant table (seeded from config/carbon.yaml WITH
+citations) — never a remembered number.
 """
 import json
 import logging
@@ -14,46 +16,55 @@ from observatory.settings import load_config
 
 log = logging.getLogger(__name__)
 
-REQUIRED = ("ets_cl_electricity_intensity", "ets_emission_factor", "ets_aid_intensity")
-
 
 def compute(conn, run_id: int) -> int:
+    cfg = load_config("carbon")["indicator"]
     consts = {r["key"]: r for r in conn.execute(
-        "SELECT * FROM benchmark_constant WHERE key = ANY(%s)", (list(REQUIRED),)
-    ).fetchall()}
-    if set(consts) != set(REQUIRED):
-        log.warning("carbon: benchmark constants missing, skipping (%s)", set(REQUIRED) - set(consts))
-        return 0
-    version = load_config("carbon")["indicator"]["methodology_version"]
+        "SELECT * FROM benchmark_constant").fetchall()}
+    for key in ("ets_cl_electricity_intensity", "ets_aid_intensity", cfg["headline_zone"]):
+        if key not in consts:
+            log.warning("carbon: benchmark constant %s missing, skipping", key)
+            return 0
     intensity = float(consts["ets_cl_electricity_intensity"]["value"])
-    ef = float(consts["ets_emission_factor"]["value"])
     aid = float(consts["ets_aid_intensity"]["value"])
-    confirmed = all(consts[k]["confirmed"] for k in REQUIRED)
 
     eua = conn.execute(
         """SELECT period, period_start, value, source, source_dataset, retrieved_at
            FROM v_series_latest WHERE series_id = 'carbon.eua_price'"""
     ).fetchall()
+
+    # (geo, zone-constant) pairs: headline EU row + per-country rows
+    targets = [("EU27_2020", cfg["headline_zone"])]
+    targets += [(geo, zone) for geo, zone in cfg["country_zones"].items()
+                if zone in consts]
+
     n = 0
-    for r in eua:
-        gross = float(r["value"]) * ef * intensity
-        net = gross * (1 - aid)
-        conn.execute(
-            """INSERT INTO fact_indicator
-               (indicator_id, methodology_version, geo_id, period, period_start,
-                value, unit, inputs, run_id)
-               VALUES ('carbon_cost_exposure',%s,'EU27_2020',%s,%s,%s,'EUR/t Cl2',%s,%s)""",
-            (version, r["period"], r["period_start"], round(net, 2),
-             json.dumps({
-                 "eua_eur_tco2": float(r["value"]),
-                 "eua_source": {"source": r["source"], "source_dataset": r["source_dataset"],
-                                "retrieved_at": str(r["retrieved_at"])},
-                 "gross_eur_t_cl2": round(gross, 2),
-                 "constants": {k: {"value": float(consts[k]["value"]),
-                                   "citation": consts[k]["citation"],
-                                   "confirmed": consts[k]["confirmed"]} for k in REQUIRED},
-                 "constants_confirmed": confirmed,
-                 "note": "net of maximum indirect-cost compensation; member states without compensation face the gross figure",
-             }), run_id))
-        n += 1
+    for geo, zone_key in targets:
+        zone = consts[zone_key]
+        ef = float(zone["value"])
+        for r in eua:
+            gross = float(r["value"]) * ef * intensity
+            net = gross * (1 - aid)
+            conn.execute(
+                """INSERT INTO fact_indicator
+                   (indicator_id, methodology_version, geo_id, period, period_start,
+                    value, unit, inputs, run_id)
+                   VALUES ('carbon_cost_exposure',%s,%s,%s,%s,%s,'EUR/t Cl2',%s,%s)""",
+                (cfg["methodology_version"], geo, r["period"], r["period_start"],
+                 round(net, 2),
+                 json.dumps({
+                     "eua_eur_tco2": float(r["value"]),
+                     "eua_source": {"source": r["source"],
+                                    "source_dataset": r["source_dataset"],
+                                    "retrieved_at": str(r["retrieved_at"])},
+                     "zone": {"key": zone_key, "factor_tco2_mwh": ef,
+                              "citation": zone["citation"],
+                              "confirmed": zone["confirmed"]},
+                     "intensity_mwh_t": intensity,
+                     "aid_intensity": aid,
+                     "gross_eur_t_cl2": round(gross, 2),
+                     "headline": geo == "EU27_2020",
+                     "note": "net of maximum compensation; member states without compensation face the gross figure",
+                 }), run_id))
+            n += 1
     return n

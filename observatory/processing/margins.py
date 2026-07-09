@@ -81,7 +81,8 @@ def compute_cost_gap(conn, run_id: int, cfg: dict) -> int:
              AND band = 'MWH_GE150000' AND tax_treatment = 'X_VAT'""").fetchall()}
     carbon_rows = conn.execute(
         """SELECT period_start, value FROM fact_indicator
-           WHERE indicator_id = 'carbon_cost_exposure'""").fetchall()
+           WHERE indicator_id = 'carbon_cost_exposure'
+             AND geo_id = 'EU27_2020'""").fetchall()   # headline zone only
     carbon_sem = defaultdict(list)
     for r in carbon_rows:
         sem, _ = norm.semester_of(r["period_start"])

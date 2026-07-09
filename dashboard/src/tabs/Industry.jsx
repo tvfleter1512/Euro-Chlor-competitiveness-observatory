@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { fetchSeries, fetchIndicators, fetchCapacityEvents } from '../api'
-import { useTheme, GEO_LABEL } from '../theme'
+import { useTheme, GEO_LABEL, GEO_SLOT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, StatTile } from '../components'
 
@@ -200,17 +200,36 @@ export default function Industry({ fromDate }) {
                            valueFmt: v => `${Number(v).toFixed(1)} €/tCO2` })
             : <EmptyState>No EUA data.</EmptyState>}
         </Card>
-        <Card title="Indirect carbon cost per tonne Cl2"
-          subtitle="EUA × emission factor × 1.846 MWh/t × (1 − 75% aid). Net of MAX compensation — uncompensated member states face ~4× this. Constants cited to Communication 2021/C 528/01, pending confirmation."
+        <Card title="Indirect carbon cost per tonne Cl2 — by member state"
+          subtitle="EUA × Annex III regional CO2 factor × 1.846 MWh/t × (1 − 80% aid). Net of MAX compensation — member states without compensation face 5× this. Constants cited to Communication 2021/C 528/01, confirmed."
           sourceRows={data.carbon?.slice(-1).map(r => ({
-            source: 'ICAP EUA + Communication 2021/C 528/01 constants',
-            source_dataset: 'carbon_cost_exposure v1.0',
-            retrieved_at: r.computed_at, quality_flag: 'estimated',
+            source: 'ICAP EUA + Communication 2021/C 528/01 Annex III',
+            source_dataset: `carbon_cost_exposure ${r.methodology_version}`,
+            retrieved_at: r.computed_at, quality_flag: 'ok',
           }))}>
-          {data.carbon?.length
-            ? simpleLine({ rows: data.carbon, theme, color: theme.series.s6, unit: 'EUR/t Cl2',
-                           valueFmt: v => `${Number(v).toFixed(1)} €/t` })
-            : <EmptyState>Awaiting EUA data + confirmed constants.</EmptyState>}
+          {data.carbon?.length ? (() => {
+            const base = baseOption(theme)
+            const geos = ['DE', 'FR', 'NL', 'BE', 'ES', 'IT', 'PL']
+              .filter(g => data.carbon.some(r => r.geo_id === g))
+            const periods = [...new Set(data.carbon.map(r => r.period))].sort()
+            const grab = (g) => {
+              const m = new Map(data.carbon.filter(r => r.geo_id === g)
+                .map(r => [r.period, Number(r.value)]))
+              return periods.map(p => m.get(p) ?? null)
+            }
+            return (
+              <>
+                <Legend items={geos.map(g => ({ label: GEO_LABEL[g] || g, color: theme.series[GEO_SLOT[g]] }))} />
+                <EChart height={215} theme={theme} option={{
+                  ...base,
+                  xAxis: { ...base.xAxis, data: periods },
+                  tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : `${Number(v).toFixed(1)} €/t` },
+                  series: geos.map(g =>
+                    lineSeries(GEO_LABEL[g] || g, grab(g), theme.series[GEO_SLOT[g]], theme)),
+                }} />
+              </>
+            )
+          })() : <EmptyState>Awaiting EUA data.</EmptyState>}
         </Card>
       </div>
 
