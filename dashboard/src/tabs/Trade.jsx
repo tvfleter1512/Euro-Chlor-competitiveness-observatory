@@ -30,7 +30,6 @@ export default function Trade({ fromDate, product, productLabel, confirmed }) {
   const [flows, setFlows] = useState(null)
   const [kpiRows, setKpiRows] = useState(null)
   const [penetration, setPenetration] = useState(null)
-  const [freight, setFreight] = useState(null)
   const [allBalance, setAllBalance] = useState(null)
   const [basket, setBasket] = useState([])
   const [error, setError] = useState(null)
@@ -41,8 +40,6 @@ export default function Trade({ fromDate, product, productLabel, confirmed }) {
       .then(d => setAllBalance(d.rows)).catch(() => {})
     fetchIndicators({ indicator_id: 'import_penetration' })
       .then(d => setPenetration(d.rows)).catch(() => {})
-    fetchSeries({ series_id: 'freight.container_index' })
-      .then(d => setFreight(d.rows)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -220,10 +217,9 @@ export default function Trade({ fromDate, product, productLabel, confirmed }) {
         </Card>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>
-        <Card title="Import penetration — caustic soda"
-          subtitle="Extra-EU imports ÷ apparent consumption (PRODCOM sold production + imports − exports), dry basis, annual. Estimated: PRODCOM excludes captive use.">
-          {penetration?.length ? (() => {
+      <Card title="Import penetration — caustic soda"
+        subtitle="Extra-EU imports ÷ apparent consumption (PRODCOM sold production + imports − exports), dry basis, annual. Estimated: PRODCOM excludes captive use.">
+        {penetration?.length ? (() => {
             const base = baseOption(theme)
             const rows = [...penetration].sort((a, b) => a.period.localeCompare(b.period))
             return <EChart height={230} theme={theme} option={{
@@ -234,28 +230,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed }) {
               series: [lineSeries('Penetration', rows.map(r => Number(r.value)), theme.series.s6, theme)],
             }} />
           })() : <EmptyState>Awaiting PRODCOM data.</EmptyState>}
-        </Card>
-
-        <Card title="Container freight context"
-          subtitle="Drewry WCI composite, USD/40ft (curated weekly drop — data/freight/). CIF import unit values embed freight; check this before reading price moves as competitiveness moves."
-          sourceRows={freight}>
-          {freight?.length ? (() => {
-            const base = baseOption(theme)
-            const rows = [...freight].sort((a, b) => a.period.localeCompare(b.period))
-            return <EChart height={230} theme={theme} option={{
-              ...base,
-              xAxis: { ...base.xAxis, data: rows.map(r => r.period) },
-              tooltip: { ...base.tooltip, valueFormatter: v => `$${Number(v).toFixed(0)}/40ft` },
-              series: [lineSeries('WCI', rows.map(r => Number(r.value)), theme.series.s3, theme)],
-            }} />
-          })() : (
-            <EmptyState>
-              No freight rows yet — paste the weekly Drewry WCI composite into
-              data/freight/ (see TEMPLATE.csv). No free API exists.
-            </EmptyState>
-          )}
-        </Card>
-      </div>
+      </Card>
     </>
   )
 }

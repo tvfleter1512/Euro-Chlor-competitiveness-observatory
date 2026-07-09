@@ -17,7 +17,3 @@ references:
     url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R0956"
     what: "Basket currently excluded from Annex I; Commission review of extension to organic chemicals/polymers due end-2027."
     cadence: static
-  - title: "Drewry World Container Index (weekly page)"
-    url: "https://www.drewry.co.uk/supply-chain-advisors/world-container-index-weekly-update/container-shipping1"
-    what: "Weekly composite published openly in-browser; paste into data/freight/ (no API). Liquid-caustic tanker rates are licensed only — model-B candidate."
-    cadence: weekly

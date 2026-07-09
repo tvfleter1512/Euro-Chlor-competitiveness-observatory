@@ -42,8 +42,6 @@ SERIES = [
     ("structure.employment", "Employment (SBS)", "structure",
      "Persons employed, NACE in band field (C2013 / C20)."),
     ("structure.enterprises", "Number of enterprises (SBS)", "structure", ""),
-    ("freight.container_index", "Container freight index", "freight",
-     "Curated weekly drop (Drewry WCI composite)."),
 ]
 
 GEOS = [

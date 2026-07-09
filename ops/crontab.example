@@ -42,8 +42,5 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 20 9 7 * *   $P --agent prodcom
 30 9 7 * *   $P --agent eurostat_sbs
 
-# Freight file-drop — daily pickup
-20 7 * * *   $P --agent freight_drop
-
 # Recompute all indicators nightly (fast; depends on everything above)
 0 22 * * *   $P --benchmarks

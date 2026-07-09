@@ -113,7 +113,7 @@ indicators:
       Replaces the composite index (see metric assessment §3): every component
       is in the same physical unit, weights are intensities rather than
       opinions, and the decomposition maps directly to policy levers.
-      Extensible: gas- and freight-gap terms can be added as components.
+      Extensible: a gas-gap term can be added as a component.
 
   composite_index:
     methodology_version: "v1.0"
