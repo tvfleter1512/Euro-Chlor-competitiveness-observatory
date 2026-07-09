@@ -40,29 +40,37 @@ class ComextSupplierAgent(IngestionAgent):
         return payloads
 
     def parse(self, payloads):
+        conv = load_config("conversions")["units"]["comext_100kg_to_tonne"]
         retrieved_at = datetime.now(timezone.utc)
         rows = []
         self._partner_labels = {}
         for url, payload in payloads:
             labels = payload["dimension"]["partner"]["category"].get("label", {})
             for coords, value in iter_observations(payload):
-                if coords["indicators"] != "VALUE_IN_EUROS" or value is None:
+                indicator = coords["indicators"]
+                if value is None:
+                    continue
+                if indicator == "VALUE_IN_EUROS":
+                    series_id, val, unit, cur = "trade.value", float(value), "EUR", "EUR"
+                elif indicator == "QUANTITY_IN_100KG":   # tonnage-parallel CDIs
+                    series_id, val, unit, cur = "trade.quantity", float(value) * conv, "t", None
+                else:
                     continue
                 partner = AGG_GEO.get(coords["partner"], coords["partner"])
                 if partner not in AGG_GEO.values():
                     self._partner_labels[partner] = labels.get(coords["partner"], partner)
                 period = coords["time"]
                 rows.append(SeriesRow(
-                    series_id="trade.value",
+                    series_id=series_id,
                     geo_id="EU27_2020",
                     partner_geo_id=partner,
                     product_code=coords["product"],
                     flow={"1": "import", "2": "export"}[coords["flow"]],
                     period=period,
                     period_start=period_start(period),
-                    value=float(value),
-                    unit="EUR",
-                    currency="EUR",
+                    value=val,
+                    unit=unit,
+                    currency=cur,
                     source="Eurostat Comext",
                     source_dataset="DS-045409 (partner detail)",
                     reference_period=period,

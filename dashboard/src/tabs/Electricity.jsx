@@ -55,6 +55,7 @@ export default function Electricity({ fromDate }) {
   const theme = useTheme()
   const [rows, setRows] = useState(null)
   const [ratios, setRatios] = useState(null)
+  const [costGap, setCostGap] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -62,11 +63,42 @@ export default function Electricity({ fromDate }) {
       fetchSeries({ series_id: 'power.industrial_delivered', band: BAND, tax: TAX, from: fromDate }),
       fetchSeries({ series_id: 'power.industrial_delivered', geo: 'US', from: fromDate }),
       fetchIndicators({ indicator_id: 'electricity_cost_ratio' }),
-    ]).then(([eu, us, ind]) => {
+      fetchIndicators({ indicator_id: 'cost_gap' }),
+    ]).then(([eu, us, ind, gap]) => {
       setRows([...eu.rows, ...toSemesters(us.rows)])
       setRatios(ind.rows.filter(r => !fromDate || r.period_start >= fromDate))
+      setCostGap(gap.rows.filter(r => !fromDate || r.period_start >= fromDate))
     }).catch(e => setError(String(e)))
   }, [fromDate])
+
+  const costGapOption = useMemo(() => {
+    if (!costGap?.length) return null
+    const comparators = [...new Set(costGap.map(r => r.comparator_geo_id))]
+    const geo = comparators.includes('US') ? 'US' : comparators[0]
+    const rows2 = costGap.filter(r => r.comparator_geo_id === geo)
+      .sort((a, b) => a.period.localeCompare(b.period))
+    const base = baseOption(theme)
+    const mkBar = (name, data, color) => ({
+      name, type: 'bar', stack: 'gap', barMaxWidth: 24, data,
+      itemStyle: { color, borderColor: theme.surface, borderWidth: 1 },
+    })
+    return {
+      geo,
+      option: {
+        ...base,
+        xAxis: { ...base.xAxis, data: rows2.map(r => r.period) },
+        tooltip: { ...base.tooltip, axisPointer: { type: 'shadow' },
+                   valueFormatter: v => v == null ? '—' : `${Number(v).toFixed(0)} €/ECU` },
+        series: [
+          mkBar('Power gap', rows2.map(r => r.inputs?.components?.power_gap_eur_ecu ?? null),
+                theme.series.s1),
+          mkBar('Carbon gap (net of compensation)',
+                rows2.map(r => r.inputs?.components?.carbon_gap_eur_ecu ?? null),
+                theme.series.s6),
+        ],
+      },
+    }
+  }, [costGap, theme])
 
   const ratioOption = useMemo(() => {
     if (!ratios?.length) return null
@@ -110,6 +142,18 @@ export default function Electricity({ fromDate }) {
 
   return (
     <>
+      <Card sourceRows={costGap}
+        title={`Cost gap vs ${costGapOption ? (GEO_LABEL[costGapOption.geo] || costGapOption.geo) : 'comparator'} — € per tonne ECU`}
+        subtitle="The headline: EU cost disadvantage decomposed into policy levers (power gap × 2.6 MWh/ECU + net carbon cost). Same-unit components, no index weights — replaces the composite index (assessment §3). Params pending confirmation."
+        right={costGapOption && <Legend items={[
+          { label: 'Power gap', color: theme.series.s1 },
+          { label: 'Carbon gap', color: theme.series.s6 },
+        ]} />}>
+        {costGapOption
+          ? <EChart option={costGapOption.option} height={280} theme={theme} />
+          : <EmptyState>Cost gap computes once comparator power + EUA data are present.</EmptyState>}
+      </Card>
+
       <Card sourceRows={comparatorRows}
         title="Industrial delivered electricity price — EU vs world regions"
         subtitle={`Delivered price (energy + network + non-recoverable levies), band ≥150 GWh/yr.${

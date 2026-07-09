@@ -31,6 +31,13 @@ classes:
   1: moderate_dependency
   0: low_dependency
 
+# EEA/EFTA/UK partners: legally extra-EU but single-market-adjacent, allied,
+# often pipeline-integrated (e.g. VCM from Norway). Concentration on these
+# suppliers is tagged so it is never presented as raw geopolitical dependency
+# (assessment §1.3b). The tag annotates; it does not change the CDI math.
+# NB: codes quoted — YAML would otherwise parse NO as boolean false
+eea_efta_uk_partners: ["NO", "IS", "LI", "CH", "GB"]
+
 # EU27 member codes as they appear as Comext partners (intra-EU flows) —
 # excluded from the extra-EU supplier set when computing the HHI.
 eu_member_partners: [AT, BE, BG, HR, CY, CZ, DK, EE, FI, FR, DE, GR, EL, HU, IE,

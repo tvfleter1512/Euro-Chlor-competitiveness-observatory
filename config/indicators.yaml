@@ -94,14 +94,29 @@ indicators:
     unit: "EUR/t"
     status: phase2
 
+  cost_gap:
+    methodology_version: "v1.0"
+    name: "Cost gap vs comparator (EUR per tonne ECU)"
+    formula: >
+      power_gap + carbon_gap, per semester, per comparator.
+      power_gap = (EU delivered power − comparator delivered power, EUR/MWh)
+      × mwh_per_ecu. carbon_gap = EU net indirect carbon cost per t Cl2 −
+      comparator carbon cost (0 for US/CN/Gulf/India — no equivalent indirect
+      carbon pricing on electrolysis; revisit if that changes).
+    inputs: ["power.industrial_delivered", "carbon_cost_exposure"]
+    unit: "EUR/ECU"
+    params:
+      mwh_per_ecu: 2.6            # CONFIRM: shared with ecu_margin_proxy
+      comparator_carbon_cost: 0.0 # CONFIRM: assumption per comparator
+    params_confirmed: false
+    note: >
+      Replaces the composite index (see metric assessment §3): every component
+      is in the same physical unit, weights are intensities rather than
+      opinions, and the decomposition maps directly to policy levers.
+      Extensible: gas- and freight-gap terms can be added as components.
+
   composite_index:
     methodology_version: "v1.0"
     name: "Composite competitiveness index"
-    formula: "weighted blend of available component indicators; weights below are published config"
-    weights:
-      electricity_cost_ratio: 0.4
-      trade_balance: 0.3
-      utilisation_gap: 0.2
-      carbon_cost_exposure: 0.1
-    note: "v1 computes only from components with data; renormalises weights over available components and labels the output accordingly."
-    status: phase2
+    formula: "SUPERSEDED — replaced by cost_gap (metric assessment §3: incommensurable units, unfounded weights, silent renormalisation). Retained for methodology history only."
+    status: superseded_by_cost_gap

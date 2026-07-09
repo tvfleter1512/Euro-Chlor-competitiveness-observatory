@@ -150,6 +150,7 @@ def run() -> dict:
             n += margins.compute_gas_spread(conn, run_id, cfg)
             n += margins.compute_ecu_margin(conn, run_id, cfg)
             n += carbon.compute(conn, run_id)
+            n += margins.compute_cost_gap(conn, run_id, cfg)   # after carbon: reads its rows
             n += penetration.compute(conn, run_id, cfg)
             conn.commit()
             db.finish_run(conn, run_id, "success", n)

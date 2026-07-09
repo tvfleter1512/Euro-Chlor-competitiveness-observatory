@@ -119,7 +119,8 @@ export default function Dependency({ product, productLabel }) {
                splitLine: { lineStyle: { color: theme.grid, width: 1 } },
                axisLabel: { color: theme.inkMuted, fontSize: 11,
                             formatter: v => `${(v * 100).toFixed(0)} %` } },
-      yAxis: { type: 'category', data: data.map(s => shortName(s.geo)),
+      yAxis: { type: 'category',
+               data: data.map(s => shortName(s.geo) + (s.eea_efta_uk ? ' · EEA' : '')),
                axisLine: { lineStyle: { color: theme.axis } }, axisTick: { show: false },
                axisLabel: { color: theme.inkSecondary, fontSize: 11.5 } },
       tooltip: { ...base.tooltip, trigger: 'item',
@@ -232,7 +233,10 @@ export default function Dependency({ product, productLabel }) {
         <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
           {CDIS.map(c => <StatTile key={c.id} icon="◔" label={c.short} {...tile(c)} />)}
           <StatTile icon="⚑" label="Classification" value={cls?.label}
-            note={`${cls?.risk} · ${current.value} of 3 criteria met`} />
+            note={`${cls?.risk} · ${current.value} of 3 criteria met${
+              current.inputs?.top_suppliers?.[0]?.eea_efta_uk &&
+              current.inputs?.cdi_values?.cdi1_hhi > (thresholds.cdi1_hhi ?? 1)
+                ? ' · ⚠ concentration driven by an EEA/EFTA/UK supplier' : ''}`} />
         </div>
       )}
 
@@ -268,23 +272,30 @@ export default function Dependency({ product, productLabel }) {
       </div>
 
       <Card title="Commission screening — all basket products"
-        subtitle={`Last 12 months. Red = above threshold. ${current?.inputs?.citation || ''}`}>
+        subtitle={`Last 12 months. Red = above threshold. HHI on value (€) and tonnage (t) bases; EEA share = extra-EU imports from EEA/EFTA/UK partners (annotation, not risk math). ${current?.inputs?.citation || ''}`}>
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
-            <th style={th}>Product</th><th style={th}>HHI</th><th style={th}>Reliance</th>
-            <th style={th}>Substitution</th><th style={th}>Classification</th>
+            <th style={th}>Product</th><th style={th}>HHI €</th><th style={th}>HHI t</th>
+            <th style={th}>Reliance</th><th style={th}>Substitution</th>
+            <th style={th}>EEA share</th><th style={th}>Classification</th>
           </tr></thead>
           <tbody>
             {[...screening].sort((a, b) => b.value - a.value).map(r => {
               const v = r.inputs?.cdi_values || {}
+              const vq = r.inputs?.cdi_values_qty || {}
               const t = r.inputs?.thresholds || {}
               const c = CLASS_STYLE[r.inputs?.class] || {}
+              const trusted = r.inputs?.trusted_share
               return (
                 <tr key={r.product_code}>
                   <td style={{ ...td, fontSize: 12 }}>{nameOf(r.product_code)}</td>
                   <td style={td}>{num(v.cdi1_hhi, t.cdi1_hhi)}</td>
+                  <td style={td}>{vq.cdi1_hhi != null ? num(vq.cdi1_hhi, t.cdi1_hhi) : '—'}</td>
                   <td style={td}>{num(v.cdi2_reliance, t.cdi2_reliance)}</td>
                   <td style={td}>{num(v.cdi3_substitution, t.cdi3_substitution)}</td>
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', color: theme.inkSecondary }}>
+                    {trusted != null ? `${(trusted * 100).toFixed(0)} %` : '—'}
+                  </td>
                   <td style={td}>
                     <span style={{ fontSize: 11.5, fontWeight: 650, color: theme.status[c.role],
                                    whiteSpace: 'nowrap' }}>● {c.label}</span>
