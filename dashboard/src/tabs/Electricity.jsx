@@ -78,23 +78,30 @@ export default function Electricity({ fromDate }) {
     const rows2 = costGap.filter(r => r.comparator_geo_id === geo)
       .sort((a, b) => a.period.localeCompare(b.period))
     const base = baseOption(theme)
-    const mkBar = (name, data, color) => ({
-      name, type: 'bar', stack: 'gap', barMaxWidth: 24, data,
-      itemStyle: { color, borderColor: theme.surface, borderWidth: 1 },
-    })
+    const upper = rows2.map(r => r.inputs?.components?.gap_uncompensated_eur_ecu ?? null)
+    const lower = rows2.map(r => r.inputs?.components?.gap_max_compensated_eur_ecu ?? null)
+    // band = invisible base line at `lower` + stacked fill up to `upper`
     return {
       geo,
       option: {
         ...base,
-        xAxis: { ...base.xAxis, data: rows2.map(r => r.period) },
-        tooltip: { ...base.tooltip, axisPointer: { type: 'shadow' },
+        xAxis: { ...base.xAxis, data: rows2.map(r => r.period), boundaryGap: false },
+        tooltip: { ...base.tooltip,
                    valueFormatter: v => v == null ? '—' : `${Number(v).toFixed(0)} €/ECU` },
         series: [
-          mkBar('Power gap', rows2.map(r => r.inputs?.components?.power_gap_eur_ecu ?? null),
-                theme.series.s1),
-          mkBar('Carbon gap (net of compensation)',
-                rows2.map(r => r.inputs?.components?.carbon_gap_eur_ecu ?? null),
-                theme.series.s6),
+          { name: '_base', type: 'line', stack: 'band', data: lower,
+            lineStyle: { width: 0 }, symbol: 'none', silent: true, tooltip: { show: false } },
+          { name: '_band', type: 'line', stack: 'band', symbol: 'none', silent: true,
+            data: upper.map((u, i) => (u != null && lower[i] != null) ? u - lower[i] : null),
+            lineStyle: { width: 0 }, tooltip: { show: false },
+            areaStyle: { color: theme.series.s1, opacity: 0.12 } },
+          lineSeries('Uncompensated sites', upper, theme.series.s1, theme),
+          lineSeries('Maximum ETS compensation', lower, theme.series.s2, theme),
+          { type: 'line', data: [], markLine: {
+              silent: true, symbol: 'none', data: [{ yAxis: 0 }],
+              lineStyle: { color: theme.axis, type: 'dashed', width: 1 },
+              label: { formatter: 'parity', position: 'insideEndTop',
+                       color: theme.inkMuted, fontSize: 10 } } },
         ],
       },
     }
@@ -144,10 +151,10 @@ export default function Electricity({ fromDate }) {
     <>
       <Card sourceRows={costGap}
         title={`Cost gap vs ${costGapOption ? (GEO_LABEL[costGapOption.geo] || costGapOption.geo) : 'comparator'} — € per tonne ECU`}
-        subtitle="The headline: EU cost disadvantage decomposed into policy levers (power gap × 2.6 MWh/ECU + net carbon cost). Same-unit components, no index weights — replaces the composite index (assessment §3). Params pending confirmation."
+        subtitle="The headline: measured power-price gap × 2.629 MWh/ECU (CO2 pass-through is inside the price — not double-counted). Band = value of maximum ETS indirect-cost compensation; actual schemes have national caps, so reality sits inside the band. Member states without compensation sit on the top line."
         right={costGapOption && <Legend items={[
-          { label: 'Power gap', color: theme.series.s1 },
-          { label: 'Carbon gap', color: theme.series.s6 },
+          { label: 'Uncompensated sites', color: theme.series.s1 },
+          { label: 'Max ETS compensation', color: theme.series.s2 },
         ]} />}>
         {costGapOption
           ? <EChart option={costGapOption.option} height={280} theme={theme} />

@@ -95,25 +95,29 @@ indicators:
     status: phase2
 
   cost_gap:
-    methodology_version: "v1.0"
-    name: "Cost gap vs comparator (EUR per tonne ECU)"
+    methodology_version: "v2.0"
+    name: "Cost gap vs comparator (EUR per tonne ECU) — compensation band"
     formula: >
-      power_gap + carbon_gap, per semester, per comparator.
-      power_gap = (EU delivered power − comparator delivered power, EUR/MWh)
-      × mwh_per_ecu. carbon_gap = EU net indirect carbon cost per t Cl2 −
-      comparator carbon cost (0 for US/CN/Gulf/India — no equivalent indirect
-      carbon pricing on electrolysis; revisit if that changes).
-    inputs: ["power.industrial_delivered", "carbon_cost_exposure"]
+      Band between two scenarios, per semester, per comparator.
+      UNCOMPENSATED = (EU delivered power − comparator delivered power,
+      EUR/MWh) × mwh_per_ecu. The EU delivered price already embeds the CO2
+      pass-through, so no carbon term is added (v1.0 double-counted it).
+      MAX-COMPENSATED = uncompensated − max_compensation, where
+      max_compensation = EUA × zone emission factor × ETS benchmark intensity
+      (1.846 MWh/t, regulatory — compensation is paid on the benchmark, costs
+      are incurred at actual intensity) × aid intensity. Actual national
+      schemes apply caps/degressivity, so reality sits inside the band;
+      member states without a scheme sit at the top edge.
+    inputs: ["power.industrial_delivered", "carbon.eua_price", "benchmark_constant"]
     unit: "EUR/ECU"
     params:
       mwh_per_ecu: 2.629          # membrane technology, 2025 — confirmed by owner 2026-07-09
       comparator_carbon_cost: 0.0 # no equivalent indirect carbon pricing in comparator regions
     params_confirmed: true        # confirmed by owner 2026-07-09
     note: >
-      Replaces the composite index (see metric assessment §3): every component
-      is in the same physical unit, weights are intensities rather than
-      opinions, and the decomposition maps directly to policy levers.
-      Extensible: a gas-gap term can be added as a component.
+      Replaces the composite index (see metric assessment §3). v2.0 fixes the
+      v1.0 carbon double-count (owner review 2026-07-09): carbon pass-through
+      lives inside the measured power gap; compensation is the scenario delta.
 
   composite_index:
     methodology_version: "v1.0"

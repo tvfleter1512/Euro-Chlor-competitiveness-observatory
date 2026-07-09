@@ -69,7 +69,14 @@ def _semester_unit_value(conn, product: str) -> dict:
 
 
 def compute_cost_gap(conn, run_id: int, cfg: dict) -> int:
-    """Cost-gap waterfall (assessment §3): EU vs comparator, EUR/ECU, per semester."""
+    """Cost-gap band, v2.0 (owner review 2026-07-09): EU vs comparator, EUR/ECU.
+
+    UNCOMPENSATED = measured power gap × intensity — the EU delivered price
+    already embeds the CO2 pass-through, so nothing is added on top (v1.0
+    double-counted this). MAX-COMPENSATED subtracts the theoretical maximum
+    indirect-cost compensation (EUA × zone EF × benchmark 1.846 × aid).
+    Reality sits inside the band; uncompensated member states at the top edge.
+    """
     from observatory.settings import load_config
     spec = cfg["cost_gap"]
     p = spec["params"]
@@ -79,14 +86,21 @@ def compute_cost_gap(conn, run_id: int, cfg: dict) -> int:
            FROM v_series_latest
            WHERE series_id = 'power.industrial_delivered' AND geo_id = 'EU27_2020'
              AND band = 'MWH_GE150000' AND tax_treatment = 'X_VAT'""").fetchall()}
-    carbon_rows = conn.execute(
-        """SELECT period_start, value FROM fact_indicator
-           WHERE indicator_id = 'carbon_cost_exposure'
-             AND geo_id = 'EU27_2020'""").fetchall()   # headline zone only
-    carbon_sem = defaultdict(list)
-    for r in carbon_rows:
-        sem, _ = norm.semester_of(r["period_start"])
-        carbon_sem[sem].append(float(r["value"]))
+
+    # max compensation from benchmark constants (regulatory formula, cited)
+    carbon_cfg = load_config("carbon")["indicator"]
+    consts = {r["key"]: r for r in conn.execute(
+        "SELECT * FROM benchmark_constant").fetchall()}
+    comp_keys = ("ets_cl_electricity_intensity", "ets_aid_intensity",
+                 carbon_cfg["headline_zone"])
+    have_carbon = all(k in consts for k in comp_keys)
+    eua_sem = defaultdict(list)
+    if have_carbon:
+        for r in conn.execute("""SELECT period_start, value FROM v_series_latest
+                                 WHERE series_id = 'carbon.eua_price'""").fetchall():
+            sem, _ = norm.semester_of(r["period_start"])
+            eua_sem[sem].append(float(r["value"]))
+
     fx = norm.load_fx(conn)
     n = 0
     for comp in load_config("regions")["comparators"]:
@@ -96,34 +110,41 @@ def compute_cost_gap(conn, run_id: int, cfg: dict) -> int:
             if not c:
                 continue
             power_gap = (float(eu_row["value"]) - c["value"]) * p["mwh_per_ecu"]
-            eu_carbon = (sum(carbon_sem[period]) / len(carbon_sem[period])
-                         if carbon_sem.get(period) else None)
-            carbon_gap = (eu_carbon - p["comparator_carbon_cost"]
-                          if eu_carbon is not None else None)
-            total = power_gap + (carbon_gap or 0)
+            max_comp = None
+            if have_carbon and eua_sem.get(period):
+                eua = sum(eua_sem[period]) / len(eua_sem[period])
+                max_comp = (eua
+                            * float(consts[carbon_cfg["headline_zone"]]["value"])
+                            * float(consts["ets_cl_electricity_intensity"]["value"])
+                            * float(consts["ets_aid_intensity"]["value"]))
+            gap_compensated = power_gap - max_comp if max_comp is not None else None
             conn.execute(
                 """INSERT INTO fact_indicator
                    (indicator_id, methodology_version, geo_id, comparator_geo_id,
                     period, period_start, value, unit, inputs, run_id)
                    VALUES ('cost_gap',%s,'EU27_2020',%s,%s,%s,%s,'EUR/ECU',%s,%s)""",
                 (spec["methodology_version"], comp["geo_id"], period,
-                 eu_row["period_start"], round(total, 2),
+                 eu_row["period_start"], round(power_gap, 2),   # value = uncompensated edge
                  json.dumps({
                      "components": {
-                         "power_gap_eur_ecu": round(power_gap, 2),
-                         "carbon_gap_eur_ecu": round(carbon_gap, 2) if carbon_gap is not None else None,
+                         "gap_uncompensated_eur_ecu": round(power_gap, 2),
+                         "max_compensation_eur_ecu": round(max_comp, 2) if max_comp is not None else None,
+                         "gap_max_compensated_eur_ecu": round(gap_compensated, 2) if gap_compensated is not None else None,
                      },
                      "params": p,
                      "params_confirmed": spec.get("params_confirmed", False),
                      "eu_power_eur_mwh": float(eu_row["value"]),
                      "comparator_power_eur_mwh": round(c["value"], 2),
                      "comparator_power_quality": c["quality_flag"],
-                     "eu_carbon_eur_t": round(eu_carbon, 2) if eu_carbon is not None else None,
+                     "compensation_constants": {k: float(consts[k]["value"])
+                                                for k in comp_keys} if have_carbon else None,
                      "eu_power_source": {"source": eu_row["source"],
                                          "source_dataset": eu_row["source_dataset"]},
                      "comparator_power_source": {"source": c["source"],
                                                  "source_dataset": c["source_dataset"]},
-                     "note": "carbon_gap None = carbon module data missing for period; total then power-only",
+                     "note": ("carbon pass-through is embedded in the measured power gap; "
+                              "compensation is the scenario delta (regulatory maximum — "
+                              "national caps/degressivity put reality inside the band)"),
                  }), run_id))
             n += 1
     return n
