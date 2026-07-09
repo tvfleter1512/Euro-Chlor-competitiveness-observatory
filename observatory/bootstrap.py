@@ -36,6 +36,14 @@ SERIES = [
      "Eurostat sts_inpr_m C17, caustic/chlorate demand proxy."),
     ("demand.chemicals_production", "EU chemicals production", "demand",
      "Eurostat sts_inpr_m C20, own-industry context."),
+    ("production.sold_production", "Sold production (PRODCOM)", "production",
+     "Excludes captive use — weak proxy for chlorine, fair for caustic."),
+    ("production.sold_production_value", "Sold production value (PRODCOM)", "production", ""),
+    ("structure.employment", "Employment (SBS)", "structure",
+     "Persons employed, NACE in band field (C2013 / C20)."),
+    ("structure.enterprises", "Number of enterprises (SBS)", "structure", ""),
+    ("freight.container_index", "Container freight index", "freight",
+     "Curated weekly drop (Drewry WCI composite)."),
 ]
 
 GEOS = [

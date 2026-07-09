@@ -101,6 +101,11 @@ def meta_carbon():
     return {"constants": constants, "config": load_config("carbon")}
 
 
+@app.get("/api/meta/references")
+def meta_references():
+    return load_config("references")
+
+
 @app.get("/api/meta/capacity-events")
 def meta_capacity_events():
     try:

@@ -61,6 +61,23 @@ indicators:
       (Phase 2), other variable costs, and uses trade unit values as price
       proxies. Directional/trend use only (assessment §2.3).
 
+  import_penetration:
+    methodology_version: "v1.0"
+    name: "Import penetration — caustic soda (dry basis)"
+    formula: >
+      extra-EU imports (dry t) ÷ apparent consumption, where apparent consumption
+      = PRODCOM sold production + extra-EU imports − extra-EU exports (all dry t).
+      Dry t: solid CN8 28151100 as-is; lye 28151200 × 0.5 (NaOH content of 50% lye).
+    inputs: ["production.sold_production", "trade.quantity"]
+    unit: "share"
+    params:
+      lye_dry_content: 0.5        # CONFIRM: NaOH content of standard 50% lye
+      prodcom_basis_assumed: "100% NaOH"   # CONFIRM: PRODCOM 20132525/20132527 quantity basis
+    params_confirmed: false
+    note: >
+      Quality flag 'estimated': PRODCOM sold production excludes captive use and
+      the PRODCOM quantity basis for lye needs confirmation. Trend use only.
+
   utilisation_gap:
     methodology_version: "v1.0"
     name: "Utilisation gap (EU − comparator)"

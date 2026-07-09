@@ -9,7 +9,7 @@ import logging
 from collections import defaultdict
 
 from observatory import db
-from observatory.processing import carbon, dependency, margins
+from observatory.processing import carbon, dependency, margins, penetration
 from observatory.processing import normalisation as norm
 from observatory.settings import load_config
 
@@ -150,6 +150,7 @@ def run() -> dict:
             n += margins.compute_gas_spread(conn, run_id, cfg)
             n += margins.compute_ecu_margin(conn, run_id, cfg)
             n += carbon.compute(conn, run_id)
+            n += penetration.compute(conn, run_id, cfg)
             conn.commit()
             db.finish_run(conn, run_id, "success", n)
             return {"agent": "benchmarking", "status": "success", "indicators": n}

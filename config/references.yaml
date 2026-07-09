@@ -1,0 +1,23 @@
+# Curated reference library (assessment §2.12) — qualitative sources that are
+# citable but not ingestible as series. Surfaced on the Sources tab.
+references:
+  - title: "Commission Quarterly Reports on European Electricity Markets"
+    url: "https://energy.ec.europa.eu/data-and-analysis/market-analysis_en"
+    what: "Free proxy for electricity market structure: wholesale trends, retail spreads, PPA market commentary. Citable in position papers."
+    cadence: quarterly
+  - title: "Commission Quarterly Reports on European Gas Markets"
+    url: "https://energy.ec.europa.eu/data-and-analysis/market-analysis_en"
+    what: "Gas market context companion to the TTF-Henry Hub spread series."
+    cadence: quarterly
+  - title: "ETS State Aid — Communication 2021/C 528/01"
+    url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:52021XC1230(01)"
+    what: "Source legal text for the chlorine electricity-intensity benchmark, emission factors and aid intensities used by the carbon module. Constants must be confirmed against this document."
+    cadence: static
+  - title: "CBAM Regulation (EU) 2023/956"
+    url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R0956"
+    what: "Basket currently excluded from Annex I; Commission review of extension to organic chemicals/polymers due end-2027."
+    cadence: static
+  - title: "Drewry World Container Index (weekly page)"
+    url: "https://www.drewry.co.uk/supply-chain-advisors/world-container-index-weekly-update/container-shipping1"
+    what: "Weekly composite published openly in-browser; paste into data/freight/ (no API). Liquid-caustic tanker rates are licensed only — model-B candidate."
+    cadence: weekly

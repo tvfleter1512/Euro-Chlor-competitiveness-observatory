@@ -5,6 +5,8 @@ units:
   kwh_per_mwh: 1000
   # Comext quantities arrive in 100 kg; normalised to tonnes
   comext_100kg_to_tonne: 0.1
+  # PRODCOM/Comtrade quantities arrive in kg
+  kg_to_tonne: 0.001
 
 caustic:
   # NaOH 50% solution <-> dry (100%) basis. confirmed: standard stoichiometric basis.

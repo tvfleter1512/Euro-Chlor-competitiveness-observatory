@@ -45,7 +45,8 @@ export default function Industry({ fromDate }) {
       fetchSeries({ series_id: 'demand.paper_production', from: fromDate }),
       fetchSeries({ series_id: 'demand.chemicals_production', from: fromDate }),
       fetchCapacityEvents(),
-    ]).then(([prod, util, stocks, gas, margin, cn, eua, carbon, constr, paper, chem, events]) => {
+      fetchSeries({ series_id: 'structure.employment', band: 'C2013' }),
+    ]).then(([prod, util, stocks, gas, margin, cn, eua, carbon, constr, paper, chem, events, emp]) => {
       setData({
         prod: prod.rows, util: util.rows, stocks: stocks.rows, gas: gas.rows,
         margin: margin.rows.filter(r => !fromDate || r.period_start >= fromDate),
@@ -54,6 +55,7 @@ export default function Industry({ fromDate }) {
         carbon: carbon.rows.filter(r => !fromDate || r.period_start >= fromDate),
         demand: { constr: constr.rows, paper: paper.rows, chem: chem.rows },
         events: events.events,
+        employment: emp.rows,
       })
     }).catch(e => setError(String(e)))
   }, [fromDate])
@@ -211,6 +213,44 @@ export default function Industry({ fromDate }) {
             : <EmptyState>Awaiting EUA data + confirmed constants.</EmptyState>}
         </Card>
       </div>
+
+      <Card title="Employment — inorganic basic chemicals (NACE 20.13)"
+        subtitle="Persons employed, EU27 + member-state detail, annual (Eurostat SBS; ~18-month lag). The 'jobs at stake' figure for position papers."
+        sourceRows={data.employment}>
+        {data.employment?.length ? (() => {
+          const base = baseOption(theme)
+          const eu = data.employment.filter(r => r.geo_id === 'EU27_2020')
+            .sort((a, b) => a.period.localeCompare(b.period))
+          const countries = [...new Set(data.employment.map(r => r.geo_id))]
+            .filter(g => g !== 'EU27_2020')
+          const latest = eu[eu.length - 1]
+          return (
+            <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: 30, fontWeight: 700, color: theme.ink }}>
+                  {Number(latest.value).toLocaleString('en')}
+                </div>
+                <div style={{ fontSize: 12, color: theme.inkSecondary }}>
+                  persons, EU27, {latest.period}
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: 320 }}>
+                <EChart height={140} theme={theme} option={{
+                  ...base,
+                  grid: { ...base.grid, top: 8, bottom: 22 },
+                  xAxis: { ...base.xAxis, data: eu.map(r => r.period) },
+                  tooltip: { ...base.tooltip, valueFormatter: v => Number(v).toLocaleString('en') },
+                  series: [lineSeries('Employment', eu.map(r => Number(r.value)), theme.series.s1, theme)],
+                }} />
+              </div>
+              <div style={{ fontSize: 11.5, color: theme.inkMuted, maxWidth: 220 }}>
+                Country detail available for {countries.length} member states via the API
+                (series structure.employment, band C2013).
+              </div>
+            </div>
+          )
+        })() : <EmptyState>Awaiting SBS data.</EmptyState>}
+      </Card>
 
       <Card title="Demand-side indicators — customers vs competitiveness"
         subtitle="EU27 output indices, 2021 = 100, seasonally adjusted (Eurostat STS). Falling demand can mask competitiveness moves in the trade balance."

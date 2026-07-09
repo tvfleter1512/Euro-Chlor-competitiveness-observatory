@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { fetchHealth, fetchProducts } from '../api'
+import { fetchHealth, fetchProducts, fetchReferences } from '../api'
 import { useTheme } from '../theme'
 import { Card, EmptyState } from '../components'
 
@@ -16,11 +16,14 @@ export default function Sources() {
   const theme = useTheme()
   const [health, setHealth] = useState(null)
   const [products, setProducts] = useState(null)
+  const [references, setReferences] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    Promise.all([fetchHealth(), fetchProducts()])
-      .then(([h, p]) => { setHealth(h.agents); setProducts(p.products) })
+    Promise.all([fetchHealth(), fetchProducts(), fetchReferences()])
+      .then(([h, p, r]) => {
+        setHealth(h.agents); setProducts(p.products); setReferences(r.references || [])
+      })
       .catch(e => setError(String(e)))
   }, [])
 
@@ -94,6 +97,20 @@ export default function Sources() {
             ))}
           </tbody>
         </table>
+      </Card>
+
+      <Card title="Reference library"
+        subtitle="Citable qualitative sources that are not ingestible as series (config/references.yaml).">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {references.map((r, i) => (
+            <div key={i} style={{ fontSize: 12.5, lineHeight: 1.5 }}>
+              <a href={r.url} target="_blank" rel="noreferrer"
+                 style={{ color: theme.accentText, fontWeight: 650 }}>{r.title} ↗</a>
+              <span style={{ color: theme.inkMuted }}> · {r.cadence}</span>
+              <div style={{ color: theme.inkSecondary }}>{r.what}</div>
+            </div>
+          ))}
+        </div>
       </Card>
     </>
   )

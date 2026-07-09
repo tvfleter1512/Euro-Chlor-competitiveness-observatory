@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS raw_landing (
 CREATE TABLE IF NOT EXISTS dim_series (
     series_id   TEXT PRIMARY KEY,   -- e.g. 'power.industrial_delivered'
     name        TEXT NOT NULL,
-    category    TEXT NOT NULL CHECK (category IN ('power', 'gas', 'trade', 'production', 'carbon', 'fx', 'price', 'demand')),
+    category    TEXT NOT NULL CHECK (category IN ('power', 'gas', 'trade', 'production', 'carbon', 'fx', 'price', 'demand', 'structure', 'freight')),
     description TEXT
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS dim_geo (
 
 CREATE TABLE IF NOT EXISTS dim_product (
     product_code TEXT PRIMARY KEY,  -- CN8 or HS6 digit string
-    nomenclature TEXT NOT NULL CHECK (nomenclature IN ('CN8', 'HS6')),
+    nomenclature TEXT NOT NULL CHECK (nomenclature IN ('CN8', 'HS6', 'PRODCOM')),
     name         TEXT NOT NULL,
     hs6          TEXT,              -- roll-up key for Comtrade comparability
     confirmed    BOOLEAN NOT NULL DEFAULT FALSE  -- human-confirmable codes (§3.5)
