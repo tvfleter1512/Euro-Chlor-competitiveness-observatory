@@ -23,6 +23,9 @@ from observatory.ingestion.comext_trade import ComextTradeAgent
 from observatory.ingestion.comext_suppliers import ComextSupplierAgent
 from observatory.ingestion.comtrade_trade import ComtradeTradeAgent
 from observatory.ingestion.eurochlor_drop import EuroChlorDropAgent
+from observatory.ingestion.eurochlor_web import EuroChlorWebAgent
+from observatory.ingestion.gas_prices import GasPriceAgent
+from observatory.ingestion.sunsirs_china import SunSirsChinaAgent
 from observatory.processing import benchmarking
 
 AGENTS = [  # execution order = dependency order
@@ -35,6 +38,9 @@ AGENTS = [  # execution order = dependency order
     ComextSupplierAgent(),
     ComtradeTradeAgent(),
     EuroChlorDropAgent(),
+    EuroChlorWebAgent(),
+    GasPriceAgent(),
+    SunSirsChinaAgent(),
 ]
 
 

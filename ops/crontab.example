@@ -25,5 +25,14 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 0 7 * * *    $P --agent proxy_power
 5 7 * * *    $P --agent eurochlor_drop
 
+# Euro Chlor public monthly stats — first-of-month posts land early each month
+30 8 * * 1   $P --agent eurochlor_web
+
+# Gas hub prices (FRED monthly) + Eurostat nrg_pc_203 — monthly
+45 7 4 * *   $P --agent gas_prices
+
+# SunSirs China caustic spot — daily (page only shows ~6 days; cron accumulates)
+15 7 * * *   $P --agent sunsirs_china
+
 # Recompute all indicators nightly (fast; depends on everything above)
 0 22 * * *   $P --benchmarks

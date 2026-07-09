@@ -20,6 +20,14 @@ SERIES = [
     ("production.capacity", "Chlorine capacity", "production", "Euro Chlor authoritative for EU."),
     ("production.production", "Chlorine production", "production", ""),
     ("production.utilisation", "Capacity utilisation", "production", ""),
+    ("production.caustic_stocks", "Caustic soda stocks", "production",
+     "Euro Chlor monthly statistics."),
+    ("gas.industrial_delivered", "Industrial delivered natural-gas price", "gas",
+     "Eurostat nrg_pc_203; EU cost driver."),
+    ("gas.hub_price", "Natural-gas hub price (monthly average)", "gas",
+     "EU (IMF Europe/TTF-based) vs US (Henry Hub), USD/MMBtu."),
+    ("price.caustic_spot_cn", "China caustic soda spot price (32% ion-membrane)", "price",
+     "SunSirs daily spot, RMB/t."),
     ("carbon.eua_price", "EUA carbon price", "carbon", "Phase 2."),
 ]
 
@@ -27,6 +35,7 @@ GEOS = [
     ("EU27_2020", "European Union (27)", "region"),
     ("EXTRA_EU", "Extra-EU27 aggregate", "region"),
     ("INTRA_EU", "Intra-EU27 aggregate", "region"),
+    ("EU27_EFTA_UK", "EU-27 + Norway/Switzerland/UK (Euro Chlor reporting area)", "region"),
     ("GULF", "Gulf (GCC)", "region"),
     ("WORLD", "World", "world"),
     ("US", "United States", "country"), ("CN", "China", "country"),

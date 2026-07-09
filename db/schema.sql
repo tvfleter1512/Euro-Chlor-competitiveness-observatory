@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS raw_landing (
 CREATE TABLE IF NOT EXISTS dim_series (
     series_id   TEXT PRIMARY KEY,   -- e.g. 'power.industrial_delivered'
     name        TEXT NOT NULL,
-    category    TEXT NOT NULL CHECK (category IN ('power', 'trade', 'production', 'carbon', 'fx')),
+    category    TEXT NOT NULL CHECK (category IN ('power', 'gas', 'trade', 'production', 'carbon', 'fx', 'price')),
     description TEXT
 );
 

@@ -6,9 +6,11 @@ import Sidebar from './Sidebar'
 import Electricity from './tabs/Electricity'
 import Trade from './tabs/Trade'
 import Dependency from './tabs/Dependency'
+import Industry from './tabs/Industry'
 import Sources from './tabs/Sources'
 
 const PRODUCT_TABS = ['Trade', 'Dependency']
+const OWN_KPI_TABS = ['Trade', 'Dependency', 'Industry']   // tabs with their own tile row
 
 const RANGES = [
   { label: 'Since 2015', from: '2015-01-01' },
@@ -113,7 +115,7 @@ export default function App() {
             </div>
           </div>
 
-          {!PRODUCT_TABS.includes(tab) && (
+          {!OWN_KPI_TABS.includes(tab) && (
             <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
               <StatTile icon="⚡" label="EU delivered power price"
                 value={kpi.power?.value} note={kpi.power?.period}
@@ -138,6 +140,7 @@ export default function App() {
           {tab === 'Dependency' && (
             <Dependency product={product} productLabel={selected?.name || product} />
           )}
+          {tab === 'Industry' && <Industry fromDate={range.from} />}
           {tab === 'Sources' && <Sources />}
         </main>
       </div>

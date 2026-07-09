@@ -24,6 +24,43 @@ indicators:
     inputs: ["trade.quantity"]
     unit: "t"
 
+  gas_hub_spread:
+    methodology_version: "v1.0"
+    name: "Natural-gas hub price spread (EU − US)"
+    formula: "EU hub price (IMF Europe/TTF-based) − US Henry Hub, USD/MMBtu, monthly"
+    inputs: ["gas.hub_price"]
+    unit: "USD/MMBtu"
+    note: "The causal driver behind the electricity cost ratio (assessment §2.2)."
+
+  gas_hub_ratio:
+    methodology_version: "v1.0"
+    name: "Natural-gas hub price ratio (EU ÷ US)"
+    formula: "EU hub price ÷ US Henry Hub, monthly"
+    inputs: ["gas.hub_price"]
+    unit: "ratio"
+
+  ecu_margin_proxy:
+    methodology_version: "v1.0"
+    name: "EU ECU cash-margin proxy"
+    formula: >
+      1.128 × caustic_dry_price + 1.0 × chlorine_value_proxy − mwh_per_ecu × power_price,
+      per semester. caustic_dry_price = extra-EU export unit value of CN8 28151200
+      (lye) × dry_factor 2.0. chlorine_value_proxy = extra-EU export unit value of
+      EDC (29031500) × cl_mass_fraction_edc. power_price = EU27 delivered,
+      band MWH_GE150000, X_VAT.
+    inputs: ["trade.value", "trade.quantity", "power.industrial_delivered"]
+    unit: "EUR/ECU"
+    params:
+      mwh_per_ecu: 2.6            # CONFIRM: membrane-cell electricity intensity per t Cl2 (ECU)
+      cl_mass_fraction_edc: 0.716 # CONFIRM: Cl2 mass share of EDC (2×35.45/98.96)
+      naoh_dry_per_ecu: 1.128     # from conversions.yaml ecu section
+      caustic_dry_factor: 2.0     # 50% lye -> 100% dry basis
+    params_confirmed: false
+    note: >
+      Public-data proxy of ECU economics, NOT a P&L margin: excludes carbon
+      (Phase 2), other variable costs, and uses trade unit values as price
+      proxies. Directional/trend use only (assessment §2.3).
+
   utilisation_gap:
     methodology_version: "v1.0"
     name: "Utilisation gap (EU − comparator)"
