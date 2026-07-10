@@ -355,37 +355,61 @@ export default function Industry({ fromDate }) {
       </div>
 
       <Card title="Employment — inorganic basic chemicals (NACE 20.13)"
-        subtitle="Persons employed, EU27 + member-state detail, annual (Eurostat SBS; ~18-month lag). The 'jobs at stake' figure for position papers."
+        subtitle="Persons employed, annual (Eurostat SBS, ~18-month lag). NACE 20.13 is broader than chlor-alkali — treat as upper bound. Pre-2021 points use the archived SBS methodology (2021 not published); 2017 spike is as published."
         sourceRows={data.employment}>
         {data.employment?.length ? (() => {
           const base = baseOption(theme)
           const eu = data.employment.filter(r => r.geo_id === 'EU27_2020')
             .sort((a, b) => a.period.localeCompare(b.period))
-          const countries = [...new Set(data.employment.map(r => r.geo_id))]
-            .filter(g => g !== 'EU27_2020')
           const latest = eu[eu.length - 1]
+          const latestYear = latest.period
+          const countries = data.employment
+            .filter(r => r.geo_id !== 'EU27_2020' && r.period === latestYear)
+            .sort((a, b) => Number(a.value) - Number(b.value))
           return (
-            <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: 30, fontWeight: 700, color: theme.ink }}>
-                  {Number(latest.value).toLocaleString('en')}
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'stretch' }}>
+              <div style={{ flex: '2 1 380px', minWidth: 320 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                  <span style={{ fontSize: 30, fontWeight: 700, color: theme.ink }}>
+                    {Number(latest.value).toLocaleString('en')}
+                  </span>
+                  <span style={{ fontSize: 12, color: theme.inkSecondary }}>
+                    persons, EU27, {latestYear}
+                  </span>
                 </div>
-                <div style={{ fontSize: 12, color: theme.inkSecondary }}>
-                  persons, EU27, {latest.period}
-                </div>
-              </div>
-              <div style={{ flex: 1, minWidth: 320 }}>
-                <EChart height={140} theme={theme} option={{
+                <EChart height={190} theme={theme} option={{
                   ...base,
-                  grid: { ...base.grid, top: 8, bottom: 22 },
+                  grid: { ...base.grid, top: 10, bottom: 22, left: 56 },
                   xAxis: { ...base.xAxis, data: eu.map(r => r.period) },
-                  tooltip: { ...base.tooltip, valueFormatter: v => Number(v).toLocaleString('en') },
-                  series: [lineSeries('Employment', eu.map(r => Number(r.value)), theme.series.s1, theme)],
+                  yAxis: { ...base.yAxis, axisLabel: { ...base.yAxis.axisLabel,
+                           formatter: v => `${(v / 1e3).toFixed(0)}k` } },
+                  tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : Number(v).toLocaleString('en') },
+                  series: [lineSeries('EU27 employment', eu.map(r => Number(r.value)),
+                                      theme.series.s1, theme)],
                 }} />
               </div>
-              <div style={{ fontSize: 11.5, color: theme.inkMuted, maxWidth: 220 }}>
-                Country detail available for {countries.length} member states via the API
-                (series structure.employment, band C2013).
+              <div style={{ flex: '1 1 300px', minWidth: 280 }}>
+                <div style={{ fontSize: 12, color: theme.inkSecondary, marginBottom: 4 }}>
+                  By member state, {latestYear}
+                </div>
+                <EChart height={205} theme={theme} option={{
+                  ...base,
+                  grid: { ...base.grid, left: 84, right: 52, top: 6, bottom: 22 },
+                  xAxis: { type: 'value',
+                           splitLine: { lineStyle: { color: theme.grid, width: 1 } },
+                           axisLabel: { color: theme.inkMuted, fontSize: 11,
+                                        formatter: v => `${(v / 1e3).toFixed(0)}k` } },
+                  yAxis: { type: 'category', data: countries.map(r => GEO_LABEL[r.geo_id] || r.geo_id),
+                           axisLine: { lineStyle: { color: theme.axis } }, axisTick: { show: false },
+                           axisLabel: { color: theme.inkSecondary, fontSize: 11.5 } },
+                  tooltip: { ...base.tooltip, trigger: 'item',
+                             formatter: p => `${p.name}: ${Number(countries[p.dataIndex].value).toLocaleString('en')} persons` },
+                  series: [{ type: 'bar', barMaxWidth: 16,
+                    data: countries.map(r => ({ value: Number(r.value),
+                      itemStyle: { color: theme.series.s1, borderRadius: [0, 4, 4, 0] } })),
+                    label: { show: true, position: 'right', color: theme.inkSecondary, fontSize: 10.5,
+                             formatter: p => `${(countries[p.dataIndex].value / 1e3).toFixed(1)}k` } }],
+                }} />
               </div>
             </div>
           )

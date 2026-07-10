@@ -26,19 +26,38 @@ class EurostatSBSAgent(IngestionAgent):
         regions = load_config("regions")
         geos = [regions["eu"]["geo_id"]] + regions["eu"]["detail_countries"]
         geo_params = "&".join(f"geo={g}" for g in geos)
-        url = (f"{BASE}?format=JSON&lang=en&{geo_params}"
-               f"&nace_r2=C2013&nace_r2=C20&indic_sbs=EMP_NR&indic_sbs=ENT_NR"
-               f"&sinceTimePeriod={HISTORY_START}")
-        resp = httpx.get(url, timeout=120)
-        resp.raise_for_status()
-        return [(url, resp.json())]
+        payloads = []
+        with httpx.Client(timeout=120) as client:
+            # current methodology (2021+)
+            url = (f"{BASE}?format=JSON&lang=en&{geo_params}"
+                   f"&nace_r2=C2013&nace_r2=C20&indic_sbs=EMP_NR&indic_sbs=ENT_NR"
+                   f"&sinceTimePeriod=2021")
+            resp = client.get(url)
+            resp.raise_for_status()
+            payloads.append((url, {"dataset": "sbs_ovw_act", "dim": "indic_sbs",
+                                   "codes": {"EMP_NR": "structure.employment",
+                                             "ENT_NR": "structure.enterprises"},
+                                   "data": resp.json()}))
+            # archived methodology (2008-2020) — extends the trend
+            url2 = ("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/"
+                    f"sbs_na_ind_r2?format=JSON&lang=en&{geo_params}"
+                    f"&nace_r2=C2013&nace_r2=C20&indic_sb=V16110&indic_sb=V11110"
+                    f"&sinceTimePeriod=2008")
+            resp2 = client.get(url2)
+            resp2.raise_for_status()
+            payloads.append((url2, {"dataset": "sbs_na_ind_r2 (pre-2021 methodology)",
+                                    "dim": "indic_sb",
+                                    "codes": {"V16110": "structure.employment",
+                                              "V11110": "structure.enterprises"},
+                                    "data": resp2.json()}))
+        return payloads
 
     def parse(self, payloads):
         retrieved_at = datetime.now(timezone.utc)
         rows = []
         for url, payload in payloads:
-            for coords, value in iter_observations(payload):
-                series_id = SERIES.get(coords.get("indic_sbs"))
+            for coords, value in iter_observations(payload["data"]):
+                series_id = payload["codes"].get(coords.get(payload["dim"]))
                 if series_id is None or value is None:
                     continue
                 period = coords["time"]
@@ -51,7 +70,7 @@ class EurostatSBSAgent(IngestionAgent):
                     unit="persons" if series_id.endswith("employment") else "enterprises",
                     band=coords.get("nace_r2"),   # NACE stored in band for filtering
                     source="Eurostat",
-                    source_dataset=f"sbs_ovw_act ({coords.get('nace_r2')})",
+                    source_dataset=f"{payload['dataset']} ({coords.get('nace_r2')})",
                     reference_period=period,
                     retrieved_at=retrieved_at,
                 ))
