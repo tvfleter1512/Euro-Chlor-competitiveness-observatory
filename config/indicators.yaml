@@ -81,10 +81,13 @@ indicators:
   utilisation_gap:
     methodology_version: "v1.0"
     name: "Utilisation gap (EU − comparator)"
-    formula: "EU operating rate − comparator operating rate, percentage points"
+    formula: >
+      EU operating rate − comparator operating rate, percentage points.
+      Monthly vs US (Chlorine Institute); annual vs China (CCAIA annual figure).
+      Periodicities are never mixed within one comparator series.
     inputs: ["production.utilisation"]
     unit: "pp"
-    status: phase2
+    note: "Derived from member-restricted inputs — indicator rows carry licensed:true and are hidden in public mode."
 
   carbon_cost_exposure:
     methodology_version: "v1.0"

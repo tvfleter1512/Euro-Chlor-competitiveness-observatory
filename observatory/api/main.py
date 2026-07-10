@@ -100,6 +100,8 @@ def indicators(indicator_id: str | None = None,
                product: str | None = None):
     q = "SELECT * FROM fact_indicator WHERE TRUE"
     params: list = []
+    if not MEMBER_MODE:   # indicators derived from member-restricted inputs
+        q += " AND (inputs->>'licensed') IS DISTINCT FROM 'true'"
     if indicator_id:
         q += " AND indicator_id = %s"
         params.append(indicator_id)

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { fetchSeries } from '../api'
+import { fetchSeries, fetchIndicators } from '../api'
 import { useTheme, GEO_SLOT, GEO_LABEL } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend } from '../components'
@@ -50,7 +50,10 @@ export default function Members({ fromDate }) {
       fetchSeries({ series_id: 'production.tech_share' }),
       fetchSeries({ series_id: 'consumption.cl2_by_use' }),
       fetchSeries({ series_id: 'consumption.naoh_apparent', geo: GEO }),
-    ]).then(([cl2, naoh, stocks, cap, util, tech, uses, naohCons]) => {
+      fetchSeries({ series_id: 'production.utilisation', geo: GEO, freq: 'M', from: fromDate }),
+      fetchSeries({ series_id: 'production.utilisation', geo: 'US', freq: 'M', from: fromDate }),
+      fetchIndicators({ indicator_id: 'utilisation_gap' }),
+    ]).then(([cl2, naoh, stocks, cap, util, tech, uses, naohCons, utilEUm, utilUSm, gaps]) => {
       setD({
         cl2: cl2.rows.filter(r => r.redistribution_class === 'licensed' && r.period.includes('-')),
         naoh: naoh.rows.filter(r => r.period.includes('-')),
@@ -58,6 +61,11 @@ export default function Members({ fromDate }) {
         cap: cap.rows.filter(r => r.redistribution_class === 'licensed'),
         util: util.rows.filter(r => r.redistribution_class === 'licensed' && !r.period.includes('-')),
         tech: tech.rows, uses: uses.rows, naohCons: naohCons.rows,
+        utilEUm: utilEUm.rows.filter(r => !r.band),
+        utilUSm: utilUSm.rows,
+        gapUS: gaps.rows.filter(r => r.comparator_geo_id === 'US' &&
+                                     (!fromDate || r.period_start >= fromDate)),
+        gapCN: gaps.rows.filter(r => r.comparator_geo_id === 'CN'),
       })
     }).catch(e => setError(String(e)))
   }, [fromDate])
@@ -175,6 +183,56 @@ export default function Members({ fromDate }) {
                   itemStyle: { color: theme.series.s1, borderRadius: [0, 4, 4, 0] } })) }],
             }} />
           })() : <EmptyState>No application split available.</EmptyState>}
+        </Card>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>
+        <Card title="Operating rate — EU vs US (monthly)"
+          subtitle="Euro Chlor member survey vs Chlorine Institute (via Euro Chlor)."
+          sourceRows={[...d.utilEUm.slice(-1), ...d.utilUSm.slice(-1)]}
+          right={<Legend items={[
+            { label: 'Euro Chlor', color: theme.series.s1 },
+            { label: 'US', color: theme.series.s2 },
+          ]} />}>
+          {(() => {
+            const p = pivot([...d.utilEUm.map(r => ({ ...r, k: 'EU' })),
+                             ...d.utilUSm.map(r => ({ ...r, k: 'US' }))], r => r.k)
+            return multiLine({ theme, periods: p.periods, fmt: v => `${v.toFixed(1)} %`,
+              seriesDefs: [
+                { name: 'Euro Chlor', data: p.data.EU, color: theme.series.s1 },
+                { name: 'US', data: p.data.US, color: theme.series.s2 },
+              ] })
+          })()}
+        </Card>
+
+        <Card title="Utilisation gap — EU − US (monthly, pp)"
+          subtitle="Negative = EU plants run lower than US plants. China (CCAIA, annual figures) below the chart."
+          sourceRows={[...d.utilUSm.slice(-1)]}>
+          {(() => {
+            const rows = [...d.gapUS].sort((a, b) => a.period.localeCompare(b.period))
+            const base = baseOption(theme)
+            return <EChart height={215} theme={theme} option={{
+              ...base,
+              xAxis: { ...base.xAxis, data: rows.map(r => r.period) },
+              tooltip: { ...base.tooltip, valueFormatter: v => `${Number(v).toFixed(1)} pp` },
+              series: [
+                lineSeries('EU − US', rows.map(r => Number(r.value)), theme.series.s6, theme),
+                { type: 'line', data: [], markLine: {
+                    silent: true, symbol: 'none', data: [{ yAxis: 0 }],
+                    lineStyle: { color: theme.axis, type: 'dashed', width: 1 },
+                    label: { show: false } } },
+              ],
+            }} />
+          })()}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+            {[...d.gapCN].sort((a, b) => a.period.localeCompare(b.period)).map(r => (
+              <span key={r.period} style={{ fontSize: 11.5, padding: '3px 10px', borderRadius: 999,
+                border: `1px solid ${theme.border}`, color: Number(r.value) < 0 ? theme.bad : theme.good,
+                fontVariantNumeric: 'tabular-nums' }}>
+                vs CN {r.period}: {Number(r.value).toFixed(1)} pp
+              </span>
+            ))}
+          </div>
         </Card>
       </div>
 

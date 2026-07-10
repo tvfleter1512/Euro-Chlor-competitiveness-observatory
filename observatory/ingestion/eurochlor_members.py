@@ -63,10 +63,16 @@ class EuroChlorMemberAgent(IngestionAgent):
 
     def fetch(self):
         files = sorted(DROP_DIR.rglob("*.xlsx"))
-        return [(str(f), {"file": str(f), "kind":
-                          "monthly" if "Monthly" in f.name else
-                          "annual" if "Annual Survey" in f.name else "unknown"})
-                for f in files]
+        def kind(name):
+            low = name.lower()
+            if "monthly" in low:
+                return "monthly"
+            if "annual survey" in low:
+                return "annual"
+            if "chlorine production" in low:
+                return "regions"   # US (Chlorine Institute) + China (CCAIA) utilisation
+            return "unknown"
+        return [(str(f), {"file": str(f), "kind": kind(f.name)}) for f in files]
 
     def parse(self, payloads):
         retrieved_at = datetime.now(timezone.utc)
@@ -78,6 +84,8 @@ class EuroChlorMemberAgent(IngestionAgent):
                 rows += self._parse_monthly(meta["file"], retrieved_at)
             elif meta["kind"] == "annual":
                 rows += self._parse_annual(meta["file"], retrieved_at)
+            elif meta["kind"] == "regions":
+                rows += self._parse_regions(meta["file"], retrieved_at)
         return rows
 
     def _row(self, series, period, value, unit, src, retrieved_at, band=None, geo=GEO):
@@ -241,6 +249,51 @@ class EuroChlorMemberAgent(IngestionAgent):
                     continue
                 rows.append(self._row("consumption.naoh_apparent", year, v, "t NaOH",
                                       src, retrieved_at, band=band, geo=geo))
+        return rows
+
+    def _parse_regions(self, path, retrieved_at):
+        """'compared with other regions': monthly utilisation for Euro Chlor
+        (extends the EU series back to 2000) and the US (Chlorine Institute);
+        China (CCAIA) carries one annual value repeated across the year's
+        monthly rows — stored as annual."""
+        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        ws = wb["compared with other regions"]
+        fname = path.split("/")[-1]
+        rows = []
+        cn_by_year = {}
+        for r in ws.iter_rows(min_row=2, values_only=True):
+            if not isinstance(r[0], datetime):
+                continue
+            period = r[0].strftime("%Y-%m")
+            eu, us, cn = _num(r[1]), _num(r[2]), _num(r[3])
+            if eu is not None:
+                rows.append(SeriesRow(
+                    series_id="production.utilisation", geo_id=GEO, period=period,
+                    period_start=period_start(period), value=eu * 100, unit="%",
+                    source="Euro Chlor member survey",
+                    source_dataset=f"compared with other regions [{fname}]",
+                    reference_period=period, retrieved_at=retrieved_at,
+                    redistribution_class="licensed"))
+            if us is not None:
+                rows.append(SeriesRow(
+                    series_id="production.utilisation", geo_id="US", period=period,
+                    period_start=period_start(period), value=us * 100, unit="%",
+                    source="Chlorine Institute (via Euro Chlor)",
+                    source_dataset=f"compared with other regions [{fname}]",
+                    reference_period=period, retrieved_at=retrieved_at,
+                    redistribution_class="licensed"))
+            if cn is not None:
+                cn_by_year.setdefault(r[0].strftime("%Y"), []).append(cn)
+        for year, vals in sorted(cn_by_year.items()):
+            # 'only yearly figures': the annual value is repeated monthly
+            rows.append(SeriesRow(
+                series_id="production.utilisation", geo_id="CN", period=year,
+                period_start=period_start(year), value=sum(vals) / len(vals) * 100,
+                unit="%", source="CCAIA (via Euro Chlor)",
+                source_dataset=f"compared with other regions [{fname}] — annual figure",
+                reference_period=year, retrieved_at=retrieved_at,
+                redistribution_class="licensed"))
+        wb.close()
         return rows
 
     def pre_insert(self, conn, rows):
