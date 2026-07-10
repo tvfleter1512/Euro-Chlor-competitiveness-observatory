@@ -138,6 +138,19 @@ ORDER BY series_id, geo_id, COALESCE(partner_geo_id, ''),
          COALESCE(product_code, ''), COALESCE(flow, ''),
          COALESCE(band, ''), COALESCE(tax_treatment, ''), period, run_id DESC;
 
+-- Public variant: restrict BEFORE the latest-vintage dedup, so a licensed
+-- vintage never shadows (and thus hides) a public row for the same key.
+CREATE OR REPLACE VIEW v_series_latest_public AS
+SELECT DISTINCT ON (series_id, geo_id, COALESCE(partner_geo_id, ''),
+                    COALESCE(product_code, ''), COALESCE(flow, ''),
+                    COALESCE(band, ''), COALESCE(tax_treatment, ''), period)
+       *
+FROM fact_series
+WHERE redistribution_class = 'public'
+ORDER BY series_id, geo_id, COALESCE(partner_geo_id, ''),
+         COALESCE(product_code, ''), COALESCE(flow, ''),
+         COALESCE(band, ''), COALESCE(tax_treatment, ''), period, run_id DESC;
+
 CREATE OR REPLACE VIEW v_fx_latest AS
 SELECT DISTINCT ON (quote_currency, rate_date) *
 FROM fx_rate

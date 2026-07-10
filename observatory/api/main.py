@@ -62,19 +62,28 @@ def series(
     flow: str | None = None,
     band: str | None = None,
     tax: str | None = None,
+    freq: str | None = Query(None, description="'M' = sub-annual periods, 'A' = annual"),
     date_from: date | None = Query(None, alias="from"),
     limit: int = Query(20000, le=100000),
 ):
-    q = "SELECT * FROM v_series_latest WHERE series_id = %s"
+    # member mode sees the full latest view; public mode uses the view that
+    # dedupes AFTER restricting to public rows (licensed vintages must not
+    # shadow public data)
+    table = "v_series_latest" if MEMBER_MODE else "v_series_latest_public"
+    q = f"SELECT * FROM {table} WHERE series_id = %s"
     params: list = [series_id]
-    if not MEMBER_MODE:   # licensed rows only behind the member gate
-        q += " AND redistribution_class = 'public'"
     for col, val in (("geo_id", geo), ("partner_geo_id", partner),
                      ("product_code", product), ("flow", flow),
                      ("band", band), ("tax_treatment", tax)):
         if val is not None:
             q += f" AND {col} = %s"
             params.append(val)
+    # one series can hold annual (survey) and monthly (statistics) periods for
+    # the same geo — charts must pick one periodicity, never mix magnitudes
+    if freq == "M":
+        q += " AND period LIKE '%%-%%'"
+    elif freq == "A":
+        q += " AND period NOT LIKE '%%-%%'"
     if date_from:
         q += " AND period_start >= %s"
         params.append(date_from)

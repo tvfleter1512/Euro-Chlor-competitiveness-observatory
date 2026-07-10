@@ -33,9 +33,10 @@ export default function Industry({ fromDate }) {
 
   useEffect(() => {
     Promise.all([
-      fetchSeries({ series_id: 'production.production', geo: 'EU27_EFTA_UK', from: fromDate }),
-      fetchSeries({ series_id: 'production.utilisation', geo: 'EU27_EFTA_UK', from: fromDate }),
-      fetchSeries({ series_id: 'production.caustic_stocks', geo: 'EU27_EFTA_UK', from: fromDate }),
+      // freq M: the annual survey shares these series ids — never mix periodicities
+      fetchSeries({ series_id: 'production.production', geo: 'EU27_EFTA_UK', from: fromDate, freq: 'M' }),
+      fetchSeries({ series_id: 'production.utilisation', geo: 'EU27_EFTA_UK', from: fromDate, freq: 'M' }),
+      fetchSeries({ series_id: 'production.caustic_stocks', geo: 'EU27_EFTA_UK', from: fromDate, freq: 'M' }),
       fetchSeries({ series_id: 'gas.hub_price', from: fromDate }),
       fetchIndicators({ indicator_id: 'ecu_margin_proxy' }),
       fetchSeries({ series_id: 'price.caustic_spot_cn', geo: 'CN' }),
@@ -47,8 +48,13 @@ export default function Industry({ fromDate }) {
       fetchCapacityEvents(),
       fetchSeries({ series_id: 'structure.employment', band: 'C2013' }),
     ]).then(([prod, util, stocks, gas, margin, cn, eua, carbon, constr, paper, chem, events, emp]) => {
+      // member stocks carry band='TOTAL'; the public scrape has band=null —
+      // prefer the member split's total when present, else the public rows
+      const stockTotal = stocks.rows.some(r => r.band === 'TOTAL')
+        ? stocks.rows.filter(r => r.band === 'TOTAL')
+        : stocks.rows.filter(r => !r.band)
       setData({
-        prod: prod.rows, util: util.rows, stocks: stocks.rows, gas: gas.rows,
+        prod: prod.rows, util: util.rows, stocks: stockTotal, gas: gas.rows,
         margin: margin.rows.filter(r => !fromDate || r.period_start >= fromDate),
         cn: cn.rows,
         eua: eua.rows,
