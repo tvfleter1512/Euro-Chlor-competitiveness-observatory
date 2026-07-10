@@ -28,6 +28,8 @@ SERIES = [
      "EU (IMF Europe/TTF-based) vs US (Henry Hub), USD/MMBtu."),
     ("price.caustic_spot_cn", "China caustic soda spot price (32% ion-membrane)", "price",
      "SunSirs daily spot, RMB/t."),
+    ("price.pvc_spot_cn", "China PVC spot price", "price",
+     "SunSirs daily spot, RMB/t."),
     ("carbon.eua_price", "EUA carbon price", "carbon",
      "ICAP secondary-market monthly average, EUR/tCO2."),
     ("demand.construction_output", "EU construction output", "demand",

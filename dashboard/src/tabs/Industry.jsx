@@ -62,6 +62,7 @@ export default function Industry({ fromDate }) {
       fetchFx('CNY'),
       fetchSeries({ series_id: 'trade.value', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '39041000', freq: 'M', from: fromDate }),
       fetchSeries({ series_id: 'trade.quantity', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '39041000', freq: 'M', from: fromDate }),
+      fetchSeries({ series_id: 'price.pvc_spot_cn', geo: 'CN' }),
       fetchSeries({ series_id: 'carbon.eua_price', from: fromDate }),
       fetchIndicators({ indicator_id: 'carbon_cost_exposure' }),
       fetchSeries({ series_id: 'demand.construction_output', from: fromDate }),
@@ -69,7 +70,7 @@ export default function Industry({ fromDate }) {
       fetchSeries({ series_id: 'demand.chemicals_production', from: fromDate }),
       fetchCapacityEvents(),
       fetchSeries({ series_id: 'structure.employment', band: 'C2013' }),
-    ]).then(([prod, util, stocks, gas, margin, cn, lyeVal, lyeQty, fxCny, pvcVal, pvcQty, eua, carbon, constr, paper, chem, events, emp]) => {
+    ]).then(([prod, util, stocks, gas, margin, cn, lyeVal, lyeQty, fxCny, pvcVal, pvcQty, pvcCn, eua, carbon, constr, paper, chem, events, emp]) => {
       // member stocks carry band='TOTAL'; the public scrape has band=null —
       // prefer the member split's total when present, else the public rows
       const stockTotal = stocks.rows.some(r => r.band === 'TOTAL')
@@ -80,7 +81,7 @@ export default function Industry({ fromDate }) {
         margin: margin.rows.filter(r => !fromDate || r.period_start >= fromDate),
         cn: cn.rows,
         lyeVal: lyeVal.rows, lyeQty: lyeQty.rows,
-        pvcVal: pvcVal.rows, pvcQty: pvcQty.rows,
+        pvcVal: pvcVal.rows, pvcQty: pvcQty.rows, pvcCn: pvcCn.rows,
         fxCny: Object.fromEntries(fxCny.rows.map(r => [String(r.rate_date).slice(0, 7), Number(r.rate)])),
         eua: eua.rows,
         carbon: carbon.rows.filter(r => !fromDate || r.period_start >= fromDate),
@@ -276,18 +277,30 @@ export default function Industry({ fromDate }) {
           })()}
         </Card>
 
-        <Card title="PVC prices — EU trade unit values"
-          subtitle="€/t, monthly, extra-EU trade in unmixed PVC (CN8 39041000). Unit values carry grade-mix effects; imports are CIF (freight included). Import UV undercutting export UV = price pressure from imports."
-          sourceRows={data.pvcVal.slice(-1)}>
+        <Card title="PVC prices — EU trade unit values vs China spot"
+          subtitle="€/t, monthly, extra-EU trade in unmixed PVC (CN8 39041000). Unit values carry grade-mix effects; imports are CIF (freight included). China = SunSirs daily spot, ECB monthly FX — accumulates from July 2026 (archive paywalled)."
+          sourceRows={[...data.pvcVal.slice(-1), ...data.pvcCn.slice(-1)]}>
           <Legend items={[
             { label: 'EU export UV', color: theme.series.s1 },
             { label: 'EU import UV', color: theme.series.s8 },
+            { label: 'China spot', color: theme.series.s3 },
           ]} />
           {(() => {
             const base = baseOption(theme)
             const exp = uvMap(data.pvcVal, data.pvcQty, 'export')
             const imp = uvMap(data.pvcVal, data.pvcQty, 'import')
-            const periods = [...new Set([...exp.keys(), ...imp.keys()])].sort()
+            const cnMonthly = new Map()
+            for (const r of data.pvcCn) {
+              const m = r.period.slice(0, 7)
+              if (!cnMonthly.has(m)) cnMonthly.set(m, [])
+              cnMonthly.get(m).push(Number(r.value))
+            }
+            const cn = new Map()
+            for (const [m, vals] of cnMonthly) {
+              const fx = data.fxCny[m] ?? Object.values(data.fxCny).at(-1)
+              if (fx) cn.set(m, (vals.reduce((a, b) => a + b, 0) / vals.length) / fx)
+            }
+            const periods = [...new Set([...exp.keys(), ...imp.keys(), ...cn.keys()])].sort()
             return <EChart height={240} theme={theme} option={{
               ...base,
               xAxis: { ...base.xAxis, data: periods },
@@ -295,6 +308,7 @@ export default function Industry({ fromDate }) {
               series: [
                 lineSeries('EU export UV', periods.map(p => exp.get(p) ?? null), theme.series.s1, theme),
                 lineSeries('EU import UV', periods.map(p => imp.get(p) ?? null), theme.series.s8, theme),
+                lineSeries('China spot', periods.map(p => cn.get(p) ?? null), theme.series.s3, theme),
               ],
             }} />
           })()}
