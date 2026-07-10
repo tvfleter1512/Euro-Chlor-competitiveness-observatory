@@ -46,7 +46,6 @@ export default function Members({ fromDate }) {
     Promise.all([
       fetchSeries({ series_id: 'production.production', geo: GEO, from: fromDate }),
       fetchSeries({ series_id: 'production.caustic_production', geo: GEO, from: fromDate }),
-      fetchSeries({ series_id: 'production.caustic_stocks', geo: GEO, from: fromDate }),
       fetchSeries({ series_id: 'production.capacity' }),
       fetchSeries({ series_id: 'production.utilisation' }),
       fetchSeries({ series_id: 'production.tech_share' }),
@@ -56,11 +55,10 @@ export default function Members({ fromDate }) {
       fetchSeries({ series_id: 'production.utilisation', geo: 'US', freq: 'M', from: fromDate }),
       fetchSeries({ series_id: 'production.utilisation', geo: 'CN', freq: 'A' }),
       fetchIndicators({ indicator_id: 'utilisation_gap' }),
-    ]).then(([cl2, naoh, stocks, cap, util, tech, uses, naohCons, utilEUm, utilUSm, utilCNa, gaps]) => {
+    ]).then(([cl2, naoh, cap, util, tech, uses, naohCons, utilEUm, utilUSm, utilCNa, gaps]) => {
       setD({
         cl2: cl2.rows.filter(r => r.redistribution_class === 'licensed' && r.period.includes('-')),
         naoh: naoh.rows.filter(r => r.period.includes('-')),
-        stocks: stocks.rows,
         cap: cap.rows.filter(r => r.redistribution_class === 'licensed'),
         util: util.rows.filter(r => r.redistribution_class === 'licensed' && !r.period.includes('-')),
         tech: tech.rows, uses: uses.rows, naohCons: naohCons.rows,
@@ -77,7 +75,6 @@ export default function Members({ fromDate }) {
   const memo = useMemo(() => {
     if (!d) return null
     const prod = pivot([...d.cl2.map(r => ({ ...r, k: 'Cl2' })), ...d.naoh.map(r => ({ ...r, k: 'NaOH' }))], r => r.k)
-    const stocks = pivot(d.stocks.filter(r => ['TOTAL', 'LIQUIDS', 'SOLIDS'].includes(r.band)), r => r.band)
     const capUtil = (() => {
       const capEU = d.cap.filter(r => r.geo_id === GEO)
       const prodAnnual = pivot(capEU.map(r => ({ ...r, k: 'Capacity' })), r => r.k)
@@ -91,7 +88,7 @@ export default function Members({ fromDate }) {
       .filter(r => r.period === String(latestUseYear) && r.band !== 'TOTAL' && !/^\d\.\d/.test(r.band))
       .sort((a, b) => Number(a.value) - Number(b.value))
     const naohCons = pivot(d.naohCons, r => r.band)
-    return { prod, stocks, capUtil, utilGroups, utilEU, tech, uses, latestUseYear, naohCons }
+    return { prod, capUtil, utilGroups, utilEU, tech, uses, latestUseYear, naohCons }
   }, [d])
 
   if (error) return <EmptyState>Failed to load: {error}</EmptyState>
@@ -125,15 +122,6 @@ export default function Members({ fromDate }) {
               { name: 'Chlorine', data: memo.prod.data.Cl2, color: theme.series.s1 },
               { name: 'Caustic soda', data: memo.prod.data.NaOH, color: theme.series.s2 },
             ] })}
-        </Card>
-
-        <Card title="Caustic soda stocks — by form" sourceRows={src}
-          subtitle="Member survey; total plus liquids/solids split."
-          right={<Legend items={['TOTAL', 'LIQUIDS', 'SOLIDS'].map((b, i) => (
-            { label: b.toLowerCase(), color: theme.series[['s1', 's2', 's3'][i]] }))} />}>
-          {multiLine({ theme, periods: memo.stocks.periods, fmt: fmtKt,
-            seriesDefs: ['TOTAL', 'LIQUIDS', 'SOLIDS'].map((b, i) => (
-              { name: b.toLowerCase(), data: memo.stocks.data[b], color: theme.series[['s1', 's2', 's3'][i]] })) })}
         </Card>
 
         <Card title="Name-plate capacity — EU total" sourceRows={src}
