@@ -52,8 +52,9 @@ export default function Members({ fromDate }) {
       fetchSeries({ series_id: 'consumption.naoh_apparent', geo: GEO }),
       fetchSeries({ series_id: 'production.utilisation', geo: GEO, freq: 'M', from: fromDate }),
       fetchSeries({ series_id: 'production.utilisation', geo: 'US', freq: 'M', from: fromDate }),
+      fetchSeries({ series_id: 'production.utilisation', geo: 'CN', freq: 'A' }),
       fetchIndicators({ indicator_id: 'utilisation_gap' }),
-    ]).then(([cl2, naoh, stocks, cap, util, tech, uses, naohCons, utilEUm, utilUSm, gaps]) => {
+    ]).then(([cl2, naoh, stocks, cap, util, tech, uses, naohCons, utilEUm, utilUSm, utilCNa, gaps]) => {
       setD({
         cl2: cl2.rows.filter(r => r.redistribution_class === 'licensed' && r.period.includes('-')),
         naoh: naoh.rows.filter(r => r.period.includes('-')),
@@ -63,6 +64,7 @@ export default function Members({ fromDate }) {
         tech: tech.rows, uses: uses.rows, naohCons: naohCons.rows,
         utilEUm: utilEUm.rows.filter(r => !r.band),
         utilUSm: utilUSm.rows,
+        utilCNa: utilCNa.rows,
         gapUS: gaps.rows.filter(r => r.comparator_geo_id === 'US' &&
                                      (!fromDate || r.period_start >= fromDate)),
         gapCN: gaps.rows.filter(r => r.comparator_geo_id === 'CN'),
@@ -157,7 +159,7 @@ export default function Members({ fromDate }) {
           right={<Legend items={Object.entries(TECH_COLORS)
             .filter(([t]) => memo.tech.keys.includes(t))
             .map(([t, s]) => ({ label: t.toLowerCase(), color: theme.series[s] }))} />}>
-          {multiLine({ theme, periods: memo.tech.periods, fmt: v => `${v.toFixed(1)} %`, stacked: true,
+          {multiLine({ theme, periods: memo.tech.periods, fmt: v => `${v.toFixed(1)} %`,
             seriesDefs: memo.tech.keys.map(t => (
               { name: t.toLowerCase(), data: memo.tech.data[t],
                 color: theme.series[TECH_COLORS[t] || 's8'] })) })}
@@ -187,20 +189,24 @@ export default function Members({ fromDate }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>
-        <Card title="Operating rate — EU vs US (monthly)"
-          subtitle="Euro Chlor member survey vs Chlorine Institute (via Euro Chlor)."
-          sourceRows={[...d.utilEUm.slice(-1), ...d.utilUSm.slice(-1)]}
+        <Card title="Operating rate — EU vs US vs China"
+          subtitle="EU & US monthly (Euro Chlor / Chlorine Institute); China plotted flat per year — CCAIA publishes annual figures only."
+          sourceRows={[...d.utilEUm.slice(-1), ...d.utilUSm.slice(-1), ...d.utilCNa.slice(-1)]}
           right={<Legend items={[
             { label: 'Euro Chlor', color: theme.series.s1 },
             { label: 'US', color: theme.series.s2 },
+            { label: 'China (annual)', color: theme.series.s3 },
           ]} />}>
           {(() => {
             const p = pivot([...d.utilEUm.map(r => ({ ...r, k: 'EU' })),
                              ...d.utilUSm.map(r => ({ ...r, k: 'US' }))], r => r.k)
+            const cnByYear = Object.fromEntries(d.utilCNa.map(r => [r.period, Number(r.value)]))
+            const cn = p.periods.map(per => cnByYear[per.slice(0, 4)] ?? null)
             return multiLine({ theme, periods: p.periods, fmt: v => `${v.toFixed(1)} %`,
               seriesDefs: [
                 { name: 'Euro Chlor', data: p.data.EU, color: theme.series.s1 },
                 { name: 'US', data: p.data.US, color: theme.series.s2 },
+                { name: 'China (annual)', data: cn, color: theme.series.s3 },
               ] })
           })()}
         </Card>
