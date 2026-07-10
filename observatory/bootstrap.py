@@ -61,6 +61,18 @@ SERIES = [
      "Industry Review data collection; band = application."),
     ("consumption.h2_applications", "Hydrogen applications (Industry Review)", "consumption",
      "Industry Review data collection; unit unspecified in source — use shares."),
+    ("efficiency.electricity_intensity", "Electricity consumption per tonne Cl2", "efficiency",
+     "Industry Review; final electricity, kWh/t."),
+    ("efficiency.primary_energy_intensity", "Primary energy per tonne Cl2", "efficiency",
+     "Industry Review; primary fuel energy, kWh/t."),
+    ("efficiency.h2_utilisation", "Hydrogen utilisation rate", "efficiency",
+     "Industry Review; share of co-produced H2 valorised (rest vented)."),
+    ("carbon.footprint", "GHG footprint per tonne Cl2", "carbon",
+     "Industry Review; tCO2eq/t Cl2."),
+    ("structure.grid_balancing", "Capacity offered to grid balancing", "structure",
+     "Industry Review; share of capacity as FCR/aFRR/mFRR, band = product."),
+    ("production.tech_share_capacity", "Installed capacity share by technology", "production",
+     "Industry Review; capacity basis (the tech_share series is production basis)."),
 ]
 
 GEOS = [

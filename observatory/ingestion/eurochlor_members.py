@@ -341,7 +341,7 @@ class EuroChlorMemberAgent(IngestionAgent):
             rows.append(SeriesRow(
                 series_id=series, geo_id=GEO, period=str(period),
                 period_start=period_start(str(period)), value=value, unit=unit,
-                band=band[:60],
+                band=band[:60] if band else None,
                 source="Euro Chlor member survey",
                 source_dataset=f"Industry Review data collection [{fname}]",
                 reference_period=str(period), retrieved_at=retrieved_at,
@@ -370,6 +370,42 @@ class EuroChlorMemberAgent(IngestionAgent):
             v = _num(r[1])
             if v is not None:
                 add("consumption.h2_applications", label, 2025, v, "as reported (unit unspecified)")
+
+        def cell(r, i):
+            return r[i] if i < len(r) else None   # read_only rows can be ragged
+
+        def year_rows(sheet, year_col=0):
+            """Rows whose year column holds a plausible year."""
+            for r in wb[sheet].iter_rows(values_only=True):
+                y = cell(r, year_col)
+                if isinstance(y, (int, float)) and 2000 <= int(y) <= 2035:
+                    yield int(y), r
+
+        # Energy consumption: primary fuel MWh/t (c3) + final electricity kWh/t (c4)
+        for year, r in year_rows("Energy consumption"):
+            if _num(cell(r, 2)) is not None:
+                add("efficiency.primary_energy_intensity", "TOTAL", year, _num(cell(r, 2)) * 1000, "kWh/t Cl2")
+            if _num(cell(r, 3)) is not None:
+                add("efficiency.electricity_intensity", "TOTAL", year, _num(cell(r, 3)), "kWh/t Cl2")
+        # Carbon footprint: tCO2eq/t Cl2 (goal column skipped)
+        for year, r in year_rows("Carbon footprint"):
+            if _num(cell(r, 1)) is not None:
+                add("carbon.footprint", None, year, _num(cell(r, 1)), "tCO2eq/t Cl2")
+        # Hydrogen utilisation: % valorised
+        for year, r in year_rows("Hydrogen utilisation"):
+            if _num(cell(r, 1)) is not None:
+                add("efficiency.h2_utilisation", None, year, _num(cell(r, 1)), "%")
+        # Grid balancing: shares of capacity offered per balancing product
+        for year, r in year_rows("Grid balancing"):
+            for col, band in ((1, "FCR"), (2, "AFRR"), (3, "MFRR"), (5, "TOTAL")):
+                if _num(cell(r, col)) is not None:
+                    add("structure.grid_balancing", band, year, _num(cell(r, col)) * 100, "%")
+        # Manufacturing process: installed-capacity share by technology (year in col B)
+        for year, r in year_rows("Manufacturing process", year_col=1):
+            for col, band in ((2, "MEMBRANE"), (3, "DIAPHRAGM"), (4, "MERCURY"), (5, "OTHERS")):
+                if _num(cell(r, col)) is not None:
+                    add("production.tech_share_capacity", band, year, _num(cell(r, col)), "%")
+
         wb.close()
         return rows
 

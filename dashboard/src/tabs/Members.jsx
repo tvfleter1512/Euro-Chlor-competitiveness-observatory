@@ -91,8 +91,13 @@ export default function Members({ fromDate }) {
       fetchSeries({ series_id: 'consumption.cl2_applications', geo: GEO }),
       fetchSeries({ series_id: 'consumption.naoh_applications', geo: GEO }),
       fetchSeries({ series_id: 'consumption.h2_applications', geo: GEO }),
+      fetchSeries({ series_id: 'efficiency.electricity_intensity', geo: GEO }),
+      fetchSeries({ series_id: 'efficiency.primary_energy_intensity', geo: GEO }),
+      fetchSeries({ series_id: 'efficiency.h2_utilisation', geo: GEO }),
+      fetchSeries({ series_id: 'carbon.footprint', geo: GEO }),
+      fetchSeries({ series_id: 'structure.grid_balancing', geo: GEO }),
     ]).then(([cl2, naoh, cap, util, tech, uses, naohCons, utilEUm, utilUSm, utilCNa, gaps,
-              appsCl2, appsNaoh, appsH2]) => {
+              appsCl2, appsNaoh, appsH2, effEl, effPrim, h2Util, footprint, gridBal]) => {
       setD({
         cl2: cl2.rows.filter(r => r.redistribution_class === 'licensed' && r.period.includes('-')),
         naoh: naoh.rows.filter(r => r.period.includes('-')),
@@ -106,6 +111,8 @@ export default function Members({ fromDate }) {
                                      (!fromDate || r.period_start >= fromDate)),
         gapCN: gaps.rows.filter(r => r.comparator_geo_id === 'CN'),
         apps: { cl2: appsCl2.rows, naoh: appsNaoh.rows, h2: appsH2.rows },
+        effEl: effEl.rows, effPrim: effPrim.rows, h2Util: h2Util.rows,
+        footprint: footprint.rows, gridBal: gridBal.rows,
       })
     }).catch(e => setError(String(e)))
   }, [fromDate])
@@ -269,6 +276,65 @@ export default function Members({ fromDate }) {
               </span>
             ))}
           </div>
+        </Card>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>
+        <Card title="Energy intensity per tonne Cl2"
+          subtitle="Industry Review. Final electricity vs primary fuel energy (incl. conversion losses), kWh/t — the efficiency lever behind the power-cost story."
+          sourceRows={d.effEl.slice(-1)}>
+          <Legend items={[
+            { label: 'Electricity (final)', color: theme.series.s1 },
+            { label: 'Primary energy', color: theme.series.s5 },
+          ]} />
+          {(() => {
+            const p = pivot([...d.effEl.map(r => ({ ...r, k: 'el' })),
+                             ...d.effPrim.map(r => ({ ...r, k: 'prim' }))], r => r.k)
+            return multiLine({ theme, periods: p.periods, fmt: v => `${v.toFixed(0)} kWh/t`, height: 220,
+              seriesDefs: [
+                { name: 'Electricity (final)', data: p.data.el, color: theme.series.s1 },
+                { name: 'Primary energy', data: p.data.prim, color: theme.series.s5 },
+              ] })
+          })()}
+        </Card>
+
+        <Card title="GHG footprint per tonne Cl2"
+          subtitle="Industry Review, tCO2eq/t Cl2, from 2020 — the decarbonisation trajectory."
+          sourceRows={d.footprint.slice(-1)}>
+          {(() => {
+            const p = pivot(d.footprint.map(r => ({ ...r, k: 'f' })), r => r.k)
+            return multiLine({ theme, periods: p.periods, fmt: v => `${v.toFixed(2)} tCO2eq/t`, height: 220,
+              seriesDefs: [{ name: 'Footprint', data: p.data.f, color: theme.series.s6 }] })
+          })()}
+        </Card>
+
+        <Card title="Hydrogen utilisation rate"
+          subtitle="Industry Review. Share of co-produced hydrogen valorised — the remainder is vented (see the hydrogen applications donut)."
+          sourceRows={d.h2Util.slice(-1)}>
+          {(() => {
+            const p = pivot(d.h2Util.map(r => ({ ...r, k: 'h' })), r => r.k)
+            return multiLine({ theme, periods: p.periods, fmt: v => `${v.toFixed(1)} %`, height: 220,
+              seriesDefs: [{ name: 'Utilised', data: p.data.h, color: theme.series.s2 }] })
+          })()}
+        </Card>
+
+        <Card title="Capacity offered to grid balancing"
+          subtitle="Industry Review. Share of chlor-alkali capacity offered as balancing reserve — flexibility monetisation in the power market."
+          sourceRows={d.gridBal.slice(-1)}>
+          <Legend items={[
+            { label: 'total', color: theme.series.s1 }, { label: 'FCR', color: theme.series.s2 },
+            { label: 'aFRR', color: theme.series.s3 }, { label: 'mFRR', color: theme.series.s5 },
+          ]} />
+          {(() => {
+            const p = pivot(d.gridBal, r => r.band)
+            return multiLine({ theme, periods: p.periods, fmt: v => `${v.toFixed(1)} %`, height: 220,
+              seriesDefs: [
+                { name: 'total', data: p.data.TOTAL, color: theme.series.s1 },
+                { name: 'FCR', data: p.data.FCR, color: theme.series.s2 },
+                { name: 'aFRR', data: p.data.AFRR, color: theme.series.s3 },
+                { name: 'mFRR', data: p.data.MFRR, color: theme.series.s5 },
+              ] })
+          })()}
         </Card>
       </div>
 
