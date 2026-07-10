@@ -3,6 +3,19 @@ import { fetchSeries, fetchIndicators, fetchCapacityEvents, fetchFx } from '../a
 
 const LYE_DRY_FACTOR = 2.0      // conversions.yaml: 50% lye -> 100% NaOH price basis
 const CN_SPOT_DRY_FACTOR = 100 / 32   // SunSirs quotes 32% ion-membrane
+
+// monthly unit value €/t from value+quantity rows; volume floor keeps
+// thin-flow months from producing absurd unit values
+function uvMap(valRows, qtyRows, flow, factor = 1, floorT = 500) {
+  const val = new Map(valRows.filter(r => r.flow === flow).map(r => [r.period, Number(r.value)]))
+  const qty = new Map(qtyRows.filter(r => r.flow === flow).map(r => [r.period, Number(r.value)]))
+  const out = new Map()
+  for (const [p, v] of val) {
+    const q = qty.get(p)
+    if (q > floorT) out.set(p, v / q * factor)
+  }
+  return out
+}
 import { useTheme, GEO_LABEL, GEO_SLOT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, StatTile } from '../components'
@@ -47,6 +60,8 @@ export default function Industry({ fromDate }) {
       fetchSeries({ series_id: 'trade.value', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '28151200', freq: 'M', from: fromDate }),
       fetchSeries({ series_id: 'trade.quantity', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '28151200', freq: 'M', from: fromDate }),
       fetchFx('CNY'),
+      fetchSeries({ series_id: 'trade.value', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '39041000', freq: 'M', from: fromDate }),
+      fetchSeries({ series_id: 'trade.quantity', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '39041000', freq: 'M', from: fromDate }),
       fetchSeries({ series_id: 'carbon.eua_price', from: fromDate }),
       fetchIndicators({ indicator_id: 'carbon_cost_exposure' }),
       fetchSeries({ series_id: 'demand.construction_output', from: fromDate }),
@@ -54,7 +69,7 @@ export default function Industry({ fromDate }) {
       fetchSeries({ series_id: 'demand.chemicals_production', from: fromDate }),
       fetchCapacityEvents(),
       fetchSeries({ series_id: 'structure.employment', band: 'C2013' }),
-    ]).then(([prod, util, stocks, gas, margin, cn, lyeVal, lyeQty, fxCny, eua, carbon, constr, paper, chem, events, emp]) => {
+    ]).then(([prod, util, stocks, gas, margin, cn, lyeVal, lyeQty, fxCny, pvcVal, pvcQty, eua, carbon, constr, paper, chem, events, emp]) => {
       // member stocks carry band='TOTAL'; the public scrape has band=null —
       // prefer the member split's total when present, else the public rows
       const stockTotal = stocks.rows.some(r => r.band === 'TOTAL')
@@ -65,6 +80,7 @@ export default function Industry({ fromDate }) {
         margin: margin.rows.filter(r => !fromDate || r.period_start >= fromDate),
         cn: cn.rows,
         lyeVal: lyeVal.rows, lyeQty: lyeQty.rows,
+        pvcVal: pvcVal.rows, pvcQty: pvcQty.rows,
         fxCny: Object.fromEntries(fxCny.rows.map(r => [String(r.rate_date).slice(0, 7), Number(r.rate)])),
         eua: eua.rows,
         carbon: carbon.rows.filter(r => !fromDate || r.period_start >= fromDate),
@@ -255,6 +271,30 @@ export default function Industry({ fromDate }) {
                 lineSeries('EU export UV', periods.map(p => exp.get(p) ?? null), theme.series.s1, theme),
                 lineSeries('EU import UV', periods.map(p => imp.get(p) ?? null), theme.series.s8, theme),
                 lineSeries('China spot', periods.map(p => cn.get(p) ?? null), theme.series.s3, theme),
+              ],
+            }} />
+          })()}
+        </Card>
+
+        <Card title="PVC prices — EU trade unit values"
+          subtitle="€/t, monthly, extra-EU trade in unmixed PVC (CN8 39041000). Unit values carry grade-mix effects; imports are CIF (freight included). Import UV undercutting export UV = price pressure from imports."
+          sourceRows={data.pvcVal.slice(-1)}>
+          <Legend items={[
+            { label: 'EU export UV', color: theme.series.s1 },
+            { label: 'EU import UV', color: theme.series.s8 },
+          ]} />
+          {(() => {
+            const base = baseOption(theme)
+            const exp = uvMap(data.pvcVal, data.pvcQty, 'export')
+            const imp = uvMap(data.pvcVal, data.pvcQty, 'import')
+            const periods = [...new Set([...exp.keys(), ...imp.keys()])].sort()
+            return <EChart height={240} theme={theme} option={{
+              ...base,
+              xAxis: { ...base.xAxis, data: periods },
+              tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : `${Number(v).toFixed(0)} €/t` },
+              series: [
+                lineSeries('EU export UV', periods.map(p => exp.get(p) ?? null), theme.series.s1, theme),
+                lineSeries('EU import UV', periods.map(p => imp.get(p) ?? null), theme.series.s8, theme),
               ],
             }} />
           })()}
