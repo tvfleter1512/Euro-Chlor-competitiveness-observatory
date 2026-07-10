@@ -9,7 +9,9 @@ import { Card, EmptyState, Legend } from '../components'
 // Euro Chlor membership.
 const GEO = 'EU27_EFTA_UK'
 const GROUP_LABEL = (g) => g.startsWith('ECG_') ? g.slice(4).replace(/_/g, '+') : (GEO_LABEL[g] || g)
-const TECH_COLORS = { MEMBRANE: 's2', MERCURY: 's6', DIAPHRAGM: 's3', FUSED: 's5', OTHER: 's8' }
+const TECH_COLORS = { MEMBRANE: 's2', MERCURY: 's6', DIAPHRAGM_OTHERS: 's3' }
+const TECH_LABEL = { MEMBRANE: 'membrane', MERCURY: 'mercury',
+                     DIAPHRAGM_OTHERS: 'diaphragm + others' }
 
 function multiLine({ theme, seriesDefs, periods, fmt, height = 260, stacked = false }) {
   const base = baseOption(theme)
@@ -83,7 +85,7 @@ export default function Members({ fromDate }) {
     })()
     const utilGroups = pivot(d.util.filter(r => r.geo_id !== GEO), r => r.geo_id)
     const utilEU = pivot(d.util.filter(r => r.geo_id === GEO), () => 'TOTAL')
-    const tech = pivot(d.tech, r => r.band)
+    const tech = pivot(d.tech.filter(r => TECH_COLORS[r.band]), r => r.band)
     const latestUseYear = Math.max(...d.uses.map(r => Number(r.period)), 0)
     const uses = d.uses
       .filter(r => r.period === String(latestUseYear) && r.band !== 'TOTAL' && !/^\d\.\d/.test(r.band))
@@ -155,13 +157,13 @@ export default function Members({ fromDate }) {
         </Card>
 
         <Card title="Production share by electrolysis technology" sourceRows={src}
-          subtitle="Annual survey — the mercury phase-out and membrane conversion, quantified."
+          subtitle="Annual survey. 'Diaphragm + others' (fused salt, MgCl2, HCl, mercury for alcoholates) is 100% − membrane − mercury: exact to 2013, estimated residual after (components suppressed per competition rules)."
           right={<Legend items={Object.entries(TECH_COLORS)
             .filter(([t]) => memo.tech.keys.includes(t))
-            .map(([t, s]) => ({ label: t.toLowerCase(), color: theme.series[s] }))} />}>
+            .map(([t, s]) => ({ label: TECH_LABEL[t], color: theme.series[s] }))} />}>
           {multiLine({ theme, periods: memo.tech.periods, fmt: v => `${v.toFixed(1)} %`,
             seriesDefs: memo.tech.keys.map(t => (
-              { name: t.toLowerCase(), data: memo.tech.data[t],
+              { name: TECH_LABEL[t], data: memo.tech.data[t],
                 color: theme.series[TECH_COLORS[t] || 's8'] })) })}
         </Card>
 

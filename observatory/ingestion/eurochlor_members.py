@@ -166,25 +166,53 @@ class EuroChlorMemberAgent(IngestionAgent):
         return rows
 
     def _parse_cl2_type(self, wb, src, retrieved_at):
-        """Technology shares (fractions) x years."""
+        """Technology shares (fractions) x years — production-share block ONLY
+        (the nameplate-capacity block repeats the same labels and would collide).
+
+        'Others' components (fused salt, MgCl2, HCl, mercury for alcoholates)
+        and diaphragm are suppressed after 2013 for competition reasons, so a
+        combined DIAPHRAGM_OTHERS band is derived as 100 − membrane − mercury:
+        exact pre-2014 (published components sum to 100), flagged 'estimated'
+        after 2013 (residual of unpublished mix). Owner-specified methodology.
+        """
         grid = list(wb["Cl2 type"].iter_rows(min_row=1, max_row=32, values_only=True))
         rows, years = [], None
-        techs = ("Diaphragm", "Mercury", "Membrane", "Fused", "Other")
+        band_of = [
+            (lambda l: l.startswith("Mercury") and "alcoholate" in l.lower(), "MERCURY_ALCOHOLATES"),
+            (lambda l: l.startswith("Mercury"), "MERCURY"),
+            (lambda l: l.startswith("Membrane"), "MEMBRANE"),
+            (lambda l: l.startswith("Diaphragm"), "DIAPHRAGM"),
+            (lambda l: l.startswith("Fused"), "FUSED_SALT"),
+            (lambda l: l.startswith("MgCl2"), "MGCL2"),
+            (lambda l: l.startswith("HCl"), "HCL"),
+        ]
+        by_band = {}
         for r in grid:
-            label = str(r[0]).strip().split("\n")[0] if r[0] is not None else ""
+            label = str(r[0]).strip().replace("\n", " ") if r[0] is not None else ""
+            if label.startswith("Total Nameplate"):
+                break   # second block: same labels, different measure — never mix
             if years is None and r[1] is not None and _year(r[1]):
                 years = [_year(c) for c in r[1:]]
                 continue
-            if not years or not label.startswith(techs):
+            band = next((b for match, b in band_of if match(label)), None)
+            if not years or band is None:
                 continue
             for year, cell in zip(years, r[1:]):
-                if year is None:
-                    continue
                 v = _num(cell)
-                if v is None:
-                    continue   # tech absent that year — not a suppression
+                if year is None or v is None:
+                    continue   # suppressed / tech absent that year
+                by_band.setdefault(band, {})[year] = v * 100
                 rows.append(self._row("production.tech_share", year, v * 100, "%",
-                                      src, retrieved_at, band=label.split()[0].upper()))
+                                      src, retrieved_at, band=band))
+        # combined residual band (owner methodology)
+        membrane, mercury = by_band.get("MEMBRANE", {}), by_band.get("MERCURY", {})
+        for year in sorted(set(membrane) & set(mercury)):
+            row = self._row("production.tech_share", year,
+                            round(100 - membrane[year] - mercury[year], 4), "%",
+                            src, retrieved_at, band="DIAPHRAGM_OTHERS")
+            if year > 2013:
+                row.quality_flag = "estimated"   # residual of suppressed components
+            rows.append(row)
         return rows
 
     def _parse_cl2_uses(self, wb, src, retrieved_at):
