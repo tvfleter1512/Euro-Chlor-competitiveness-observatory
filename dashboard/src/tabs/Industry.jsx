@@ -29,6 +29,7 @@ function simpleLine({ rows, theme, color, unit, valueFmt, height = 240, markAt }
 export default function Industry({ fromDate }) {
   const theme = useTheme()
   const [data, setData] = useState(null)
+  const [prodView, setProdView] = useState('absolute')   // production chart: tonnes vs operating rate
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -152,15 +153,30 @@ export default function Industry({ fromDate }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>
-        <Card title="EU chlorine production" subtitle={`Monthly tonnes, ${note}.`}
-          sourceRows={data.prod}>
-          {simpleLine({ rows: data.prod, theme, color: theme.series.s1, unit: 't Cl2',
-                        valueFmt: v => `${(v / 1e3).toFixed(0)} kt` })}
-        </Card>
-        <Card title="Capacity utilisation" subtitle="Monthly operating rate, %. Idle capacity is the EU's real substitution margin (assessment §1.3)."
-          sourceRows={data.util}>
-          {simpleLine({ rows: data.util, theme, color: theme.series.s5, unit: '%',
-                        valueFmt: v => `${Number(v).toFixed(1)} %` })}
+        <Card
+          title="EU chlorine production"
+          subtitle={prodView === 'absolute'
+            ? `Monthly tonnes, ${note}.`
+            : 'Monthly operating rate (production ÷ nameplate capacity), %. Idle capacity is the EU’s real substitution margin (assessment §1.3).'}
+          sourceRows={prodView === 'absolute' ? data.prod : data.util}
+          right={
+            <span style={{ display: 'inline-flex', gap: 3, padding: 3, borderRadius: 999,
+                           background: theme.page, border: `1px solid ${theme.border}`, flexShrink: 0 }}>
+              {[['absolute', 'tonnes'], ['ratio', 'utilisation']].map(([key, label]) => (
+                <button key={key} onClick={() => setProdView(key)} style={{
+                  padding: '3px 10px', fontSize: 11.5, cursor: 'pointer', borderRadius: 999,
+                  border: 'none', fontWeight: 600,
+                  background: prodView === key ? theme.accent : 'transparent',
+                  color: prodView === key ? '#fff' : theme.inkSecondary,
+                }}>{label}</button>
+              ))}
+            </span>
+          }>
+          {prodView === 'absolute'
+            ? simpleLine({ rows: data.prod, theme, color: theme.series.s1, unit: 't Cl2',
+                           valueFmt: v => `${(v / 1e3).toFixed(0)} kt` })
+            : simpleLine({ rows: data.util, theme, color: theme.series.s5, unit: '%',
+                           valueFmt: v => `${Number(v).toFixed(1)} %` })}
         </Card>
 
         <Card title="Natural-gas hub prices — EU vs US"
@@ -174,7 +190,7 @@ export default function Industry({ fromDate }) {
             : <EmptyState>No gas data.</EmptyState>}
         </Card>
         <Card title="ECU cash-margin proxy"
-          subtitle="EUR per ECU, semi-annual. Public-data proxy (trade unit values − power cost); directional use only; params pending confirmation."
+          subtitle="What a tonne of chlorine + its co-produced caustic earns over its electricity bill, EUR/ECU, semi-annual. Revenue proxied from extra-EU export unit values (caustic dry-basis + chlorine valued via EDC); cost = delivered power × 2.629 MWh. Excludes carbon and other variable costs — trend/directional use only."
           sourceRows={data.margin?.map(r => ({
             source: 'Comext unit values + Eurostat power', source_dataset: 'ecu_margin_proxy v1.0',
             retrieved_at: r.computed_at, quality_flag: 'estimated',
