@@ -117,6 +117,15 @@ def indicators(indicator_id: str | None = None,
     return {"count": len(rows), "rows": rows}
 
 
+@app.get("/api/fx")
+def fx(currency: str = "USD"):
+    with db.get_conn() as conn:
+        rows = conn.execute(
+            """SELECT rate_date, rate FROM v_fx_latest
+               WHERE quote_currency = %s ORDER BY rate_date""", (currency,)).fetchall()
+    return {"currency": currency, "base": "EUR", "rows": rows}
+
+
 @app.get("/api/meta/products")
 def meta_products():
     with db.get_conn() as conn:

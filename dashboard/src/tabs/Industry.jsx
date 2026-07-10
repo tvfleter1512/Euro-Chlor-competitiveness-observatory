@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { fetchSeries, fetchIndicators, fetchCapacityEvents } from '../api'
+import { fetchSeries, fetchIndicators, fetchCapacityEvents, fetchFx } from '../api'
+
+const LYE_DRY_FACTOR = 2.0      // conversions.yaml: 50% lye -> 100% NaOH price basis
+const CN_SPOT_DRY_FACTOR = 100 / 32   // SunSirs quotes 32% ion-membrane
 import { useTheme, GEO_LABEL, GEO_SLOT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, StatTile } from '../components'
@@ -41,6 +44,9 @@ export default function Industry({ fromDate }) {
       fetchSeries({ series_id: 'gas.hub_price', from: fromDate }),
       fetchIndicators({ indicator_id: 'ecu_margin_proxy' }),
       fetchSeries({ series_id: 'price.caustic_spot_cn', geo: 'CN' }),
+      fetchSeries({ series_id: 'trade.value', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '28151200', freq: 'M', from: fromDate }),
+      fetchSeries({ series_id: 'trade.quantity', geo: 'EU27_2020', partner: 'EXTRA_EU', product: '28151200', freq: 'M', from: fromDate }),
+      fetchFx('CNY'),
       fetchSeries({ series_id: 'carbon.eua_price', from: fromDate }),
       fetchIndicators({ indicator_id: 'carbon_cost_exposure' }),
       fetchSeries({ series_id: 'demand.construction_output', from: fromDate }),
@@ -48,7 +54,7 @@ export default function Industry({ fromDate }) {
       fetchSeries({ series_id: 'demand.chemicals_production', from: fromDate }),
       fetchCapacityEvents(),
       fetchSeries({ series_id: 'structure.employment', band: 'C2013' }),
-    ]).then(([prod, util, stocks, gas, margin, cn, eua, carbon, constr, paper, chem, events, emp]) => {
+    ]).then(([prod, util, stocks, gas, margin, cn, lyeVal, lyeQty, fxCny, eua, carbon, constr, paper, chem, events, emp]) => {
       // member stocks carry band='TOTAL'; the public scrape has band=null —
       // prefer the member split's total when present, else the public rows
       const stockTotal = stocks.rows.some(r => r.band === 'TOTAL')
@@ -58,6 +64,8 @@ export default function Industry({ fromDate }) {
         prod: prod.rows, util: util.rows, stocks: stockTotal, gas: gas.rows,
         margin: margin.rows.filter(r => !fromDate || r.period_start >= fromDate),
         cn: cn.rows,
+        lyeVal: lyeVal.rows, lyeQty: lyeQty.rows,
+        fxCny: Object.fromEntries(fxCny.rows.map(r => [String(r.rate_date).slice(0, 7), Number(r.rate)])),
         eua: eua.rows,
         carbon: carbon.rows.filter(r => !fromDate || r.period_start >= fromDate),
         demand: { constr: constr.rows, paper: paper.rows, chem: chem.rows },
@@ -206,13 +214,50 @@ export default function Industry({ fromDate }) {
           {simpleLine({ rows: data.stocks, theme, color: theme.series.s2, unit: 't NaOH',
                         valueFmt: v => `${(v / 1e3).toFixed(0)} kt` })}
         </Card>
-        <Card title="China caustic soda spot price"
-          subtitle="Daily RMB/t, 32% ion-membrane (SunSirs). Series accumulates from July 2026 — page exposes only recent days."
-          sourceRows={data.cn}>
-          {data.cn?.length
-            ? simpleLine({ rows: data.cn, theme, color: theme.series.s3, unit: 'RMB/t',
-                           valueFmt: v => `${Number(v).toFixed(0)} RMB/t` })
-            : <EmptyState>No SunSirs rows yet — runs daily via cron.</EmptyState>}
+        <Card title="Caustic soda prices — EU trade unit values vs China spot"
+          subtitle="€/t on 100% NaOH basis, monthly. EU lines = extra-EU lye trade unit values (mix effects; imports are CIF, freight included). China = SunSirs 32% spot ÷ 0.32, ECB monthly FX — history accumulates from July 2026 (SunSirs archive is paywalled)."
+          sourceRows={[...data.lyeVal.slice(-1), ...data.cn.slice(-1)]}>
+          <Legend items={[
+            { label: 'EU export UV', color: theme.series.s1 },
+            { label: 'EU import UV', color: theme.series.s8 },
+            { label: 'China spot', color: theme.series.s3 },
+          ]} />
+          {(() => {
+            const base = baseOption(theme)
+            const uv = (flow) => {
+              const val = new Map(data.lyeVal.filter(r => r.flow === flow).map(r => [r.period, Number(r.value)]))
+              const qty = new Map(data.lyeQty.filter(r => r.flow === flow).map(r => [r.period, Number(r.value)]))
+              const out = new Map()
+              for (const [p, v] of val) {
+                const q = qty.get(p)
+                if (q > 500) out.set(p, v / q * LYE_DRY_FACTOR)   // volume floor: unit values on tiny flows are noise
+              }
+              return out
+            }
+            const exp = uv('export'), imp = uv('import')
+            const cnMonthly = new Map()
+            for (const r of data.cn) {
+              const m = r.period.slice(0, 7)
+              if (!cnMonthly.has(m)) cnMonthly.set(m, [])
+              cnMonthly.get(m).push(Number(r.value))
+            }
+            const cn = new Map()
+            for (const [m, vals] of cnMonthly) {
+              const fx = data.fxCny[m] ?? Object.values(data.fxCny).at(-1)
+              if (fx) cn.set(m, (vals.reduce((a, b) => a + b, 0) / vals.length) * CN_SPOT_DRY_FACTOR / fx)
+            }
+            const periods = [...new Set([...exp.keys(), ...imp.keys(), ...cn.keys()])].sort()
+            return <EChart height={240} theme={theme} option={{
+              ...base,
+              xAxis: { ...base.xAxis, data: periods },
+              tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : `${Number(v).toFixed(0)} €/t` },
+              series: [
+                lineSeries('EU export UV', periods.map(p => exp.get(p) ?? null), theme.series.s1, theme),
+                lineSeries('EU import UV', periods.map(p => imp.get(p) ?? null), theme.series.s8, theme),
+                lineSeries('China spot', periods.map(p => cn.get(p) ?? null), theme.series.s3, theme),
+              ],
+            }} />
+          })()}
         </Card>
 
         <Card title="EUA carbon price" subtitle="Monthly average of daily secondary-market closes, EUR/tCO2 (ICAP)."
