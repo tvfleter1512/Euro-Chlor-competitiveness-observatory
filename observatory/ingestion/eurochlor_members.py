@@ -71,6 +71,8 @@ class EuroChlorMemberAgent(IngestionAgent):
                 return "annual"
             if "chlorine production" in low:
                 return "regions"   # US (Chlorine Institute) + China (CCAIA) utilisation
+            if "industry review" in low:
+                return "industry_review"   # 2025 data collection (applications etc.)
             return "unknown"
         return [(str(f), {"file": str(f), "kind": kind(f.name)}) for f in files]
 
@@ -86,6 +88,8 @@ class EuroChlorMemberAgent(IngestionAgent):
                 rows += self._parse_annual(meta["file"], retrieved_at)
             elif meta["kind"] == "regions":
                 rows += self._parse_regions(meta["file"], retrieved_at)
+            elif meta["kind"] == "industry_review":
+                rows += self._parse_industry_review(meta["file"], retrieved_at)
         return rows
 
     def _row(self, series, period, value, unit, src, retrieved_at, band=None, geo=GEO):
@@ -321,6 +325,51 @@ class EuroChlorMemberAgent(IngestionAgent):
                 source_dataset=f"compared with other regions [{fname}] — annual figure",
                 reference_period=year, retrieved_at=retrieved_at,
                 redistribution_class="licensed"))
+        wb.close()
+        return rows
+
+    def _parse_industry_review(self, path, retrieved_at):
+        """Industry Review data collection: application splits for chlorine,
+        caustic (2024+2025 columns) and hydrogen. Values in kt for Cl2/NaOH;
+        the hydrogen sheet declares no unit — stored as-reported, shares are
+        the reliable dimension."""
+        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        fname = path.split("/")[-1]
+        rows = []
+
+        def add(series, band, period, value, unit):
+            rows.append(SeriesRow(
+                series_id=series, geo_id=GEO, period=str(period),
+                period_start=period_start(str(period)), value=value, unit=unit,
+                band=band[:60],
+                source="Euro Chlor member survey",
+                source_dataset=f"Industry Review data collection [{fname}]",
+                reference_period=str(period), retrieved_at=retrieved_at,
+                redistribution_class="licensed"))
+
+        def sheet_rows(name):
+            for r in wb[name].iter_rows(values_only=True):
+                label = str(r[0]).strip().replace("\n", " ") if r[0] is not None else ""
+                if not label or label.upper().startswith("TOTAL") or "% of total" in label:
+                    continue
+                if label.lower().startswith(("european", "hydrogen applications")):
+                    continue   # title rows
+                yield label, r
+
+        for label, r in sheet_rows("Chlorine applications"):
+            v = _num(r[1])
+            if v is not None:
+                add("consumption.cl2_applications", label, 2025, v * 1000, "t Cl2")
+        for label, r in sheet_rows("Caustic applications"):
+            v24, v25 = _num(r[1]), _num(r[3])
+            if v24 is not None:
+                add("consumption.naoh_applications", label, 2024, v24 * 1000, "t NaOH")
+            if v25 is not None:
+                add("consumption.naoh_applications", label, 2025, v25 * 1000, "t NaOH")
+        for label, r in sheet_rows("Hydrogen applications"):
+            v = _num(r[1])
+            if v is not None:
+                add("consumption.h2_applications", label, 2025, v, "as reported (unit unspecified)")
         wb.close()
         return rows
 

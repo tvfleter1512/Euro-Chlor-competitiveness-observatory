@@ -26,6 +26,39 @@ function multiLine({ theme, seriesDefs, periods, fmt, height = 260, stacked = fa
   }} />
 }
 
+// donut of application shares: top 5 + Other (pie stays readable ≤6 slices)
+function donutOption(rows, theme, { valueFmt, sharesOnly = false }) {
+  const period = rows.length ? rows.map(r => r.period).sort().at(-1) : null
+  const latest = rows.filter(r => r.period === period)
+    .map(r => ({ name: r.band.replace(/\s*\(.*$/, ''), value: Number(r.value) }))
+    .sort((a, b) => b.value - a.value)
+  const total = latest.reduce((a, r) => a + r.value, 0)
+  const top = latest.slice(0, 5)
+  const rest = latest.slice(5).reduce((a, r) => a + r.value, 0)
+  const slices = rest > 0 ? [...top, { name: 'Other', value: rest }] : top
+  const slots = ['s1', 's2', 's3', 's5', 's8', 's6']
+  return {
+    period,
+    option: {
+      tooltip: {
+        backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1,
+        textStyle: { color: theme.ink, fontSize: 12 },
+        formatter: p => `${p.name}: ${(p.value / total * 100).toFixed(1)} %${
+          sharesOnly ? '' : ` · ${valueFmt(p.value)}`}`,
+      },
+      series: [{
+        type: 'pie', radius: ['42%', '68%'], center: ['50%', '52%'],
+        itemStyle: { borderColor: theme.surface, borderWidth: 2 },
+        label: { color: theme.inkSecondary, fontSize: 10.5, width: 110,
+                 overflow: 'truncate', lineHeight: 14,
+                 formatter: p => `${p.name}\n${(p.value / total * 100).toFixed(0)} %` },
+        labelLine: { lineStyle: { color: theme.axis } },
+        data: slices.map((s, i) => ({ ...s, itemStyle: { color: theme.series[slots[i % slots.length]] } })),
+      }],
+    },
+  }
+}
+
 function pivot(rows, keyFn) {
   const periods = [...new Set(rows.map(r => r.period))].sort()
   const keys = [...new Set(rows.map(keyFn))]
@@ -55,7 +88,11 @@ export default function Members({ fromDate }) {
       fetchSeries({ series_id: 'production.utilisation', geo: 'US', freq: 'M', from: fromDate }),
       fetchSeries({ series_id: 'production.utilisation', geo: 'CN', freq: 'A' }),
       fetchIndicators({ indicator_id: 'utilisation_gap' }),
-    ]).then(([cl2, naoh, cap, util, tech, uses, naohCons, utilEUm, utilUSm, utilCNa, gaps]) => {
+      fetchSeries({ series_id: 'consumption.cl2_applications', geo: GEO }),
+      fetchSeries({ series_id: 'consumption.naoh_applications', geo: GEO }),
+      fetchSeries({ series_id: 'consumption.h2_applications', geo: GEO }),
+    ]).then(([cl2, naoh, cap, util, tech, uses, naohCons, utilEUm, utilUSm, utilCNa, gaps,
+              appsCl2, appsNaoh, appsH2]) => {
       setD({
         cl2: cl2.rows.filter(r => r.redistribution_class === 'licensed' && r.period.includes('-')),
         naoh: naoh.rows.filter(r => r.period.includes('-')),
@@ -68,6 +105,7 @@ export default function Members({ fromDate }) {
         gapUS: gaps.rows.filter(r => r.comparator_geo_id === 'US' &&
                                      (!fromDate || r.period_start >= fromDate)),
         gapCN: gaps.rows.filter(r => r.comparator_geo_id === 'CN'),
+        apps: { cl2: appsCl2.rows, naoh: appsNaoh.rows, h2: appsH2.rows },
       })
     }).catch(e => setError(String(e)))
   }, [fromDate])
@@ -155,28 +193,30 @@ export default function Members({ fromDate }) {
                 color: theme.series[TECH_COLORS[t] || 's8'] })) })}
         </Card>
 
-        <Card title={`Chlorine consumption by application — ${memo.latestUseYear}`} sourceRows={src}
-          subtitle="Annual survey, main application categories, tonnes Cl2.">
-          {memo.uses.length ? (() => {
-            const base = baseOption(theme)
-            return <EChart height={280} theme={theme} option={{
-              ...base,
-              grid: { ...base.grid, left: 170, right: 60, bottom: 24 },
-              xAxis: { type: 'value', splitLine: { lineStyle: { color: theme.grid, width: 1 } },
-                       axisLabel: { color: theme.inkMuted, fontSize: 11, formatter: v => `${(v / 1e6).toFixed(1)} Mt` } },
-              yAxis: { type: 'category',
-                       data: memo.uses.map(r => r.band.replace(/\s*\(.*$/, '').replace(/^\d+\.\s*/, '').slice(0, 24)),
-                       axisLine: { lineStyle: { color: theme.axis } }, axisTick: { show: false },
-                       axisLabel: { color: theme.inkSecondary, fontSize: 11 } },
-              tooltip: { ...base.tooltip, trigger: 'item',
-                         formatter: p => `${p.name}: ${(memo.uses[p.dataIndex].value / 1e3).toFixed(0)} kt` },
-              series: [{ type: 'bar', barMaxWidth: 16,
-                data: memo.uses.map(r => ({ value: Number(r.value),
-                  itemStyle: { color: theme.series.s1, borderRadius: [0, 4, 4, 0] } })) }],
-            }} />
-          })() : <EmptyState>No application split available.</EmptyState>}
-        </Card>
       </div>
+
+      <Card title="Applications — Industry Review 2025 data collection" sourceRows={d.apps.cl2.slice(-1)}
+        subtitle="Share of use per product. Chlorine & caustic in kt; the hydrogen sheet specifies no unit, so shares only. Categories beyond the top 5 fold into 'Other'.">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: 8 }}>
+          {[
+            { key: 'cl2', title: 'Chlorine', rows: d.apps.cl2, fmt: v => `${(v / 1e3).toFixed(0)} kt`, sharesOnly: false },
+            { key: 'naoh', title: 'Caustic soda', rows: d.apps.naoh, fmt: v => `${(v / 1e3).toFixed(0)} kt`, sharesOnly: false },
+            { key: 'h2', title: 'Hydrogen', rows: d.apps.h2, fmt: v => v, sharesOnly: true },
+          ].map(({ key, title, rows, fmt, sharesOnly }) => {
+            if (!rows.length) return null
+            const donut = donutOption(rows, theme, { valueFmt: fmt, sharesOnly })
+            return (
+              <div key={key}>
+                <div style={{ fontSize: 12.5, fontWeight: 650, color: theme.ink,
+                              textAlign: 'center' }}>
+                  {title} <span style={{ color: theme.inkMuted, fontWeight: 500 }}>{donut.period}</span>
+                </div>
+                <EChart height={265} theme={theme} option={donut.option} />
+              </div>
+            )
+          })}
+        </div>
+      </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>
         <Card title="Operating rate — EU vs US vs China"

@@ -55,6 +55,12 @@ SERIES = [
      "Annual survey, by country group."),
     ("consumption.naoh_apparent", "Caustic soda apparent consumption", "consumption",
      "Annual survey, by country group."),
+    ("consumption.cl2_applications", "Chlorine applications (Industry Review)", "consumption",
+     "Industry Review data collection; band = application."),
+    ("consumption.naoh_applications", "Caustic soda applications (Industry Review)", "consumption",
+     "Industry Review data collection; band = application."),
+    ("consumption.h2_applications", "Hydrogen applications (Industry Review)", "consumption",
+     "Industry Review data collection; unit unspecified in source — use shares."),
 ]
 
 GEOS = [
