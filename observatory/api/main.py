@@ -4,17 +4,46 @@ Every payload row carries its provenance (spec §8: no provenance, no render).
 Model A: everything public; redistribution_class is served so a model-B
 entitlement layer can be added in front without schema change.
 """
+import base64
+import secrets
 from datetime import date
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
 from observatory import db
-from observatory.settings import PROJECT_ROOT, load_config
+from observatory.settings import DASHBOARD_PASSWORD, PROJECT_ROOT, load_config
 
 app = FastAPI(title="Euro Chlor Competitiveness Observatory", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# MEMBER_MODE: while the password gate is up, member-restricted (licensed)
+# series are served. Replace with per-user entitlements on the cloud deployment.
+MEMBER_MODE = bool(DASHBOARD_PASSWORD)
+
+
+@app.middleware("http")
+async def basic_auth(request: Request, call_next):
+    if DASHBOARD_PASSWORD:
+        header = request.headers.get("authorization", "")
+        ok = False
+        if header.startswith("Basic "):
+            try:
+                _, _, password = base64.b64decode(header[6:]).decode().partition(":")
+                ok = secrets.compare_digest(password, DASHBOARD_PASSWORD)
+            except Exception:
+                ok = False
+        if not ok:
+            return Response(status_code=401, content="Authentication required",
+                            headers={"WWW-Authenticate": 'Basic realm="Euro Chlor Observatory"'})
+    return await call_next(request)
+
+
+@app.get("/api/mode")
+def mode():
+    return {"member_mode": MEMBER_MODE}
 
 
 @app.get("/api/health")
@@ -38,6 +67,8 @@ def series(
 ):
     q = "SELECT * FROM v_series_latest WHERE series_id = %s"
     params: list = [series_id]
+    if not MEMBER_MODE:   # licensed rows only behind the member gate
+        q += " AND redistribution_class = 'public'"
     for col, val in (("geo_id", geo), ("partner_geo_id", partner),
                      ("product_code", product), ("flow", flow),
                      ("band", band), ("tax_treatment", tax)):

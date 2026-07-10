@@ -13,12 +13,13 @@ const ICONS = {
   ship: 'M3 9h18v10H3z|M8 9V5h8v4|M3 13h18',
   shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
   factory: 'M2 20h20|M4 20V10l5 3v-3l5 3V4h6v16',
+  lock: 'M5 11h14v10H5z|M8 11V7a4 4 0 0 1 8 0v4',
   db: 'M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3z|M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6|M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
   moon: 'M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z',
   sun: 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z|M12 1v2|M12 21v2|M4.2 4.2l1.4 1.4|M18.4 18.4l1.4 1.4|M1 12h2|M21 12h2|M4.2 19.8l1.4-1.4|M18.4 5.6l1.4-1.4',
 }
 
-export default function Sidebar({ tab, setTab, dark, setDark }) {
+export default function Sidebar({ tab, setTab, dark, setDark, memberMode }) {
   const theme = useTheme()
 
   const NavItem = ({ id, icon, children }) => {
@@ -68,6 +69,7 @@ export default function Sidebar({ tab, setTab, dark, setDark }) {
         <NavItem id="Trade" icon="ship">Trade</NavItem>
         <NavItem id="Dependency" icon="shield">Dependency (CDI)</NavItem>
         <NavItem id="Industry" icon="factory">Industry &amp; margins</NavItem>
+        {memberMode && <NavItem id="Members" icon="lock">Member data</NavItem>}
       </nav>
 
       <div style={sectionLabel}>System</div>

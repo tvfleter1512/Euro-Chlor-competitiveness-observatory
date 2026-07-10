@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { LIGHT, DARK, ThemeContext, FONT } from './theme'
-import { fetchSeries, fetchIndicators, fetchHealth, fetchProducts } from './api'
+import { fetchSeries, fetchIndicators, fetchHealth, fetchProducts, fetchMode } from './api'
 import { StatTile } from './components'
 import Sidebar from './Sidebar'
 import Electricity from './tabs/Electricity'
 import Trade from './tabs/Trade'
 import Dependency from './tabs/Dependency'
 import Industry from './tabs/Industry'
+import Members from './tabs/Members'
 import Sources from './tabs/Sources'
 
 const PRODUCT_TABS = ['Trade', 'Dependency']
@@ -28,9 +29,11 @@ export default function App() {
   const [basket, setBasket] = useState([])
   const [product, setProduct] = useState(null)
   const [basis, setBasis] = useState('value')   // Trade tab: € value vs tonnage
+  const [memberMode, setMemberMode] = useState(false)
   const [kpi, setKpi] = useState({})
 
   useEffect(() => {
+    fetchMode().then(m => setMemberMode(!!m.member_mode)).catch(() => {})
     fetchProducts().then(p => {
       const cn8 = p.products.filter(x => x.nomenclature === 'CN8')
       setBasket(cn8)
@@ -85,7 +88,7 @@ export default function App() {
   return (
     <ThemeContext.Provider value={theme}>
       <div style={{ display: 'flex', minHeight: '100vh', background: theme.page, fontFamily: FONT }}>
-        <Sidebar tab={tab} setTab={setTab} dark={dark} setDark={setDark} />
+        <Sidebar tab={tab} setTab={setTab} dark={dark} setDark={setDark} memberMode={memberMode} />
 
         <main style={{ flex: 1, padding: '26px 32px', minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
@@ -155,6 +158,7 @@ export default function App() {
             <Dependency product={product} productLabel={selected?.name || product} />
           )}
           {tab === 'Industry' && <Industry fromDate={range.from} />}
+          {tab === 'Members' && <Members fromDate={range.from} />}
           {tab === 'Sources' && <Sources />}
         </main>
       </div>

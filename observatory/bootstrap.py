@@ -42,6 +42,17 @@ SERIES = [
     ("structure.employment", "Employment (SBS)", "structure",
      "Persons employed, NACE in band field (C2013 / C20)."),
     ("structure.enterprises", "Number of enterprises (SBS)", "structure", ""),
+    # --- Euro Chlor member survey series (redistribution_class='licensed') ---
+    ("production.caustic_production", "Caustic soda production (member data)", "production",
+     "Monthly, Euro Chlor member survey — not published publicly."),
+    ("production.tech_share", "Production share by electrolysis technology", "production",
+     "Annual survey; band = technology."),
+    ("consumption.cl2_by_use", "Chlorine consumption by application", "consumption",
+     "Annual survey; band = application."),
+    ("consumption.cl2_apparent", "Chlorine apparent consumption", "consumption",
+     "Annual survey, by country group."),
+    ("consumption.naoh_apparent", "Caustic soda apparent consumption", "consumption",
+     "Annual survey, by country group."),
 ]
 
 GEOS = [
