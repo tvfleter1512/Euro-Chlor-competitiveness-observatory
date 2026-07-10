@@ -27,6 +27,7 @@ export default function App() {
   const [range, setRange] = useState(RANGES[0])
   const [basket, setBasket] = useState([])
   const [product, setProduct] = useState(null)
+  const [basis, setBasis] = useState('value')   // Trade tab: € value vs tonnage
   const [kpi, setKpi] = useState({})
 
   useEffect(() => {
@@ -100,6 +101,19 @@ export default function App() {
                 <button key={r.label} style={pill(range.label === r.label)}
                         onClick={() => setRange(r)}>{r.label}</button>
               ))}
+              {tab === 'Trade' && (
+                <span style={{ display: 'inline-flex', gap: 4, padding: 3, borderRadius: 999,
+                               background: theme.surface, border: `1px solid ${theme.border}` }}>
+                  {[['value', '€ value'], ['volume', 'tonnes']].map(([key, label]) => (
+                    <button key={key} onClick={() => setBasis(key)} style={{
+                      padding: '4px 12px', fontSize: 12, cursor: 'pointer', borderRadius: 999,
+                      border: 'none', fontFamily: FONT, fontWeight: 600,
+                      background: basis === key ? theme.accent : 'transparent',
+                      color: basis === key ? '#fff' : theme.inkSecondary,
+                    }}>{label}</button>
+                  ))}
+                </span>
+              )}
               {PRODUCT_TABS.includes(tab) && basket.length > 0 && (
                 <select value={product || ''} onChange={e => setProduct(e.target.value)}
                   style={{ padding: '7px 12px', fontSize: 12.5, fontFamily: FONT,
@@ -134,7 +148,7 @@ export default function App() {
 
           {tab === 'Electricity' && <Electricity fromDate={range.from} />}
           {tab === 'Trade' && (
-            <Trade fromDate={range.from} product={product}
+            <Trade fromDate={range.from} product={product} basis={basis}
                    productLabel={selected?.name || product} confirmed={selected?.confirmed} />
           )}
           {tab === 'Dependency' && (
