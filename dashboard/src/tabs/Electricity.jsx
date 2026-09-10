@@ -8,6 +8,7 @@ const BAND = 'MWH_GE150000'   // largest Eurostat band — chlor-alkali scale
 const TAX = 'X_VAT'           // excl. recoverable VAT, incl. non-recoverable levies
 const COMPARATORS = ['EU27_2020', 'US', 'CN', 'GULF', 'IN']
 const EU_DETAIL = ['EU27_2020', 'DE', 'FR', 'NL', 'BE', 'ES', 'IT', 'PL']
+const WHOLESALE_ZONES = ['DE_LU', 'FR', 'NL', 'BE']   // ENTSO-E bidding zones ingested
 
 // Align monthly/annual comparator series onto the EU semester grid
 // (mirrors the benchmarking agent's alignment, for display only).
@@ -56,6 +57,7 @@ export default function Electricity({ fromDate }) {
   const [rows, setRows] = useState(null)
   const [ratios, setRatios] = useState(null)
   const [costGap, setCostGap] = useState(null)
+  const [wholesale, setWholesale] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -64,10 +66,12 @@ export default function Electricity({ fromDate }) {
       fetchSeries({ series_id: 'power.industrial_delivered', geo: 'US', from: fromDate }),
       fetchIndicators({ indicator_id: 'electricity_cost_ratio' }),
       fetchIndicators({ indicator_id: 'cost_gap' }),
-    ]).then(([eu, us, ind, gap]) => {
+      fetchSeries({ series_id: 'power.wholesale_day_ahead', from: fromDate }),
+    ]).then(([eu, us, ind, gap, spot]) => {
       setRows([...eu.rows, ...toSemesters(us.rows)])
       setRatios(ind.rows.filter(r => !fromDate || r.period_start >= fromDate))
       setCostGap(gap.rows.filter(r => !fromDate || r.period_start >= fromDate))
+      setWholesale(spot.rows)
     }).catch(e => setError(String(e)))
   }, [fromDate])
 
@@ -146,6 +150,7 @@ export default function Electricity({ fromDate }) {
 
   const cmp = pivotOption(comparatorRows, COMPARATORS, theme, '€/MWh')
   const detail = pivotOption(detailRows, EU_DETAIL, theme, '€/MWh')
+  const spot = pivotOption(wholesale, WHOLESALE_ZONES, theme, '€/MWh')
 
   return (
     <>
@@ -167,6 +172,15 @@ export default function Electricity({ fromDate }) {
           missing.length ? ` Awaiting data: ${missing.map(g => GEO_LABEL[g]).join(', ')}.` : ''}`}
         right={<Legend items={cmp.present.map(g => ({ label: GEO_LABEL[g] || g, color: theme.series[GEO_SLOT[g]] }))} />}>
         <EChart option={cmp.option} height={320} theme={theme} />
+      </Card>
+
+      <Card sourceRows={wholesale}
+        title="Wholesale day-ahead electricity price — monthly average"
+        subtitle="ENTSO-E day-ahead auction, monthly average of hourly prices per bidding zone. Wholesale energy only — not comparable with the delivered price above, which adds network costs and levies."
+        right={<Legend items={spot.present.map(g => ({ label: GEO_LABEL[g] || g, color: theme.series[GEO_SLOT[g]] }))} />}>
+        {spot.present.length
+          ? <EChart option={spot.option} height={280} theme={theme} />
+          : <EmptyState>No wholesale prices yet — the ENTSO-E agent has not reported.</EmptyState>}
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>

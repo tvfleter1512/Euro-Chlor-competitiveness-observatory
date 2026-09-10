@@ -46,12 +46,14 @@ export const DARK = {
 export const GEO_SLOT = {
   EU27_2020: 's1', US: 's2', CN: 's3', GULF: 's4', IN: 's5',
   DE: 's2', FR: 's3', NL: 's4', BE: 's5', ES: 's6', IT: 's7', PL: 's8',
+  DE_LU: 's2',   // ENTSO-E bidding zone; same entity colour as Germany
 }
 
 export const GEO_LABEL = {
   EU27_2020: 'EU27', US: 'United States', CN: 'China', GULF: 'Gulf (GCC)', IN: 'India',
   DE: 'Germany', FR: 'France', NL: 'Netherlands', BE: 'Belgium',
   ES: 'Spain', IT: 'Italy', PL: 'Poland', EXTRA_EU: 'Extra-EU', WORLD: 'World',
+  DE_LU: 'Germany-Luxembourg',
 }
 
 // Fixed product-key -> slot order (stable across sessions; from basket order)
