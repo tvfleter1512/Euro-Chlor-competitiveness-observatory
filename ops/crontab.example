@@ -17,6 +17,7 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 
 # Comext trade — monthly, after the mid-month reference-period update
 0 8 16 * *   $P --agent comext_trade
+30 8 16 * *  $P --agent comext_suppliers
 
 # UN Comtrade — monthly (annual data, but reporters trickle in)
 15 8 17 * *  $P --agent comtrade_trade
@@ -24,6 +25,7 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 # File-drop agents — daily pickup of any new curated/member files
 0 7 * * *    $P --agent proxy_power
 5 7 * * *    $P --agent eurochlor_drop
+10 7 * * *   $P --agent eurochlor_members
 
 # Euro Chlor public monthly stats — first-of-month posts land early each month
 30 8 * * 1   $P --agent eurochlor_web
@@ -41,6 +43,9 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 # PRODCOM + SBS (annual releases) — monthly check is ample
 20 9 7 * *   $P --agent prodcom
 30 9 7 * *   $P --agent eurostat_sbs
+
+# Bring Postgres + API back after a reboot
+@reboot      cd /home/tva/Euro-Chlor-competitiveness-observatory && nohup ops/start.sh >> logs_api.log 2>&1 &
 
 # Recompute all indicators nightly (fast; depends on everything above)
 0 22 * * *   $P --benchmarks
