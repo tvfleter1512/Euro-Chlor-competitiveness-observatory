@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LIGHT, DARK, ThemeContext, FONT } from './theme'
 import { fetchSeries, fetchIndicators, fetchHealth, fetchProducts, fetchMode } from './api'
 import { StatTile } from './components'
-import Sidebar from './Sidebar'
+import Header from './Header'
 import Electricity from './tabs/Electricity'
 import Trade from './tabs/Trade'
 import Dependency from './tabs/Dependency'
@@ -12,6 +12,15 @@ import Sources from './tabs/Sources'
 
 const PRODUCT_TABS = ['Trade', 'Dependency']
 const OWN_KPI_TABS = ['Trade', 'Dependency', 'Industry']   // tabs with their own tile row
+
+const SUBTITLE = {
+  Electricity: 'Delivered and wholesale power prices, EU versus comparator regions',
+  Trade: 'Extra-EU trade in the chlor-alkali product basket',
+  Dependency: 'Import dependency and disruption risk, Commission CDI method',
+  Industry: 'Production, utilisation, prices and margin proxies',
+  Members: 'Euro Chlor member survey data — restricted',
+  Sources: 'Source health, product basket and reference library',
+}
 
 const RANGES = [
   { label: 'Since 2015', from: '2015-01-01' },
@@ -75,44 +84,55 @@ export default function App() {
     }).catch(() => {})
   }, [])
 
+  // Filter controls sit on the navy band: translucent white at rest, brand yellow when active.
   const pill = (active) => ({
     padding: '7px 15px', fontSize: 12.5, cursor: 'pointer', borderRadius: 999,
-    border: `1px solid ${active ? theme.accent : theme.border}`,
-    background: active ? theme.accent : theme.surface,
-    color: active ? '#fff' : theme.inkSecondary, fontFamily: FONT, fontWeight: 550,
+    border: `1px solid ${active ? theme.highlight : 'rgba(255,255,255,0.28)'}`,
+    background: active ? theme.highlight : 'rgba(255,255,255,0.10)',
+    color: active ? theme.highlightText : '#fff', fontFamily: FONT, fontWeight: 600,
   })
 
   const selected = basket.find(b => b.product_code === product)
   const pct = (d) => d == null ? null : `${d >= 0 ? '' : '-'}${Math.abs(d).toFixed(1)} %`
 
+  const wrap = { maxWidth: 1320, margin: '0 auto', padding: '0 32px' }
+
   return (
     <ThemeContext.Provider value={theme}>
-      <div style={{ display: 'flex', minHeight: '100vh', background: theme.page, fontFamily: FONT }}>
-        <Sidebar tab={tab} setTab={setTab} dark={dark} setDark={setDark} memberMode={memberMode} />
+      <div style={{ minHeight: '100vh', background: theme.page, fontFamily: FONT,
+                    display: 'flex', flexDirection: 'column' }}>
+        <Header tab={tab} setTab={setTab} dark={dark} setDark={setDark} memberMode={memberMode} />
 
-        <main style={{ flex: 1, padding: '26px 32px', minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <h1 style={{ fontSize: 24, fontWeight: 750, color: theme.ink, margin: 0 }}>{tab}</h1>
-              <div style={{ fontSize: 12.5, color: theme.inkSecondary, marginTop: 2 }}>
+        {/* Title band: page title left, the one filter row scoping every chart right */}
+        <section style={{ background: theme.band, color: '#fff' }}>
+          <div style={{ ...wrap, padding: '30px 32px 26px', display: 'flex', alignItems: 'flex-end',
+                        gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.08em',
+                            textTransform: 'uppercase', color: theme.highlight }}>
                 EU chlor-alkali competitiveness vs world regions
               </div>
+              <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15,
+                           margin: '6px 0 0', color: '#fff' }}>{tab}</h1>
+              <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.78)', marginTop: 6 }}>
+                {SUBTITLE[tab]}
+              </div>
             </div>
-            {/* one filter row scoping every chart */}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               {RANGES.map(r => (
                 <button key={r.label} style={pill(range.label === r.label)}
                         onClick={() => setRange(r)}>{r.label}</button>
               ))}
               {tab === 'Trade' && (
                 <span style={{ display: 'inline-flex', gap: 4, padding: 3, borderRadius: 999,
-                               background: theme.surface, border: `1px solid ${theme.border}` }}>
+                               background: 'rgba(255,255,255,0.10)',
+                               border: '1px solid rgba(255,255,255,0.28)' }}>
                   {[['value', '€ value'], ['volume', 'tonnes']].map(([key, label]) => (
                     <button key={key} onClick={() => setBasis(key)} style={{
                       padding: '4px 12px', fontSize: 12, cursor: 'pointer', borderRadius: 999,
                       border: 'none', fontFamily: FONT, fontWeight: 600,
-                      background: basis === key ? theme.accent : 'transparent',
-                      color: basis === key ? '#fff' : theme.inkSecondary,
+                      background: basis === key ? theme.highlight : 'transparent',
+                      color: basis === key ? theme.highlightText : '#fff',
                     }}>{label}</button>
                   ))}
                 </span>
@@ -120,10 +140,11 @@ export default function App() {
               {PRODUCT_TABS.includes(tab) && basket.length > 0 && (
                 <select value={product || ''} onChange={e => setProduct(e.target.value)}
                   style={{ padding: '7px 12px', fontSize: 12.5, fontFamily: FONT,
-                           background: theme.surface, color: theme.ink, fontWeight: 550,
-                           border: `1px solid ${theme.border}`, borderRadius: 999 }}>
+                           background: 'rgba(255,255,255,0.10)', color: '#fff', fontWeight: 600,
+                           border: '1px solid rgba(255,255,255,0.28)', borderRadius: 999 }}>
                   {basket.map(b => (
-                    <option key={b.product_code} value={b.product_code}>
+                    <option key={b.product_code} value={b.product_code}
+                            style={{ color: theme.ink, background: theme.surface }}>
                       {b.name} ({b.product_code})
                     </option>
                   ))}
@@ -131,7 +152,10 @@ export default function App() {
               )}
             </div>
           </div>
+        </section>
 
+        <main style={{ ...wrap, flex: 1, width: '100%', boxSizing: 'border-box',
+                       padding: '26px 32px 40px' }}>
           {!OWN_KPI_TABS.includes(tab) && (
             <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
               <StatTile icon="⚡" label="EU delivered power price"
@@ -161,6 +185,14 @@ export default function App() {
           {tab === 'Members' && <Members fromDate={range.from} />}
           {tab === 'Sources' && <Sources />}
         </main>
+
+        <footer style={{ borderTop: `1px solid ${theme.border}`, background: theme.header }}>
+          <div style={{ ...wrap, padding: '16px 32px', fontSize: 11.5, color: theme.inkMuted,
+                        display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+            <span>Euro Chlor Competitiveness Observatory · {memberMode ? 'Member view' : 'Model A — public data only'}</span>
+            <span>Provenance-first: figures without a source do not render.</span>
+          </div>
+        </footer>
       </div>
     </ThemeContext.Provider>
   )

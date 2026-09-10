@@ -7,7 +7,7 @@ export function Card({ title, subtitle, children, sourceRows, right }) {
   return (
     <div style={{
       background: theme.surface, border: `1px solid ${theme.border}`,
-      borderRadius: 16, padding: '20px 24px 14px', boxShadow: theme.shadow,
+      borderRadius: 12, padding: '20px 24px 14px', boxShadow: theme.shadow,
       marginBottom: 20,
     }}>
       {(title || right) && (
@@ -63,13 +63,13 @@ export function StatTile({ label, value, delta, deltaGood, icon, note }) {
   return (
     <div style={{
       background: theme.surface, border: `1px solid ${theme.border}`,
-      borderRadius: 16, padding: '16px 20px', boxShadow: theme.shadow, flex: 1, minWidth: 190,
+      borderRadius: 12, padding: '16px 20px', boxShadow: theme.shadow, flex: 1, minWidth: 190,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
-          width: 26, height: 26, borderRadius: 8, background: theme.accentSoft,
+          width: 26, height: 26, borderRadius: 8, background: theme.highlight,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          color: theme.accentText, fontSize: 13,
+          color: theme.highlightText, fontSize: 13,
         }}>{icon}</span>
         <span style={{ fontSize: 12.5, color: theme.inkSecondary }}>{label}</span>
       </div>

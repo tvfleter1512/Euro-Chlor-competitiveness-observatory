@@ -4,6 +4,7 @@ Dormant until ENTSOE_TOKEN is set. Hourly prices aggregated to monthly averages
 per bidding zone at ingestion. Kept strictly separate from the delivered series:
 series_id 'power.wholesale_day_ahead', price_basis 'wholesale' (spec: never conflate).
 """
+import time
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -47,7 +48,13 @@ class EntsoePowerAgent(IngestionAgent):
                         "periodStart": f"{year}01010000",
                         "periodEnd": f"{year}12312300",
                     }
-                    resp = client.get(URL, params=params)
+                    # ENTSO-E intermittently answers 400 to a request it accepts
+                    # seconds later; one flake must not fail the whole 4x12-year run.
+                    for attempt in range(3):
+                        resp = client.get(URL, params=params)
+                        if resp.status_code < 400 or attempt == 2:
+                            break
+                        time.sleep(10 * (attempt + 1))
                     resp.raise_for_status()
                     url_masked = str(resp.request.url).replace(ENTSOE_TOKEN, "***")
                     payloads.append((url_masked, {"zone": zone["geo_id"], "xml": resp.text}))
