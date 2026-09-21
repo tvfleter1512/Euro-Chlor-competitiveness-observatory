@@ -37,7 +37,7 @@ def format_digest(alerts, now):
     # one line per product/flow/partner: the strongest hit, plus the other periods/tests
     groups = {}
     for a in alerts:
-        key = (a["product_code"], a["flow"], a["partner_geo_id"])
+        key = (a["kind"], a["product_code"], a["flow"], a["partner_geo_id"])
         g = groups.setdefault(key, {"lead": a, "others": []})
         lead = g["lead"]
         stronger = (a["severity"] == "high" and lead["severity"] != "high") or \
@@ -56,17 +56,23 @@ def format_digest(alerts, now):
         name = (a["partner_name"] or a["partner_geo_id"]).split(" (")[0]   # Comext's long names
         partner = "all extra-EU partners" if a["partner_geo_id"] == "EXTRA_EU" \
             else f"{name} ({a['partner_geo_id']})"
-        base = inp.get("baseline_t") or 0
-        ratio = inp.get("ratio")
-        vs = "new origin/destination (nothing in the previous 12 months)" \
-            if inp.get("new_origin") else f"x{ratio:.1f} the previous 12-month mean of {_kt(base)}"
         share = inp.get("share")
         share_txt = f", {share * 100:.0f} % of extra-EU {a['flow']}s" if share else ""
         also = "; also " + ", ".join(sorted({f"{o['period']} ({TEST_LABEL[o['test']]})"
                                              for o in g["others"]})) if g["others"] else ""
+        if a["kind"] == "trade_price_drop":
+            what = (f"PRICE DROP: {float(a['value']):,.0f} EUR/t, -{inp['drop'] * 100:.0f} % vs the "
+                    f"previous 12-month unit value of {inp['baseline_uv']:,.0f} EUR/t, on "
+                    f"{_kt(inp['quantity_t'])}{share_txt}")
+        else:
+            base = inp.get("baseline_t") or 0
+            ratio = inp.get("ratio")
+            vs = "new origin/destination (nothing in the previous 12 months)" \
+                if inp.get("new_origin") else f"x{ratio:.1f} the previous 12-month mean of {_kt(base)}"
+            what = f"VOLUME: {_kt(a['value'])}, {vs}{share_txt}"
         lines.append(f"- **{a['severity'].upper()}** {a['product_name']} ({a['product_code']}) — "
                      f"{FLOW_LABEL[a['flow']]} {partner}, {a['period']} "
-                     f"({TEST_LABEL[a['test']]}): {_kt(a['value'])}, {vs}{share_txt}{also}.")
+                     f"({TEST_LABEL[a['test']]}): {what}{also}.")
     lines += ["", "Method: config/surges.yaml (thresholds not yet owner-confirmed). "
               "Comext revises the latest months; re-check before informing members."]
     return "\n".join(lines)

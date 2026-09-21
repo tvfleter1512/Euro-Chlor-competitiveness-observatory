@@ -30,6 +30,21 @@ severity:
   high_ratio: 4.0
   high_share: 0.30
 
+# Unit-value (EUR/t) drop screen on the same grid: the partner's tonnage-weighted
+# unit value in the latest month (or latest 3 months) vs its own previous 12 months.
+# Same materiality floors as the volume screen, applied to both the window and the
+# baseline, so a price fall on a trivial or brand-new flow stays silent.
+price:
+  partner:
+    month:   { drop: 0.20, min_t: 5000, min_share: 0.10 }
+    quarter: { drop: 0.15, min_t: 5000, min_share: 0.10 }
+  aggregate:
+    month:   { drop: 0.15, min_t: 10000 }
+    quarter: { drop: 0.10, min_t: 10000 }
+  severity:
+    high_drop: 0.35
+    high_share: 0.30
+
 # alerts are raised for hits in the latest N periods of each product/flow grid;
 # older hits stay visible as trade_surge indicator rows only
 alert_window_months: 3

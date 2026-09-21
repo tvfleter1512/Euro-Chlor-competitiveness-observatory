@@ -140,32 +140,38 @@ def trade_partners(product: str, flow: str, series_id: str = "trade.quantity",
     """Monthly extra-EU flow by partner: top-N partners (by last-12-month sum) + Other,
     plus latest-month screening statistics per partner (same maths as the surge detector)."""
     from observatory.processing.surges import EU_MEMBERS, partner_stats
-    table = "v_series_latest" if MEMBER_MODE else "v_series_latest_public"
-    q = f"""SELECT partner_geo_id, period, period_start, value, source, source_dataset,
+    # latest vintage per partner-month, scoped BEFORE deduping: v_series_latest sorts the
+    # whole table first (~4 s per call); this uses idx_fact_series_trade (~50 ms)
+    public_only = "" if MEMBER_MODE else " AND redistribution_class = 'public'"
+    q = f"""SELECT DISTINCT ON (partner_geo_id, period)
+                   partner_geo_id, period, period_start, value, source, source_dataset,
                    retrieved_at, quality_flag
-            FROM {table}
+            FROM fact_series
             WHERE series_id = %s AND geo_id = 'EU27_2020' AND product_code = %s
-              AND flow = %s AND period LIKE '%%-%%'"""
+              AND flow = %s AND period LIKE '%%-%%'{public_only}
+            ORDER BY partner_geo_id, period, run_id DESC"""
     with db.get_conn() as conn:
         rows = conn.execute(q, (series_id, product, flow)).fetchall()
-        # screening statistics are ALWAYS on tonnes — the detector's thresholds are
-        # tonnage floors, so the table must agree with the alerts whatever the chart shows
-        qty_rows = rows if series_id == "trade.quantity" \
-            else conn.execute(q, ("trade.quantity", product, flow)).fetchall()
+        # screening statistics are ALWAYS on tonnes and EUR/t — the detector's floors
+        # are tonnage — so the table agrees with the alerts whatever the chart shows
+        both = {s: (rows if s == series_id else conn.execute(q, (s, product, flow)).fetchall())
+                for s in ("trade.quantity", "trade.value")}
         names = {r["geo_id"]: (r["name"] or r["geo_id"]).split(" (")[0]   # Comext's long names
                  for r in conn.execute("SELECT geo_id, name FROM dim_geo").fetchall()}
     excluded = set(load_config("surges")["excluded_partners"]) | EU_MEMBERS
 
-    def pivot(rs):
-        out: dict[str, dict] = {}
-        for r in rs:
-            out.setdefault(r["partner_geo_id"], {})[r["period"]] = float(r["value"])
-        return out
-    by_partner, by_partner_t = pivot(rows), pivot(qty_rows)
+    by_partner: dict[str, dict] = {}
+    for r in rows:
+        by_partner.setdefault(r["partner_geo_id"], {})[r["period"]] = float(r["value"])
+    by_partner_qv: dict[str, dict] = {}          # {partner: {period: (tonnes, eur)}}
+    for slot, s in ((0, "trade.quantity"), (1, "trade.value")):
+        for r in both[s]:
+            cell = by_partner_qv.setdefault(r["partner_geo_id"], {}).setdefault(r["period"], [0.0, 0.0])
+            cell[slot] = float(r["value"])
     months = sorted(by_partner.get("EXTRA_EU", {}))
     if not months:
         return {"periods": [], "series": [], "other": [], "total": [], "stats": []}
-    stats = partner_stats(by_partner_t, sorted(by_partner_t.get("EXTRA_EU", {})))
+    stats = partner_stats(by_partner_qv, sorted(by_partner_qv.get("EXTRA_EU", {})))
     last12 = set(months[-12:])
     ranked = sorted((p for p in by_partner if p not in excluded),
                     key=lambda p: -sum(v for m, v in by_partner[p].items() if m in last12))

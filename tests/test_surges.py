@@ -37,3 +37,34 @@ def test_gradual_rise_is_caught_by_the_quarter_test():
     hits = screen(values, TOTALS, CFG, SEV)
     tests = {h["test"] for h in hits}
     assert "quarter" in tests and "month" not in tests
+
+
+from observatory.processing.surges import screen_price
+
+PCFG = {"month": {"drop": 0.20, "min_t": 5000, "min_share": 0.10},
+        "quarter": {"drop": 0.15, "min_t": 5000, "min_share": 0.10}}
+PSEV = {"high_drop": 0.35, "high_share": 0.30}
+
+
+def test_price_drop_on_material_flow_is_a_hit():
+    qty = [20_000] * 24
+    val = [20_000 * 900] * 23 + [20_000 * 600]      # 900 -> 600 EUR/t, -33 %
+    hits = screen_price(qty, val, TOTALS, PCFG, PSEV)
+    month = [h for h in hits if h["test"] == "month"]
+    assert len(month) == 1 and month[0]["index"] == 23
+    assert abs(month[0]["drop"] - 1 / 3) < 1e-9 and month[0]["severity"] == "medium"
+
+
+def test_price_drop_without_baseline_or_volume_is_silent():
+    qty = [0] * 23 + [20_000]                         # new origin: no price baseline
+    val = [0] * 23 + [20_000 * 500]
+    assert screen_price(qty, val, TOTALS, PCFG, PSEV) == []
+    qty = [2_000] * 24                                # below the tonnage floor
+    val = [2_000 * 900] * 23 + [2_000 * 400]
+    assert screen_price(qty, val, TOTALS, PCFG, PSEV) == []
+
+
+def test_small_price_move_is_silent():
+    qty = [20_000] * 24
+    val = [20_000 * 900] * 23 + [20_000 * 800]        # -11 %
+    assert screen_price(qty, val, TOTALS, PCFG, PSEV) == []

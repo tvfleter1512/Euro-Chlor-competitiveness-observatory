@@ -20,7 +20,8 @@ const BASIS = {
 }
 
 const FLOW_LABEL = { import: 'Imports by origin', export: 'Exports by destination' }
-const TEST_LABEL = { month: 'latest month', quarter: '3-month average' }
+const TEST_LABEL = { month: 'latest month', quarter: '3-month average', price: 'unit value' }
+const KIND_LABEL = { trade_surge: 'Volume rise', trade_price_drop: 'Price drop' }
 
 // last-12-months vs previous-12-months sums, per flow, from monthly series rows
 function windowSums(rows) {
@@ -44,7 +45,7 @@ const x = r => r == null ? '—' : `×${r >= 10 ? r.toFixed(0) : r.toFixed(1)}`
 function groupAlerts(rows) {
   const groups = new Map()
   for (const a of rows) {
-    const key = `${a.product_code}|${a.flow}|${a.partner_geo_id}`
+    const key = `${a.kind}|${a.product_code}|${a.flow}|${a.partner_geo_id}`
     const g = groups.get(key)
     if (!g) { groups.set(key, { lead: a, periods: new Set([a.period]) }); continue }
     g.periods.add(a.period)
@@ -266,15 +267,16 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
       )}
 
       <Card title="Trade alerts — sudden rises by partner"
-        subtitle="Extra-EU tonnage screened after every Comext update: latest month vs the previous 12 (must exceed 2.5× the mean and 1.5× the maximum) and 3-month average vs the previous 12 (1.75×), with 5 kt and 10 % share floors. Thresholds in config/surges.yaml, pending owner confirmation. Click a row to open that product.">
+        subtitle="Screened after every Comext update. Volume: latest month vs the previous 12 (must exceed 2.5× the mean and 1.5× the maximum) or 3-month average vs the previous 12 (1.75×). Price: the partner's unit value (€/t) down 20 % (month) or 15 % (3-month) vs its own previous 12 months. Both need 5 kt and a 10 % share. Thresholds in config/surges.yaml, pending owner confirmation. Click a row to open that product.">
         {alertGroups.length ? (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead><tr>
                 <th style={{ ...th, textAlign: 'left' }}>Severity</th>
+                <th style={{ ...th, textAlign: 'left' }}>Type</th>
                 <th style={{ ...th, textAlign: 'left' }}>Product</th>
                 <th style={{ ...th, textAlign: 'left' }}>Flow · partner</th>
-                <th style={th}>Period</th><th style={th}>Tonnes</th><th style={th}>vs 12-m mean</th>
+                <th style={th}>Period</th><th style={th}>Level</th><th style={th}>vs previous 12 m</th>
                 <th style={th}>Share</th><th style={{ ...th, textAlign: 'left' }}>Test</th>
               </tr></thead>
               <tbody>
@@ -286,14 +288,15 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
                         onClick={() => { setProduct?.(a.product_code); setPflow(a.flow) }}
                         style={{ cursor: 'pointer', background: mine ? theme.accentSoft : 'transparent' }}>
                       <td style={{ ...td, textAlign: 'left' }}><span style={chip(a.severity)}>{a.severity}</span></td>
+                      <td style={{ ...td, textAlign: 'left', color: theme.inkSecondary }}>{KIND_LABEL[a.kind] || a.kind}</td>
                       <td style={{ ...td, textAlign: 'left', fontWeight: mine ? 650 : 500 }}>{a.product_name}</td>
                       <td style={{ ...td, textAlign: 'left' }}>
                         {a.flow === 'import' ? 'from' : 'to'}{' '}
                         {a.partner_geo_id === 'EXTRA_EU' ? 'all extra-EU' : `${a.partner_name} (${a.partner_geo_id})`}
                       </td>
                       <td style={td}>{a.period}{periods.size > 1 ? ` +${periods.size - 1}` : ''}</td>
-                      <td style={td}>{fmtKt(Number(a.value))}</td>
-                      <td style={td}>{inp.new_origin ? 'new' : x(inp.ratio)}</td>
+                      <td style={td}>{a.kind === 'trade_price_drop' ? `${Number(a.value).toFixed(0)} €/t on ${fmtKt(inp.quantity_t)}` : fmtKt(Number(a.value))}</td>
+                      <td style={{ ...td, color: a.kind === 'trade_price_drop' ? theme.bad : theme.ink }}>{a.kind === 'trade_price_drop' ? `−${(inp.drop * 100).toFixed(0)} % (${Number(inp.baseline_uv).toFixed(0)} €/t)` : inp.new_origin ? 'new' : x(inp.ratio)}</td>
                       <td style={td}>{inp.share == null ? '—' : `${(inp.share * 100).toFixed(0)} %`}</td>
                       <td style={{ ...td, textAlign: 'left', color: theme.inkSecondary }}>{TEST_LABEL[a.test]}</td>
                     </tr>
@@ -328,7 +331,8 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
                   <th style={th}>{partners.latest_period}</th><th style={th}>12-m mean</th>
                   <th style={th}>× mean</th><th style={th}>12-m max</th>
                   <th style={th}>3-m avg</th><th style={th}>× prior 12</th>
-                  <th style={th}>Share</th><th style={{ ...th, textAlign: 'left' }}>Flag</th>
+                  <th style={th}>Share</th><th style={th}>€/t latest</th><th style={th}>€/t 12-m</th><th style={th}>Δ €/t</th>
+                  <th style={{ ...th, textAlign: 'left' }}>Flag</th>
                 </tr></thead>
                 <tbody>
                   {partners.stats.slice(0, 12).map(s => (
@@ -345,6 +349,9 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
                       <td style={td}>{fmtCell(s.avg3)}</td>
                       <td style={{ ...td, color: s.ratio3 >= 1.75 ? theme.bad : theme.ink }}>{x(s.ratio3)}</td>
                       <td style={td}>{s.share == null ? '—' : `${(s.share * 100).toFixed(0)} %`}</td>
+                      <td style={td}>{s.uv == null ? '—' : s.uv.toFixed(0)}</td>
+                      <td style={td}>{s.uv12 == null ? '—' : s.uv12.toFixed(0)}</td>
+                      <td style={{ ...td, color: s.uv_change != null && s.uv_change <= -0.2 ? theme.bad : theme.ink }}>{s.uv_change == null ? '—' : `${s.uv_change >= 0 ? '+' : '−'}${Math.abs(s.uv_change * 100).toFixed(0)} %`}</td>
                       <td style={{ ...td, textAlign: 'left', color: theme.status.critical, fontWeight: 650 }}>
                         {s.flags.map(f => TEST_LABEL[f]).join(', ')}
                       </td>
@@ -353,7 +360,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
                 </tbody>
               </table>
               <div style={{ fontSize: 11, color: theme.inkMuted, marginTop: 6 }}>
-                Screening table in tonnes whatever the €/t toggle shows (the detector's floors are tonnage). Top 12 partners by the latest month; ratios in red exceed the screening thresholds; a flag means the detector fired on that partner within the last three months.
+                Screening table in tonnes and €/t whatever the toggle shows (the detector's floors are tonnage). Top 12 partners by the latest month; ratios in red exceed the screening thresholds; a flag means the detector fired on that partner within the last three months.
               </div>
             </div>
           </>
