@@ -65,6 +65,8 @@ def main() -> None:
     group.add_argument("--benchmarks", action="store_true")
     group.add_argument("--notify", action="store_true",
                        help="send/log the digest of alerts raised since the last notification")
+    group.add_argument("--notify-test", action="store_true",
+                       help="e-mail the current alert window as a delivery test (needs SMTP in .env)")
     group.add_argument("--list", action="store_true")
     args = parser.parse_args()
 
@@ -88,6 +90,8 @@ def main() -> None:
         results = [benchmarking.run()]
     elif args.notify:
         results = [notify.run()]
+    elif args.notify_test:
+        results = [notify.run(test=True)]
     elif args.all:
         results = [a.run() for a in AGENTS]   # isolated: failures don't propagate
         results.append(benchmarking.run())

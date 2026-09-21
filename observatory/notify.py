@@ -91,9 +91,34 @@ def _send_mail(subject, body):
         s.send_message(msg)
 
 
-def run() -> dict:
+def _fetch_current_window(conn):
+    """All alerts of the latest 3 periods, notified or not (delivery test)."""
+    return conn.execute(
+        """SELECT a.*, p.name AS product_name, g.name AS partner_name
+           FROM alert a
+           JOIN dim_product p ON p.product_code = a.product_code
+           LEFT JOIN dim_geo g ON g.geo_id = a.partner_geo_id
+           WHERE a.period >= (SELECT to_char((max(period) || '-01')::date - interval '2 months',
+                                             'YYYY-MM') FROM alert)
+           ORDER BY a.severity, a.product_code, a.flow, a.period DESC, a.partner_geo_id"""
+    ).fetchall()
+
+
+def run(test: bool = False) -> dict:
+    """Send the digest of pending alerts. test=True re-sends the current window by
+    e-mail without marking anything notified — a delivery check, requires SMTP."""
     now = datetime.now(timezone.utc)
     with db.get_conn() as conn:
+        if test:
+            if not (SMTP_HOST and ALERT_TO):
+                return {"agent": "notify", "status": "failed",
+                        "error": "SMTP_HOST / ALERT_TO not set in .env — nothing to test"}
+            alerts = _fetch_current_window(conn)
+            _send_mail(f"[TEST] [Euro Chlor Observatory] {len(alerts)} trade alert(s)",
+                       "Delivery test — these alerts were already notified.\n\n"
+                       + format_digest(alerts, now))
+            return {"agent": "notify", "status": "success", "alerts": len(alerts),
+                    "channel": "email (test)", "to": ALERT_TO}
         alerts = _fetch_pending(conn)
         if not alerts:
             return {"agent": "notify", "status": "success", "alerts": 0}
