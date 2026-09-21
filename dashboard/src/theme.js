@@ -56,6 +56,21 @@ export const GEO_LABEL = {
   DE_LU: 'Germany-Luxembourg',
 }
 
+// Fixed trade-partner -> slot mapping for the by-origin/destination charts. Slots
+// are shared only between partners that do not appear together in the same
+// product's top-6 (checked against 12-month tonnage, Sep 2026). Unmapped partners
+// fall into 'Other'. Colour follows the partner, never its rank.
+export const PARTNER_SLOT = {
+  MX: 's1', CH: 's1', TH: 's1',
+  US: 's2', RU: 's2',
+  CN: 's3', UA: 's3', CA: 's3',
+  NO: 's4', DZ: 's4', MA: 's4',
+  EG: 's5', TR: 's5', MK: 's5',
+  KR: 's6', IN: 's6', BA: 's6',
+  GB: 's7', PK: 's7',
+  TW: 's8', XS: 's8', AL: 's8', TN: 's8',
+}
+
 // Fixed product-key -> slot order (stable across sessions; from basket order)
 export const PRODUCT_SLOTS = ['s1', 's2', 's3', 's5', 's6', 's8', 's7', 's4']
 

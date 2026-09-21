@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { fetchSeries, fetchIndicators, fetchProducts } from '../api'
-import { useTheme, PRODUCT_SLOTS } from '../theme'
+import { fetchSeries, fetchIndicators, fetchProducts, fetchAlerts, fetchTradePartners } from '../api'
+import { useTheme, PRODUCT_SLOTS, PARTNER_SLOT, FONT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, StatTile } from '../components'
 
@@ -19,6 +19,9 @@ const BASIS = {
             listFmt: v => `${(v / 1e3).toFixed(0)} kt` },
 }
 
+const FLOW_LABEL = { import: 'Imports by origin', export: 'Exports by destination' }
+const TEST_LABEL = { month: 'latest month', quarter: '3-month average' }
+
 // last-12-months vs previous-12-months sums, per flow, from monthly series rows
 function windowSums(rows) {
   const months = [...new Set(rows.map(r => r.period))].sort()
@@ -35,8 +38,26 @@ function windowSums(rows) {
 
 const deltaPct = (last, prev) => (prev ? (last - prev) / Math.abs(prev) * 100 : null)
 const pct = d => d == null ? null : `${d >= 0 ? '' : '-'}${Math.abs(d).toFixed(1)} %`
+const x = r => r == null ? '—' : `×${r >= 10 ? r.toFixed(0) : r.toFixed(1)}`
 
-export default function Trade({ fromDate, product, productLabel, confirmed, basis = 'value' }) {
+// one entry per product/flow/partner: strongest (high first, then latest) alert leads
+function groupAlerts(rows) {
+  const groups = new Map()
+  for (const a of rows) {
+    const key = `${a.product_code}|${a.flow}|${a.partner_geo_id}`
+    const g = groups.get(key)
+    if (!g) { groups.set(key, { lead: a, periods: new Set([a.period]) }); continue }
+    g.periods.add(a.period)
+    const stronger = (a.severity === 'high' && g.lead.severity !== 'high') ||
+      (a.severity === g.lead.severity && a.period > g.lead.period)
+    if (stronger) g.lead = a
+  }
+  return [...groups.values()].sort((p, q) =>
+    (p.lead.severity === q.lead.severity ? q.lead.period.localeCompare(p.lead.period)
+      : p.lead.severity === 'high' ? -1 : 1))
+}
+
+export default function Trade({ fromDate, product, productLabel, confirmed, basis = 'value', setProduct }) {
   const theme = useTheme()
   const B = BASIS[basis] || BASIS.value
   const [balances, setBalances] = useState(null)   // {value: rows, volume: rows} for product
@@ -44,6 +65,9 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
   const [penetration, setPenetration] = useState(null)
   const [allBalances, setAllBalances] = useState(null)  // {value, volume} all products
   const [basket, setBasket] = useState([])
+  const [pflow, setPflow] = useState('import')      // partner section: imports | exports
+  const [partners, setPartners] = useState(null)
+  const [alerts, setAlerts] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -54,6 +78,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
     ]).then(([v, q]) => setAllBalances({ value: v.rows, volume: q.rows })).catch(() => {})
     fetchIndicators({ indicator_id: 'import_penetration' })
       .then(d => setPenetration(d.rows)).catch(() => {})
+    fetchAlerts(6).then(d => setAlerts(d.rows)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -70,6 +95,13 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
       setKpiRows({ qty: qty.rows, val: val.rows })
     }).catch(e => setError(String(e)))
   }, [product])
+
+  useEffect(() => {
+    if (!product) return
+    setPartners(null)
+    fetchTradePartners({ product, flow: pflow, series_id: B.series, top: 6, from: fromDate })
+      .then(setPartners).catch(e => setError(String(e)))
+  }, [product, pflow, basis, fromDate])
 
   const balance = useMemo(() => {
     if (!balances) return null
@@ -127,6 +159,30 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
     }
   }, [flows, theme, basis])
 
+  // by-partner stacked bars: top-6 partners in fixed entity colours + Other
+  const partnerColor = geo => PARTNER_SLOT[geo] ? theme.series[PARTNER_SLOT[geo]] : theme.inkMuted
+  const partnerOption = useMemo(() => {
+    if (!partners?.periods?.length) return null
+    const base = baseOption(theme)
+    const stack = (name, data, color, last) => ({
+      name, type: 'bar', stack: 'flow', data, barMaxWidth: 26, barCategoryGap: '25%',
+      itemStyle: { color, borderColor: theme.surface, borderWidth: 1,
+                   borderRadius: last ? [3, 3, 0, 0] : 0 },
+      emphasis: { focus: 'series' },
+    })
+    return {
+      ...base,
+      xAxis: { ...base.xAxis, data: partners.periods },
+      yAxis: { ...base.yAxis, axisLabel: { ...base.yAxis.axisLabel, formatter: B.axis } },
+      tooltip: { ...base.tooltip, axisPointer: { type: 'shadow' }, order: 'seriesDesc',
+                 valueFormatter: v => v == null ? '—' : B.fmt(Number(v)) },
+      series: [
+        ...partners.series.map(s => stack(s.name, s.values, partnerColor(s.geo), false)),
+        stack('Other', partners.other, theme.inkMuted, true),
+      ],
+    }
+  }, [partners, theme, basis])
+
   // ranked net-balance list, last 12 months, all basket products (Flup countries-list style)
   const ranked = useMemo(() => {
     const rows = allBalances?.[basis]
@@ -165,11 +221,31 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
     }
   }, [kpiRows])
 
+  const alertGroups = useMemo(() => groupAlerts(alerts), [alerts])
+
   if (error) return <EmptyState>Failed to load: {error}</EmptyState>
   if (!product || !balances || !kpiRows) return <EmptyState>Loading…</EmptyState>
 
   const unconfirmedNote = confirmed ? '' : ' · ⚠ CN8 code pending human confirmation'
   const maxAbs = ranked ? Math.max(...ranked.items.map(i => Math.abs(i.value)), 1) : 1
+  const sevColor = s => s === 'high' ? theme.status.critical : theme.status.warning
+  const chip = (s) => ({
+    fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
+    padding: '2px 8px', borderRadius: 999, border: `1px solid ${sevColor(s)}`, color: sevColor(s),
+    whiteSpace: 'nowrap',
+  })
+  const toggle = (active) => ({
+    padding: '4px 12px', fontSize: 12, cursor: 'pointer', borderRadius: 999, border: 'none',
+    fontFamily: FONT, fontWeight: 600,
+    background: active ? theme.accent : 'transparent', color: active ? '#fff' : theme.inkSecondary,
+  })
+  const th = { textAlign: 'right', padding: '8px 10px', fontSize: 10.5, color: theme.inkMuted,
+               fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+               borderBottom: `1px solid ${theme.grid}`, whiteSpace: 'nowrap' }
+  const td = { textAlign: 'right', padding: '7px 10px', fontSize: 12.5, color: theme.ink,
+               borderBottom: `1px solid ${theme.grid}`, fontVariantNumeric: 'tabular-nums',
+               whiteSpace: 'nowrap' }
+  const fmtCell = v => v == null ? '—' : fmtKt(Number(v))   // screening table is always tonnes
 
   return (
     <>
@@ -184,11 +260,107 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
           <StatTile icon="←" label="Imports, 12 months"
             value={tiles.imports.value} note="extra-EU, tonnage"
             delta={pct(tiles.imports.delta)} deltaGood={tiles.imports.delta < 0} />
-          <StatTile icon="€" label="Import unit value"
-            value={tiles.unit?.value} note="12-month average"
-            delta={pct(tiles.unit?.delta)} deltaGood={tiles.unit?.delta >= 0} />
+          <StatTile icon="!" label="Open trade alerts"
+            value={String(alertGroups.length)} note="all products, last 6 months" />
         </div>
       )}
+
+      <Card title="Trade alerts — sudden rises by partner"
+        subtitle="Extra-EU tonnage screened after every Comext update: latest month vs the previous 12 (must exceed 2.5× the mean and 1.5× the maximum) and 3-month average vs the previous 12 (1.75×), with 5 kt and 10 % share floors. Thresholds in config/surges.yaml, pending owner confirmation. Click a row to open that product.">
+        {alertGroups.length ? (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+              <thead><tr>
+                <th style={{ ...th, textAlign: 'left' }}>Severity</th>
+                <th style={{ ...th, textAlign: 'left' }}>Product</th>
+                <th style={{ ...th, textAlign: 'left' }}>Flow · partner</th>
+                <th style={th}>Period</th><th style={th}>Tonnes</th><th style={th}>vs 12-m mean</th>
+                <th style={th}>Share</th><th style={{ ...th, textAlign: 'left' }}>Test</th>
+              </tr></thead>
+              <tbody>
+                {alertGroups.map(({ lead: a, periods }) => {
+                  const inp = a.inputs || {}
+                  const mine = a.product_code === product
+                  return (
+                    <tr key={`${a.product_code}${a.flow}${a.partner_geo_id}`}
+                        onClick={() => { setProduct?.(a.product_code); setPflow(a.flow) }}
+                        style={{ cursor: 'pointer', background: mine ? theme.accentSoft : 'transparent' }}>
+                      <td style={{ ...td, textAlign: 'left' }}><span style={chip(a.severity)}>{a.severity}</span></td>
+                      <td style={{ ...td, textAlign: 'left', fontWeight: mine ? 650 : 500 }}>{a.product_name}</td>
+                      <td style={{ ...td, textAlign: 'left' }}>
+                        {a.flow === 'import' ? 'from' : 'to'}{' '}
+                        {a.partner_geo_id === 'EXTRA_EU' ? 'all extra-EU' : `${a.partner_name} (${a.partner_geo_id})`}
+                      </td>
+                      <td style={td}>{a.period}{periods.size > 1 ? ` +${periods.size - 1}` : ''}</td>
+                      <td style={td}>{fmtKt(Number(a.value))}</td>
+                      <td style={td}>{inp.new_origin ? 'new' : x(inp.ratio)}</td>
+                      <td style={td}>{inp.share == null ? '—' : `${(inp.share * 100).toFixed(0)} %`}</td>
+                      <td style={{ ...td, textAlign: 'left', color: theme.inkSecondary }}>{TEST_LABEL[a.test]}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : <EmptyState>No open alerts in the last 6 months.</EmptyState>}
+      </Card>
+
+      <Card sourceRows={flows}
+        title={`${FLOW_LABEL[pflow]} — ${productLabel}`}
+        subtitle={`Monthly extra-EU ${B.label}, top-6 partners by the last 12 months; the rest as Other.${unconfirmedNote}`}
+        right={
+          <span style={{ display: 'inline-flex', gap: 4, padding: 3, borderRadius: 999,
+                         background: theme.page, border: `1px solid ${theme.border}` }}>
+            {[['import', 'Imports'], ['export', 'Exports']].map(([k, l]) => (
+              <button key={k} onClick={() => setPflow(k)} style={toggle(pflow === k)}>{l}</button>
+            ))}
+          </span>
+        }>
+        {partners?.series?.length ? (
+          <>
+            <Legend items={[...partners.series.map(s => ({ label: `${s.name} (${s.geo})`, color: partnerColor(s.geo) })),
+                             { label: 'Other', color: theme.inkMuted }]} />
+            <EChart option={partnerOption} height={300} theme={theme} />
+            <div style={{ overflowX: 'auto', marginTop: 12 }}>
+              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead><tr>
+                  <th style={{ ...th, textAlign: 'left' }}>Partner</th>
+                  <th style={th}>{partners.latest_period}</th><th style={th}>12-m mean</th>
+                  <th style={th}>× mean</th><th style={th}>12-m max</th>
+                  <th style={th}>3-m avg</th><th style={th}>× prior 12</th>
+                  <th style={th}>Share</th><th style={{ ...th, textAlign: 'left' }}>Flag</th>
+                </tr></thead>
+                <tbody>
+                  {partners.stats.slice(0, 12).map(s => (
+                    <tr key={s.geo} style={{ background: s.flags.length ? theme.accentSoft : 'transparent' }}>
+                      <td style={{ ...td, textAlign: 'left' }}>
+                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4,
+                                       background: partnerColor(s.geo), marginRight: 8 }} />
+                        {s.name} <span style={{ color: theme.inkMuted }}>({s.geo})</span>
+                      </td>
+                      <td style={{ ...td, fontWeight: 650 }}>{fmtCell(s.latest)}</td>
+                      <td style={td}>{fmtCell(s.mean12)}</td>
+                      <td style={{ ...td, color: s.ratio >= 2.5 ? theme.bad : theme.ink }}>{x(s.ratio)}</td>
+                      <td style={td}>{fmtCell(s.max12)}</td>
+                      <td style={td}>{fmtCell(s.avg3)}</td>
+                      <td style={{ ...td, color: s.ratio3 >= 1.75 ? theme.bad : theme.ink }}>{x(s.ratio3)}</td>
+                      <td style={td}>{s.share == null ? '—' : `${(s.share * 100).toFixed(0)} %`}</td>
+                      <td style={{ ...td, textAlign: 'left', color: theme.status.critical, fontWeight: 650 }}>
+                        {s.flags.map(f => TEST_LABEL[f]).join(', ')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ fontSize: 11, color: theme.inkMuted, marginTop: 6 }}>
+                Screening table in tonnes whatever the €/t toggle shows (the detector's floors are tonnage). Top 12 partners by the latest month; ratios in red exceed the screening thresholds; a flag means the detector fired on that partner within the last three months.
+              </div>
+            </div>
+          </>
+        ) : partners ? <EmptyState>No partner rows for this product and flow.</EmptyState>
+          : <EmptyState>Loading…</EmptyState>}
+      </Card>
+
       <Card sourceRows={flows}
         title={`Extra-EU trade balance — ${productLabel}`}
         subtitle={`Monthly exports − imports, ${B.label}. Positive = net exporter.${unconfirmedNote}`}>

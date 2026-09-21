@@ -52,6 +52,7 @@ Dashboard: `cd dashboard && npm install && npm run build` (dev: `npm run dev`).
 | `comtrade_trade` (non-EU) | `COMTRADE_KEY` | comtradeplus.un.org free tier |
 | `proxy_power` (CN/Gulf/IN) | curated CSVs | `data/proxy_tariffs/` (see TEMPLATE.csv) |
 | `eurochlor_drop` (Phase 2) | member data CSVs | `data/eurochlor_drop/` (see TEMPLATE.csv) |
+| `notify` (trade-surge e-mails) | `SMTP_HOST`, `SMTP_PORT` (587, STARTTLS), `SMTP_USER`, `SMTP_PASSWORD`, `ALERT_TO` (optional `ALERT_FROM`, `DASHBOARD_URL`) | `.env`; until set, digests go to `logs/alerts-YYYYMM.md` and the Trade tab |
 
 ## Human-confirmable configuration
 
@@ -59,6 +60,8 @@ Dashboard: `cd dashboard && npm install && npm run build` (dev: `npm run dev`).
   against current nomenclature (surfaced on the dashboard's Sources tab).
 - `config/conversions.yaml` — unit/currency conversion registry (ECU composition flagged).
 - `config/indicators.yaml` — versioned indicator formulas, published weights.
+- `config/surges.yaml` — trade-surge alert thresholds (calibration in `docs/surge-backtest.md`),
+  `confirmed: false` until the owner signs them off.
 - `config/source_of_truth.yaml` — per-metric authority hierarchy (§2.2, confirmed).
 
 ## Database

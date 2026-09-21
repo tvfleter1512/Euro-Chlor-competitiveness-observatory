@@ -117,6 +117,74 @@ def indicators(indicator_id: str | None = None,
     return {"count": len(rows), "rows": rows}
 
 
+@app.get("/api/alerts")
+def alerts(months: int = Query(6, le=36)):
+    """Open trade-surge alerts (durable `alert` table), newest first."""
+    with db.get_conn() as conn:
+        rows = conn.execute(
+            """SELECT a.*, p.name AS product_name,
+                      split_part(g.name, ' (', 1) AS partner_name   -- Comext's long names
+               FROM alert a
+               JOIN dim_product p ON p.product_code = a.product_code
+               LEFT JOIN dim_geo g ON g.geo_id = a.partner_geo_id
+               WHERE a.period >= to_char(now() - (%s || ' months')::interval, 'YYYY-MM')
+               ORDER BY a.period DESC, a.severity, a.product_code, a.flow, a.partner_geo_id""",
+            (months,),
+        ).fetchall()
+    return {"count": len(rows), "rows": rows}
+
+
+@app.get("/api/trade/partners")
+def trade_partners(product: str, flow: str, series_id: str = "trade.quantity",
+                   top: int = Query(6, le=12), date_from: date | None = Query(None, alias="from")):
+    """Monthly extra-EU flow by partner: top-N partners (by last-12-month sum) + Other,
+    plus latest-month screening statistics per partner (same maths as the surge detector)."""
+    from observatory.processing.surges import EU_MEMBERS, partner_stats
+    table = "v_series_latest" if MEMBER_MODE else "v_series_latest_public"
+    q = f"""SELECT partner_geo_id, period, period_start, value, source, source_dataset,
+                   retrieved_at, quality_flag
+            FROM {table}
+            WHERE series_id = %s AND geo_id = 'EU27_2020' AND product_code = %s
+              AND flow = %s AND period LIKE '%%-%%'"""
+    with db.get_conn() as conn:
+        rows = conn.execute(q, (series_id, product, flow)).fetchall()
+        # screening statistics are ALWAYS on tonnes — the detector's thresholds are
+        # tonnage floors, so the table must agree with the alerts whatever the chart shows
+        qty_rows = rows if series_id == "trade.quantity" \
+            else conn.execute(q, ("trade.quantity", product, flow)).fetchall()
+        names = {r["geo_id"]: (r["name"] or r["geo_id"]).split(" (")[0]   # Comext's long names
+                 for r in conn.execute("SELECT geo_id, name FROM dim_geo").fetchall()}
+    excluded = set(load_config("surges")["excluded_partners"]) | EU_MEMBERS
+
+    def pivot(rs):
+        out: dict[str, dict] = {}
+        for r in rs:
+            out.setdefault(r["partner_geo_id"], {})[r["period"]] = float(r["value"])
+        return out
+    by_partner, by_partner_t = pivot(rows), pivot(qty_rows)
+    months = sorted(by_partner.get("EXTRA_EU", {}))
+    if not months:
+        return {"periods": [], "series": [], "other": [], "total": [], "stats": []}
+    stats = partner_stats(by_partner_t, sorted(by_partner_t.get("EXTRA_EU", {})))
+    last12 = set(months[-12:])
+    ranked = sorted((p for p in by_partner if p not in excluded),
+                    key=lambda p: -sum(v for m, v in by_partner[p].items() if m in last12))
+    shown = ranked[:top]
+    keep = [m for m in months if not date_from or m >= date_from.strftime("%Y-%m")]
+    series = [{"geo": p, "name": names.get(p, p), "values": [by_partner[p].get(m) for m in keep]}
+              for p in shown]
+    total = [by_partner["EXTRA_EU"].get(m) for m in keep]
+    other = [None if t is None else round(t - sum(by_partner[p].get(m, 0.0) for p in shown), 3)
+             for m, t in zip(keep, total)]
+    for s in stats:
+        s["name"] = names.get(s["geo"], s["geo"])
+    prov = rows[0] if rows else None
+    return {"periods": keep, "series": series, "other": other, "total": total,
+            "latest_period": months[-1], "stats": stats,
+            "provenance": prov and {k: prov[k] for k in ("source", "source_dataset",
+                                                         "retrieved_at", "quality_flag")}}
+
+
 @app.get("/api/fx")
 def fx(currency: str = "USD"):
     with db.get_conn() as conn:

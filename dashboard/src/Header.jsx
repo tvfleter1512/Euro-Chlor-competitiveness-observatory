@@ -24,7 +24,7 @@ const NAV = [
   { id: 'Sources', label: 'Sources & provenance' },
 ]
 
-export default function Header({ tab, setTab, dark, setDark, memberMode }) {
+export default function Header({ tab, setTab, dark, setDark, memberMode, alertCount = 0 }) {
   const theme = useTheme()
 
   return (
@@ -58,6 +58,13 @@ export default function Header({ tab, setTab, dark, setDark, memberMode }) {
               }}>
                 {n.members && <Icon d={ICONS.lock} size={13} />}
                 {n.label}
+                {n.id === 'Trade' && alertCount > 0 && (
+                  <span title={`${alertCount} open trade alert(s)`} style={{
+                    minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999,
+                    background: theme.highlight, color: theme.highlightText,
+                    fontSize: 11, fontWeight: 800, display: 'inline-grid', placeItems: 'center',
+                  }}>{alertCount}</span>
+                )}
               </button>
             )
           })}

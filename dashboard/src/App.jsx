@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { LIGHT, DARK, ThemeContext, FONT } from './theme'
-import { fetchSeries, fetchIndicators, fetchHealth, fetchProducts, fetchMode } from './api'
+import { fetchSeries, fetchIndicators, fetchHealth, fetchProducts, fetchMode, fetchAlerts } from './api'
 import { StatTile } from './components'
 import Header from './Header'
 import Electricity from './tabs/Electricity'
@@ -40,9 +40,13 @@ export default function App() {
   const [basis, setBasis] = useState('value')   // Trade tab: € value vs tonnage
   const [memberMode, setMemberMode] = useState(false)
   const [kpi, setKpi] = useState({})
+  const [alertCount, setAlertCount] = useState(0)
 
   useEffect(() => {
     fetchMode().then(m => setMemberMode(!!m.member_mode)).catch(() => {})
+    // open trade-surge signals: one per product/flow/partner (same grouping as the Trade tab)
+    fetchAlerts(6).then(d => setAlertCount(
+      new Set(d.rows.map(a => `${a.product_code}|${a.flow}|${a.partner_geo_id}`)).size)).catch(() => {})
     fetchProducts().then(p => {
       const cn8 = p.products.filter(x => x.nomenclature === 'CN8')
       setBasket(cn8)
@@ -101,7 +105,8 @@ export default function App() {
     <ThemeContext.Provider value={theme}>
       <div style={{ minHeight: '100vh', background: theme.page, fontFamily: FONT,
                     display: 'flex', flexDirection: 'column' }}>
-        <Header tab={tab} setTab={setTab} dark={dark} setDark={setDark} memberMode={memberMode} />
+        <Header tab={tab} setTab={setTab} dark={dark} setDark={setDark} memberMode={memberMode}
+                alertCount={alertCount} />
 
         {/* Title band: page title left, the one filter row scoping every chart right */}
         <section style={{ background: theme.band, color: '#fff' }}>
@@ -175,7 +180,7 @@ export default function App() {
 
           {tab === 'Electricity' && <Electricity fromDate={range.from} />}
           {tab === 'Trade' && (
-            <Trade fromDate={range.from} product={product} basis={basis}
+            <Trade fromDate={range.from} product={product} basis={basis} setProduct={setProduct}
                    productLabel={selected?.name || product} confirmed={selected?.confirmed} />
           )}
           {tab === 'Dependency' && (

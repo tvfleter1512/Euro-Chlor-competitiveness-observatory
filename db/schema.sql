@@ -162,3 +162,22 @@ SELECT DISTINCT ON (agent)
        agent, run_id, started_at, finished_at, status, rows_ingested, rows_quarantined, notes
 FROM ingestion_run
 ORDER BY agent, run_id DESC;
+
+-- Durable alert state (fact_indicator is rebuilt every benchmarks run, so
+-- 'already notified' lives here). One row per product/flow/partner/period/test.
+CREATE TABLE IF NOT EXISTS alert (
+    alert_id        BIGSERIAL PRIMARY KEY,
+    kind            TEXT    NOT NULL,           -- 'trade_surge'
+    product_code    TEXT    REFERENCES dim_product(product_code),
+    flow            TEXT,
+    partner_geo_id  TEXT    REFERENCES dim_geo(geo_id),
+    period          TEXT    NOT NULL,
+    test            TEXT    NOT NULL,           -- 'month' | 'quarter'
+    severity        TEXT    NOT NULL,           -- 'high' | 'medium'
+    value           NUMERIC NOT NULL,           -- tonnes in the flagged window
+    inputs          JSONB,
+    first_seen      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_seen       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    notified_at     TIMESTAMPTZ,
+    UNIQUE (kind, product_code, flow, partner_geo_id, period, test)
+);

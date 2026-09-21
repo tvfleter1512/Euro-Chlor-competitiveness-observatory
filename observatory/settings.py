@@ -24,6 +24,15 @@ HISTORY_START = int(os.environ.get("HISTORY_START", "2015"))
 # password gates the whole app AND unlocks licensed (member) series
 DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "")
 
+# Alert notifier (observatory/notify.py). Unset SMTP_HOST -> digest goes to logs/ only.
+SMTP_HOST = os.environ.get("SMTP_HOST", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+ALERT_TO = os.environ.get("ALERT_TO", "")
+ALERT_FROM = os.environ.get("ALERT_FROM", "")
+DASHBOARD_URL = os.environ.get("DASHBOARD_URL", "http://10.0.0.150:8300/")
+
 
 @lru_cache(maxsize=None)
 def load_config(name: str) -> dict:

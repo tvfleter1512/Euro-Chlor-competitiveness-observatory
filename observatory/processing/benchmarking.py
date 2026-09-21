@@ -9,7 +9,7 @@ import logging
 from collections import defaultdict
 
 from observatory import db
-from observatory.processing import carbon, dependency, margins, penetration, utilisation
+from observatory.processing import carbon, dependency, margins, penetration, surges, utilisation
 from observatory.processing import normalisation as norm
 from observatory.settings import load_config
 
@@ -146,6 +146,7 @@ def run() -> dict:
             conn.execute("DELETE FROM fact_indicator")
             n = compute_electricity_cost_ratio(conn, run_id, cfg)
             n += compute_trade_balance(conn, run_id, cfg)
+            n += surges.compute(conn, run_id)
             n += dependency.compute(conn, run_id)
             n += margins.compute_gas_spread(conn, run_id, cfg)
             n += margins.compute_ecu_margin(conn, run_id, cfg)

@@ -1,0 +1,38 @@
+# Trade-surge screening — sudden rises in extra-EU imports or exports of a basket
+# product from/to one partner, or of the extra-EU total. Runs with the benchmarks
+# (i.e. right after every Comext ingestion) and feeds the `alert` table + notifier.
+#
+# Two tests per partner series (monthly tonnes, missing months = 0):
+#   month   — latest month vs the previous 12 months: must be >= ratio_vs_mean x the
+#             12-month mean AND >= ratio_vs_max x the 12-month maximum (the max guard
+#             stops lumpy cargo patterns — e.g. one lye vessel a quarter — from firing).
+#   quarter — mean of the latest 3 months vs the mean of the 12 months before them.
+# Both also need an absolute floor (min_t, tonnes per month) and a share floor
+# (min_share of the extra-EU flow in the same window), so a partner going from
+# 0 to 1 kt never alerts. A baseline of zero is a 'new origin' hit if the floors pass.
+#
+# Thresholds calibrated on the 2019-2026 backtest (see docs/surge-backtest.md);
+# confirmed: false until the owner signs them off.
+methodology_version: "v1.0"
+confirmed: false
+
+partner:
+  month:   { ratio_vs_mean: 2.5, ratio_vs_max: 1.5, min_t: 5000, min_share: 0.10 }
+  quarter: { ratio_vs_mean: 1.75, min_t: 5000, min_share: 0.10 }
+
+# The EXTRA_EU aggregate itself (share test not applicable)
+aggregate:
+  month:   { ratio_vs_mean: 1.5, ratio_vs_max: 1.15, min_t: 10000 }
+  quarter: { ratio_vs_mean: 1.3, min_t: 10000 }
+
+# severity 'high' when either holds, else 'medium'
+severity:
+  high_ratio: 4.0
+  high_share: 0.30
+
+# alerts are raised for hits in the latest N periods of each product/flow grid;
+# older hits stay visible as trade_surge indicator rows only
+alert_window_months: 3
+
+# partner codes never screened individually (aggregates, EU members, 'not specified')
+excluded_partners: [EXTRA_EU, INTRA_EU, QA, QP, QR, QS, QV, QW, QY, QZ]

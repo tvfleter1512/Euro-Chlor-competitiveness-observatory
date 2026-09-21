@@ -31,6 +31,7 @@ from observatory.ingestion.eua_price import EUAPriceAgent
 from observatory.ingestion.eurostat_demand import EurostatDemandAgent
 from observatory.ingestion.eurostat_sbs import EurostatSBSAgent
 from observatory.ingestion.prodcom import ProdcomAgent
+from observatory import notify
 from observatory.processing import benchmarking
 
 AGENTS = [  # execution order = dependency order
@@ -62,6 +63,8 @@ def main() -> None:
     group.add_argument("--all", action="store_true")
     group.add_argument("--agent")
     group.add_argument("--benchmarks", action="store_true")
+    group.add_argument("--notify", action="store_true",
+                       help="send/log the digest of alerts raised since the last notification")
     group.add_argument("--list", action="store_true")
     args = parser.parse_args()
 
@@ -83,6 +86,8 @@ def main() -> None:
             results.append(benchmarking.run())
     elif args.benchmarks:
         results = [benchmarking.run()]
+    elif args.notify:
+        results = [notify.run()]
     elif args.all:
         results = [a.run() for a in AGENTS]   # isolated: failures don't propagate
         results.append(benchmarking.run())

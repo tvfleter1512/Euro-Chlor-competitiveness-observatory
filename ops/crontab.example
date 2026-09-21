@@ -15,8 +15,9 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 # Eurostat nrg_pc_205 — semi-annual release; monthly check is ample
 50 7 5 * *   $P --agent eurostat_power
 
-# Comext trade — monthly, after the mid-month reference-period update
-0 8 16 * *   $P --agent comext_trade
+# Comext trade — monthly, after the mid-month reference-period update; the surge
+# screen runs with the benchmarks after every agent, so notify right after it
+0 8 16 * *   $P --agent comext_trade && $P --notify
 30 8 16 * *  $P --agent comext_suppliers
 
 # UN Comtrade — monthly (annual data, but reporters trickle in)
@@ -44,8 +45,9 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 20 9 7 * *   $P --agent prodcom
 30 9 7 * *   $P --agent eurostat_sbs
 
-# Bring Postgres + API back after a reboot
-@reboot      cd /home/tva/Euro-Chlor-competitiveness-observatory && nohup ops/start.sh >> logs_api.log 2>&1 &
+# Postgres + API are managed by the systemd user unit euro-chlor-observatory.service
+# (enabled, restarts on failure) — no @reboot line needed here.
 
 # Recompute all indicators nightly (fast; depends on everything above)
 0 22 * * *   $P --benchmarks
+5 22 * * *   $P --notify
