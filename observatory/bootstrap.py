@@ -73,6 +73,8 @@ SERIES = [
      "Industry Review; share of capacity as FCR/aFRR/mFRR, band = product."),
     ("production.tech_share_capacity", "Installed capacity share by technology", "production",
      "Industry Review; capacity basis (the tech_share series is production basis)."),
+    ("cost.ecu_cash_cost_argus", "ECU cash cost by component (Argus 2023 study)", "structure",
+     "Argus Final Report Fig 5-4, EU4 average, EUR/t ECU; band = power/salt/other/fixed/total. Licensed."),
 ]
 
 GEOS = [
@@ -89,6 +91,7 @@ GEOS = [
     ("NL", "Netherlands", "country"), ("BE", "Belgium", "country"),
     ("ES", "Spain", "country"), ("IT", "Italy", "country"), ("PL", "Poland", "country"),
     ("DE_LU", "Germany-Luxembourg bidding zone", "bidding_zone"),
+    ("EU4", "Germany, France, Belgium, Spain (Argus study average)", "region"),
 ]
 
 

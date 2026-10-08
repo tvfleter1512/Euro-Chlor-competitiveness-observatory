@@ -186,7 +186,7 @@ export default function App() {
           {tab === 'Dependency' && (
             <Dependency product={product} productLabel={selected?.name || product} />
           )}
-          {tab === 'Industry' && <Industry fromDate={range.from} />}
+          {tab === 'Industry' && <Industry fromDate={range.from} memberMode={memberMode} />}
           {tab === 'Members' && <Members fromDate={range.from} />}
           {tab === 'Sources' && <Sources />}
         </main>

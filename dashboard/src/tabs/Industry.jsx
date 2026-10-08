@@ -42,7 +42,57 @@ function simpleLine({ rows, theme, color, unit, valueFmt, height = 240, markAt }
   return <EChart option={option} height={height} theme={theme} />
 }
 
-export default function Industry({ fromDate }) {
+
+// EU4 ECU cash cost: measured power + Argus non-power costs (licensed, member view only)
+const ECU_PARTS = [['power', 'Power (measured)', 's1'], ['salt', 'Salt (Argus)', 's3'],
+                   ['other', 'Other variable (Argus)', 's7'], ['fixed', 'Fixed (Argus)', 's5']]
+
+function EcuCashCostCard({ theme }) {
+  const [rows, setRows] = useState(null)
+  const [argus, setArgus] = useState([])
+  useEffect(() => {
+    Promise.all([
+      fetchIndicators({ indicator_id: 'ecu_cash_cost' }),
+      fetchSeries({ series_id: 'cost.ecu_cash_cost_argus', geo: 'EU4', band: 'total' }),
+    ]).then(([ind, arg]) => { setRows(ind.rows); setArgus(arg.rows) }).catch(() => setRows([]))
+  }, [])
+  const option = useMemo(() => {
+    if (!rows?.length) return null
+    const base = baseOption(theme)
+    const years = [...new Set([...argus.map(r => r.period), ...rows.map(r => r.period)])].sort()
+    const byYear = new Map(rows.map(r => [r.period, r.inputs]))
+    const argusBy = new Map(argus.map(r => [r.period, Number(r.value)]))
+    return {
+      ...base,
+      grid: { ...base.grid, left: 52 },
+      xAxis: { ...base.xAxis, data: years },
+      tooltip: { ...base.tooltip, valueFormatter: v => (v == null ? '–' : `€${Math.round(v)}/t`) },
+      series: [
+        ...ECU_PARTS.map(([k, label, slot]) => ({
+          name: label, type: 'bar', stack: 'ecu', barMaxWidth: 26,
+          data: years.map(y => byYear.get(y)?.[k] ?? null),
+          itemStyle: { color: theme.series[slot] },
+        })),
+        { ...lineSeries('Argus forecast (total)', years.map(y => argusBy.get(y) ?? null), theme.ink, theme),
+          lineStyle: { width: 2, color: theme.ink, type: 'dashed' }, showSymbol: true, symbolSize: 5 },
+      ],
+    }
+  }, [rows, argus, theme])
+  const last = rows?.length ? rows[rows.length - 1] : null
+  return (
+    <Card title="ECU cash cost — measured power vs Argus forecast"
+      subtitle={`EUR per tonne ECU, annual, average of Germany, France, Belgium and Spain. Bars: electricity at the measured Eurostat price (largest band, excluding taxes and levies) × 2.629 MWh, plus Argus' salt, other variable and fixed costs. Dashed line: the Argus 2023 forecast total. Plant-gate cash cost: no freight, depreciation or separate carbon cost. Argus figures are licensed — member view only.${last ? ` ${last.period}: €${Math.round(last.value)}/t against €${Math.round(last.inputs.argus_total)}/t forecast.` : ''}`}
+      sourceRows={[{ source: 'Eurostat nrg_pc_205 + Argus Media Consulting 2023 (licensed)',
+                     source_dataset: 'ecu_cash_cost v1.0', retrieved_at: last?.computed_at, quality_flag: 'estimated' }]}>
+      <Legend items={[...ECU_PARTS.map(([, label, slot]) => ({ label, color: theme.series[slot] })),
+                      { label: 'Argus forecast (total)', color: theme.ink }]} />
+      {option ? <EChart option={option} height={280} theme={theme} />
+        : <EmptyState>{rows ? 'No ECU cash cost yet.' : 'Loading…'}</EmptyState>}
+    </Card>
+  )
+}
+
+export default function Industry({ fromDate, memberMode }) {
   const theme = useTheme()
   const [data, setData] = useState(null)
   const [prodView, setProdView] = useState('absolute')   // production chart: tonnes vs operating rate
@@ -215,9 +265,9 @@ export default function Industry({ fromDate }) {
             : <EmptyState>No gas data.</EmptyState>}
         </Card>
         <Card title="ECU cash-margin proxy"
-          subtitle="What a tonne of chlorine + its co-produced caustic earns over its electricity bill, EUR/ECU, semi-annual. Revenue proxied from extra-EU export unit values (caustic dry-basis + chlorine valued via EDC); cost = delivered power × 2.629 MWh. Excludes carbon and other variable costs — trend/directional use only."
+          subtitle="What a tonne of chlorine + its co-produced caustic earns over its electricity bill, EUR/ECU, semi-annual. Revenue proxied from extra-EU export unit values (caustic dry-basis + chlorine at the EDC price per tonne, an upper bound as it ignores ethylene); cost = delivered power × 2.629 MWh. Excludes carbon and other variable costs — trend/directional use only."
           sourceRows={data.margin?.map(r => ({
-            source: 'Comext unit values + Eurostat power', source_dataset: 'ecu_margin_proxy v1.0',
+            source: 'Comext unit values + Eurostat power', source_dataset: 'ecu_margin_proxy v1.1',
             retrieved_at: r.computed_at, quality_flag: 'estimated',
           })).slice(-1)}>
           {data.margin?.length
@@ -225,6 +275,7 @@ export default function Industry({ fromDate }) {
                            valueFmt: v => `${Number(v).toFixed(0)} €/ECU`, markAt: 0 })
             : <EmptyState>No margin series yet.</EmptyState>}
         </Card>
+        {memberMode && <EcuCashCostCard theme={theme} />}
 
         <Card title="Caustic soda stocks" subtitle={`Monthly tonnes, ${note}.`}
           sourceRows={data.stocks}>

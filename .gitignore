@@ -12,3 +12,4 @@ data/eurochlor_drop/*
 !data/eurochlor_drop/TEMPLATE.csv
 !data/eurochlor_drop/README.md
 logs_api.log
+data/licensed/

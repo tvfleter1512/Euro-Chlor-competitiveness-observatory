@@ -173,7 +173,7 @@ def compute_ecu_margin(conn, run_id: int, cfg: dict) -> int:
         if sem not in caustic_uv or sem not in edc_uv:
             continue
         caustic_dry = caustic_uv[sem] * p["caustic_dry_factor"]
-        cl2_value = edc_uv[sem] * p["cl_mass_fraction_edc"]
+        cl2_value = edc_uv[sem]   # mass allocation: a tonne of Cl2 carries the EDC price per tonne
         revenue = p["naoh_dry_per_ecu"] * caustic_dry + cl2_value
         power_cost = p["mwh_per_ecu"] * float(pw["value"])
         margin = revenue - power_cost
@@ -194,7 +194,72 @@ def compute_ecu_margin(conn, run_id: int, cfg: dict) -> int:
                                   "source_dataset": pw["source_dataset"],
                                   "retrieved_at": str(pw["retrieved_at"])},
                  "trade_source": "Eurostat Comext DS-045409 extra-EU export unit values",
-                 "excludes": "carbon cost (Phase 2), non-power variable costs",
+                 "chlorine_value_basis": p["chlorine_value_basis"],
+                 "excludes": "carbon cost, non-power variable costs, ethylene in EDC",
              }), run_id))
+        n += 1
+    return n
+
+
+def ecu_cash_cost_rows(power: dict, argus: dict, params: dict) -> list[dict]:
+    """Pure core of compute_ecu_cash_cost, for tests.
+
+    power: {country: {period 'YYYY-S1'/'YYYY-S2': EUR/MWh}}
+    argus: {year 'YYYY': {component: EUR/t ECU}}
+    Returns one dict per year where every country has both semesters and Argus
+    has salt/other/fixed.
+    """
+    out = []
+    for year, comp in sorted(argus.items()):
+        if not all(k in comp for k in ("salt", "other", "fixed")):
+            continue
+        annual = {}
+        for c in params["countries"]:
+            sems = [power.get(c, {}).get(f"{year}-{h}") for h in ("S1", "S2")]
+            if None in sems:
+                break
+            annual[c] = sum(sems) / 2
+        else:
+            price = sum(annual.values()) / len(annual)
+            power_cost = params["mwh_per_ecu"] * price
+            total = power_cost + comp["salt"] + comp["other"] + comp["fixed"]
+            out.append({"year": year, "power_price_eur_mwh": round(price, 2),
+                        "country_prices": {c: round(v, 2) for c, v in annual.items()},
+                        "power": round(power_cost, 1), "salt": comp["salt"],
+                        "other": comp["other"], "fixed": comp["fixed"],
+                        "total": round(total, 1), "argus_total": comp.get("total"),
+                        "argus_power": comp.get("power")})
+    return out
+
+
+def compute_ecu_cash_cost(conn, run_id: int, cfg: dict) -> int:
+    """EU4 ECU cash cost: measured power (Eurostat X_TAX) + Argus non-power costs.
+    Licensed (Argus inputs) — rows carry inputs.licensed so public mode hides them."""
+    spec = cfg["ecu_cash_cost"]
+    p = spec["params"]
+    power = defaultdict(dict)
+    for r in conn.execute(
+            """SELECT geo_id, period, value FROM v_series_latest
+               WHERE series_id = 'power.industrial_delivered' AND band = 'MWH_GE150000'
+                 AND tax_treatment = %s AND geo_id = ANY(%s)""",
+            (p["tax_treatment"], p["countries"])).fetchall():
+        power[r["geo_id"]][r["period"]] = float(r["value"])
+    argus = defaultdict(dict)
+    for r in conn.execute(
+            """SELECT period, band, value FROM v_series_latest
+               WHERE series_id = 'cost.ecu_cash_cost_argus' AND geo_id = 'EU4'""").fetchall():
+        argus[r["period"]][r["band"]] = float(r["value"])
+    n = 0
+    for row in ecu_cash_cost_rows(power, argus, p):
+        conn.execute(
+            """INSERT INTO fact_indicator
+               (indicator_id, methodology_version, geo_id, period, period_start,
+                value, unit, inputs, run_id)
+               VALUES ('ecu_cash_cost',%s,'EU4',%s,%s,%s,'EUR/t ECU',%s,%s)""",
+            (spec["methodology_version"], row["year"], f"{row['year']}-01-01", row["total"],
+             json.dumps({**row, "licensed": True, "params": p,
+                         "power_source": "Eurostat nrg_pc_205, MWH_GE150000, " + p["tax_treatment"],
+                         "non_power_source": "Argus 2023 Final Report, Fig 5-4 p.97 (licensed)"}),
+             run_id))
         n += 1
     return n

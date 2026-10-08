@@ -24,6 +24,7 @@ from observatory.ingestion.comext_suppliers import ComextSupplierAgent
 from observatory.ingestion.comtrade_trade import ComtradeTradeAgent
 from observatory.ingestion.eurochlor_drop import EuroChlorDropAgent
 from observatory.ingestion.eurochlor_members import EuroChlorMemberAgent
+from observatory.ingestion.argus_study import ArgusStudyAgent
 from observatory.ingestion.eurochlor_web import EuroChlorWebAgent
 from observatory.ingestion.gas_prices import GasPriceAgent
 from observatory.ingestion.sunsirs_china import SunSirsChinaAgent
@@ -45,6 +46,7 @@ AGENTS = [  # execution order = dependency order
     ComtradeTradeAgent(),
     EuroChlorDropAgent(),
     EuroChlorMemberAgent(),
+    ArgusStudyAgent(),
     EuroChlorWebAgent(),
     GasPriceAgent(),
     SunSirsChinaAgent(),
