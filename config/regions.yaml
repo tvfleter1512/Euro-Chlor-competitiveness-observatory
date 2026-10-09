@@ -33,6 +33,9 @@ entsoe_bidding_zones:
   - geo_id: BE
     name: "Belgium"
     eic: "10YBE----------2"
+  - geo_id: ES
+    name: "Spain"
+    eic: "10YES-REE------0"
 
 # Comtrade numeric reporter/partner codes (UN M49) for the comparator set
 comtrade_reporters:

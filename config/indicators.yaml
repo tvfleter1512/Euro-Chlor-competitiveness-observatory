@@ -87,6 +87,23 @@ indicators:
       costs from 2022 on are Argus forecasts, not actuals. Plant-gate cash cost:
       excludes freight, depreciation, financing and separate carbon costs.
 
+  ecu_cash_cost_wholesale:
+    methodology_version: "v1.0"
+    name: "EU ECU cash cost — Argus basis (actual wholesale power) + Argus non-power costs"
+    formula: >
+      Same as ecu_cash_cost, but power priced as Argus assumes (p.50): actual
+      ENTSO-E day-ahead wholesale price, mean of the 12 monthly averages, simple
+      mean of DE-LU, FR, BE and ES. Same mwh_per_ecu, so the two lines differ
+      only by the electricity price basis.
+    inputs: ["power.wholesale_day_ahead", "cost.ecu_cash_cost_argus"]
+    unit: "EUR/t ECU"
+    params:
+      mwh_per_ecu: 2.629          # same as ecu_cash_cost (owner decision 2026-10-09)
+      zones: {DE: DE_LU, FR: FR, BE: BE, ES: ES}
+    params_confirmed: true        # owner decision 2026-10-09
+    note: >
+      Licensed (Argus non-power costs): member view only. Complete years only.
+
   import_penetration:
     methodology_version: "v1.0"
     name: "Import penetration — caustic soda (dry basis)"

@@ -201,65 +201,100 @@ def compute_ecu_margin(conn, run_id: int, cfg: dict) -> int:
     return n
 
 
-def ecu_cash_cost_rows(power: dict, argus: dict, params: dict) -> list[dict]:
-    """Pure core of compute_ecu_cash_cost, for tests.
+SEMESTERS = ("S1", "S2")
+MONTHS = tuple(f"{m:02d}" for m in range(1, 13))
 
-    power: {country: {period 'YYYY-S1'/'YYYY-S2': EUR/MWh}}
+
+def annual_means(series: dict, parts: tuple) -> dict:
+    """{period 'YYYY-<part>': value} -> {'YYYY': mean}, only for complete years."""
+    by_year = defaultdict(dict)
+    for period, v in series.items():
+        year, _, part = period.partition("-")
+        by_year[year][part] = v
+    return {y: sum(v[p] for p in parts) / len(parts)
+            for y, v in by_year.items() if all(p in v for p in parts)}
+
+
+def ecu_cash_cost_rows(power: dict, argus: dict, params: dict) -> list[dict]:
+    """Pure core of the ECU cash-cost indicators, for tests.
+
+    power: {country: {year 'YYYY': annual EUR/MWh}}
     argus: {year 'YYYY': {component: EUR/t ECU}}
-    Returns one dict per year where every country has both semesters and Argus
-    has salt/other/fixed.
+    Returns one dict per year where every country has a price and Argus has
+    salt/other/fixed. Countries are averaged unweighted (Argus' EU4 basis).
     """
     out = []
     for year, comp in sorted(argus.items()):
         if not all(k in comp for k in ("salt", "other", "fixed")):
             continue
-        annual = {}
-        for c in params["countries"]:
-            sems = [power.get(c, {}).get(f"{year}-{h}") for h in ("S1", "S2")]
-            if None in sems:
-                break
-            annual[c] = sum(sems) / 2
-        else:
-            price = sum(annual.values()) / len(annual)
-            power_cost = params["mwh_per_ecu"] * price
-            total = power_cost + comp["salt"] + comp["other"] + comp["fixed"]
-            out.append({"year": year, "power_price_eur_mwh": round(price, 2),
-                        "country_prices": {c: round(v, 2) for c, v in annual.items()},
-                        "power": round(power_cost, 1), "salt": comp["salt"],
-                        "other": comp["other"], "fixed": comp["fixed"],
-                        "total": round(total, 1), "argus_total": comp.get("total"),
-                        "argus_power": comp.get("power")})
+        annual = {c: power.get(c, {}).get(year) for c in params["countries"]}
+        if None in annual.values():
+            continue
+        price = sum(annual.values()) / len(annual)
+        power_cost = params["mwh_per_ecu"] * price
+        total = power_cost + comp["salt"] + comp["other"] + comp["fixed"]
+        out.append({"year": year, "power_price_eur_mwh": round(price, 2),
+                    "country_prices": {c: round(v, 2) for c, v in annual.items()},
+                    "power": round(power_cost, 1), "salt": comp["salt"],
+                    "other": comp["other"], "fixed": comp["fixed"],
+                    "total": round(total, 1), "argus_total": comp.get("total"),
+                    "argus_power": comp.get("power")})
     return out
 
 
+def _insert_ecu_cash_cost(conn, run_id, indicator_id, spec, rows, power_source) -> int:
+    for row in rows:
+        conn.execute(
+            """INSERT INTO fact_indicator
+               (indicator_id, methodology_version, geo_id, period, period_start,
+                value, unit, inputs, run_id)
+               VALUES (%s,%s,'EU4',%s,%s,%s,'EUR/t ECU',%s,%s)""",
+            (indicator_id, spec["methodology_version"], row["year"], f"{row['year']}-01-01",
+             row["total"],
+             json.dumps({**row, "licensed": True, "params": spec["params"],
+                         "power_source": power_source,
+                         "non_power_source": "Argus 2023 Final Report, Fig 5-4 p.97 (licensed)"}),
+             run_id))
+    return len(rows)
+
+
 def compute_ecu_cash_cost(conn, run_id: int, cfg: dict) -> int:
-    """EU4 ECU cash cost: measured power (Eurostat X_TAX) + Argus non-power costs.
+    """EU4 ECU cash cost, two electricity bases + Argus non-power costs.
+    ecu_cash_cost: Eurostat price paid by large users (X_TAX), half-yearly.
+    ecu_cash_cost_wholesale: ENTSO-E day-ahead, Argus' own price assumption.
     Licensed (Argus inputs) — rows carry inputs.licensed so public mode hides them."""
-    spec = cfg["ecu_cash_cost"]
-    p = spec["params"]
-    power = defaultdict(dict)
-    for r in conn.execute(
-            """SELECT geo_id, period, value FROM v_series_latest
-               WHERE series_id = 'power.industrial_delivered' AND band = 'MWH_GE150000'
-                 AND tax_treatment = %s AND geo_id = ANY(%s)""",
-            (p["tax_treatment"], p["countries"])).fetchall():
-        power[r["geo_id"]][r["period"]] = float(r["value"])
     argus = defaultdict(dict)
     for r in conn.execute(
             """SELECT period, band, value FROM v_series_latest
                WHERE series_id = 'cost.ecu_cash_cost_argus' AND geo_id = 'EU4'""").fetchall():
         argus[r["period"]][r["band"]] = float(r["value"])
-    n = 0
-    for row in ecu_cash_cost_rows(power, argus, p):
-        conn.execute(
-            """INSERT INTO fact_indicator
-               (indicator_id, methodology_version, geo_id, period, period_start,
-                value, unit, inputs, run_id)
-               VALUES ('ecu_cash_cost',%s,'EU4',%s,%s,%s,'EUR/t ECU',%s,%s)""",
-            (spec["methodology_version"], row["year"], f"{row['year']}-01-01", row["total"],
-             json.dumps({**row, "licensed": True, "params": p,
-                         "power_source": "Eurostat nrg_pc_205, MWH_GE150000, " + p["tax_treatment"],
-                         "non_power_source": "Argus 2023 Final Report, Fig 5-4 p.97 (licensed)"}),
-             run_id))
-        n += 1
+
+    spec = cfg["ecu_cash_cost"]
+    p = spec["params"]
+    paid = defaultdict(dict)
+    for r in conn.execute(
+            """SELECT geo_id, period, value FROM v_series_latest
+               WHERE series_id = 'power.industrial_delivered' AND band = 'MWH_GE150000'
+                 AND tax_treatment = %s AND geo_id = ANY(%s)""",
+            (p["tax_treatment"], p["countries"])).fetchall():
+        paid[r["geo_id"]][r["period"]] = float(r["value"])
+    n = _insert_ecu_cash_cost(
+        conn, run_id, "ecu_cash_cost", spec,
+        ecu_cash_cost_rows({c: annual_means(v, SEMESTERS) for c, v in paid.items()}, argus, p),
+        "Eurostat nrg_pc_205, MWH_GE150000, " + p["tax_treatment"])
+
+    spec = cfg["ecu_cash_cost_wholesale"]
+    p = spec["params"]
+    zone_of = p["zones"]                     # country -> ENTSO-E bidding zone
+    wholesale = defaultdict(dict)
+    for r in conn.execute(
+            """SELECT geo_id, period, value FROM v_series_latest
+               WHERE series_id = 'power.wholesale_day_ahead' AND geo_id = ANY(%s)""",
+            (list(zone_of.values()),)).fetchall():
+        wholesale[r["geo_id"]][r["period"]] = float(r["value"])
+    annual = {c: annual_means(wholesale.get(z, {}), MONTHS) for c, z in zone_of.items()}
+    n += _insert_ecu_cash_cost(
+        conn, run_id, "ecu_cash_cost_wholesale", spec,
+        ecu_cash_cost_rows(annual, argus, {**p, "countries": list(zone_of)}),
+        "ENTSO-E Transparency Platform, day-ahead prices (monthly means)")
     return n

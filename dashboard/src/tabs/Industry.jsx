@@ -43,49 +43,67 @@ function simpleLine({ rows, theme, color, unit, valueFmt, height = 240, markAt }
 }
 
 
-// EU4 ECU cash cost: measured power + Argus non-power costs (licensed, member view only)
-const ECU_PARTS = [['power', 'Power (measured)', 's1'], ['salt', 'Salt (Argus)', 's3'],
-                   ['other', 'Other variable (Argus)', 's7'], ['fixed', 'Fixed (Argus)', 's5']]
+// EU4 ECU cash cost, two electricity bases + Argus non-power costs (licensed, member view only)
+const ECU_LINES = [
+  ['ecu_cash_cost_wholesale', 'Argus basis (actual wholesale power)', 's1'],
+  ['ecu_cash_cost', 'As paid (Eurostat price for large users)', 's2'],
+]
 
 function EcuCashCostCard({ theme }) {
   const [rows, setRows] = useState(null)
   const [argus, setArgus] = useState([])
   useEffect(() => {
     Promise.all([
-      fetchIndicators({ indicator_id: 'ecu_cash_cost' }),
+      ...ECU_LINES.map(([id]) => fetchIndicators({ indicator_id: id })),
       fetchSeries({ series_id: 'cost.ecu_cash_cost_argus', geo: 'EU4', band: 'total' }),
-    ]).then(([ind, arg]) => { setRows(ind.rows); setArgus(arg.rows) }).catch(() => setRows([]))
+    ]).then(([w, paid, arg]) => { setRows({ ecu_cash_cost_wholesale: w.rows, ecu_cash_cost: paid.rows }); setArgus(arg.rows) })
+      .catch(() => setRows({}))
   }, [])
   const option = useMemo(() => {
-    if (!rows?.length) return null
+    if (!rows || !Object.values(rows).some(r => r?.length)) return null
     const base = baseOption(theme)
-    const years = [...new Set([...argus.map(r => r.period), ...rows.map(r => r.period)])].sort()
-    const byYear = new Map(rows.map(r => [r.period, r.inputs]))
+    const all = Object.values(rows).flat()
+    const years = [...new Set([...argus.map(r => r.period), ...all.map(r => r.period)])].sort()
+    const by = id => new Map((rows[id] || []).map(r => [r.period, r]))
     const argusBy = new Map(argus.map(r => [r.period, Number(r.value)]))
+    const maps = Object.fromEntries(ECU_LINES.map(([id]) => [id, by(id)]))
     return {
       ...base,
       grid: { ...base.grid, left: 52 },
       xAxis: { ...base.xAxis, data: years },
-      tooltip: { ...base.tooltip, valueFormatter: v => (v == null ? '–' : `€${Math.round(v)}/t`) },
+      tooltip: {
+        ...base.tooltip,
+        formatter: ps => {
+          const y = ps[0]?.axisValue
+          const lines = ps.filter(p => p.value != null).map(p => {
+            const id = ECU_LINES.find(([, label]) => label === p.seriesName)?.[0]
+            const inp = id && maps[id].get(y)?.inputs
+            const extra = inp ? ` <span style="color:${theme.inkMuted}">(power €${Math.round(inp.power)} at €${inp.power_price_eur_mwh.toFixed(0)}/MWh)</span>` : ''
+            return `${p.marker} ${p.seriesName}: <b>€${Math.round(p.value)}/t</b>${extra}`
+          })
+          return [`<b>${y}</b>`, ...lines].join('<br/>')
+        },
+      },
       series: [
-        ...ECU_PARTS.map(([k, label, slot]) => ({
-          name: label, type: 'bar', stack: 'ecu', barMaxWidth: 26,
-          data: years.map(y => byYear.get(y)?.[k] ?? null),
-          itemStyle: { color: theme.series[slot] },
+        ...ECU_LINES.map(([id, label, slot]) => ({
+          ...lineSeries(label, years.map(y => maps[id].get(y)?.value ?? null), theme.series[slot], theme),
+          connectNulls: false, showSymbol: true, symbolSize: 6,
         })),
-        { ...lineSeries('Argus forecast (total)', years.map(y => argusBy.get(y) ?? null), theme.ink, theme),
+        { ...lineSeries('Argus forecast (2023 study)', years.map(y => argusBy.get(y) ?? null), theme.ink, theme),
           lineStyle: { width: 2, color: theme.ink, type: 'dashed' }, showSymbol: true, symbolSize: 5 },
       ],
     }
   }, [rows, argus, theme])
-  const last = rows?.length ? rows[rows.length - 1] : null
+  const lastOf = id => { const r = rows?.[id]; return r?.length ? r[r.length - 1] : null }
+  const w = lastOf('ecu_cash_cost_wholesale'), paid = lastOf('ecu_cash_cost')
   return (
-    <Card title="ECU cash cost — measured power vs Argus forecast"
-      subtitle={`EUR per tonne ECU, annual, average of Germany, France, Belgium and Spain. Bars: electricity at the measured Eurostat price (largest band, excluding taxes and levies) × 2.629 MWh, plus Argus' salt, other variable and fixed costs. Dashed line: the Argus 2023 forecast total. Plant-gate cash cost: no freight, depreciation or separate carbon cost. Argus figures are licensed — member view only.${last ? ` ${last.period}: €${Math.round(last.value)}/t against €${Math.round(last.inputs.argus_total)}/t forecast.` : ''}`}
-      sourceRows={[{ source: 'Eurostat nrg_pc_205 + Argus Media Consulting 2023 (licensed)',
-                     source_dataset: 'ecu_cash_cost v1.0', retrieved_at: last?.computed_at, quality_flag: 'estimated' }]}>
-      <Legend items={[...ECU_PARTS.map(([, label, slot]) => ({ label, color: theme.series[slot] })),
-                      { label: 'Argus forecast (total)', color: theme.ink }]} />
+    <Card title="ECU cash cost — actual electricity vs Argus forecast"
+      subtitle={`EUR per tonne ECU, annual, average of Germany, France, Belgium and Spain. Both lines use Argus' salt, other variable and fixed costs and 2.629 MWh per ECU; they differ only in the electricity price: actual wholesale day-ahead price (Argus' own assumption) or the Eurostat price reported for the largest users, excluding taxes and levies. Dashed: the Argus 2023 forecast. Plant-gate cash cost: no freight, depreciation or separate carbon cost. Argus figures are licensed — member view only.${w && paid && w.period === paid.period ? ` ${w.period}: €${Math.round(w.value)}/t (Argus basis) and €${Math.round(paid.value)}/t (as paid) against €${Math.round(w.inputs.argus_total)}/t forecast.` : ''}`}
+      sourceRows={[{ source: 'ENTSO-E + Eurostat nrg_pc_205 + Argus Media Consulting 2023 (licensed)',
+                     source_dataset: 'ecu_cash_cost / ecu_cash_cost_wholesale v1.0',
+                     retrieved_at: paid?.computed_at, quality_flag: 'estimated' }]}>
+      <Legend items={[...ECU_LINES.map(([, label, slot]) => ({ label, color: theme.series[slot] })),
+                      { label: 'Argus forecast (2023 study)', color: theme.ink }]} />
       {option ? <EChart option={option} height={280} theme={theme} />
         : <EmptyState>{rows ? 'No ECU cash cost yet.' : 'Loading…'}</EmptyState>}
     </Card>
