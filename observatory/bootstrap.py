@@ -73,6 +73,12 @@ SERIES = [
      "Industry Review; share of capacity as FCR/aFRR/mFRR, band = product."),
     ("production.tech_share_capacity", "Installed capacity share by technology", "production",
      "Industry Review; capacity basis (the tech_share series is production basis)."),
+    ("structure.employees", "Employees (SBS / QCEW)", "structure",
+     "Eurostat SBS employees (band = NACE) and BLS QCEW annual average employment (band = NAICS325180)."),
+    ("structure.wages", "Wages and salaries (SBS / QCEW)", "structure",
+     "Eurostat SBS wages and salaries, EUR million; BLS QCEW total annual wages, USD. Band = NACE/NAICS."),
+    ("structure.personnel_costs", "Personnel costs (SBS)", "structure",
+     "Eurostat SBS employee benefits expense = wages + employer social charges, EUR million. Band = NACE."),
     ("cost.ecu_cash_cost_argus", "ECU cash cost by component (Argus 2023 study)", "structure",
      "Argus Final Report Fig 5-4, EU4 average, EUR/t ECU; band = power/salt/other/fixed/total. Licensed."),
 ]
@@ -92,6 +98,8 @@ GEOS = [
     ("ES", "Spain", "country"), ("IT", "Italy", "country"), ("PL", "Poland", "country"),
     ("DE_LU", "Germany-Luxembourg bidding zone", "bidding_zone"),
     ("EU4", "Germany, France, Belgium, Spain (Argus study average)", "region"),
+    ("US_LA", "Louisiana (US)", "region"), ("US_TX", "Texas (US)", "region"),
+    ("US_GULF", "US Gulf Coast (Louisiana + Texas)", "region"),
 ]
 
 

@@ -53,6 +53,7 @@ Dashboard: `cd dashboard && npm install && npm run build` (dev: `npm run dev`).
 | `proxy_power` (CN/Gulf/IN) | curated CSVs | `data/proxy_tariffs/` (see TEMPLATE.csv) |
 | `eurochlor_drop` (Phase 2) | member data CSVs | `data/eurochlor_drop/` (see TEMPLATE.csv) |
 | `notify` (trade-surge e-mails) | `SMTP_HOST`, `SMTP_PORT` (587, STARTTLS), `SMTP_USER`, `SMTP_PASSWORD`, `ALERT_TO` (optional `ALERT_FROM`, `DASHBOARD_URL`) | `.env`; until set, digests go to `logs/alerts-YYYYMM.md` and the Trade tab |
+| `argus_study` (member-only ECU cash cost) | transcription of the licensed Argus 2023 study | `data/licensed/argus/ecu_cash_cost_eu4.csv` (gitignored — never commit Argus figures) |
 
 ## Human-confirmable configuration
 

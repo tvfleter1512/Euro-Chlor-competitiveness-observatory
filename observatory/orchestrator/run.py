@@ -31,6 +31,7 @@ from observatory.ingestion.sunsirs_china import SunSirsChinaAgent
 from observatory.ingestion.eua_price import EUAPriceAgent
 from observatory.ingestion.eurostat_demand import EurostatDemandAgent
 from observatory.ingestion.eurostat_sbs import EurostatSBSAgent
+from observatory.ingestion.bls_qcew import BLSQCEWAgent
 from observatory.ingestion.prodcom import ProdcomAgent
 from observatory import notify
 from observatory.processing import benchmarking
@@ -53,6 +54,7 @@ AGENTS = [  # execution order = dependency order
     EUAPriceAgent(),
     EurostatDemandAgent(),
     EurostatSBSAgent(),
+    BLSQCEWAgent(),
     ProdcomAgent(),
 ]
 

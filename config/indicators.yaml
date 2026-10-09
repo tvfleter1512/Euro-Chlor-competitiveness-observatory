@@ -104,6 +104,33 @@ indicators:
     note: >
       Licensed (Argus non-power costs): member view only. Complete years only.
 
+  labour_cost:
+    methodology_version: "v1.0"
+    name: "Labour costs per employee — check on the Argus fixed costs"
+    formula: >
+      wages_per_employee = wages and salaries / employees, kEUR, EU (Eurostat SBS,
+      NACE C20.13) and US (BLS QCEW, NAICS 325180; US, Louisiana, Texas and
+      LA+TX), USD converted at the mean of the twelve ECB monthly rates.
+      personnel_cost_per_employee = EU wages + employer social charges / employees.
+      wages_index = per-employee wages rebased to base_year = 100: EU4 = Σ wages /
+      Σ employees of DE/FR/BE/ES in NACE C20 (complete and stable), US and
+      Louisiana in NAICS 325180, each in its own currency.
+    inputs: ["structure.wages", "structure.employees", "structure.personnel_costs"]
+    unit: "kEUR/employee; index"
+    params:
+      eu_countries: [DE, FR, BE, ES]
+      level_nace: C2013           # sector levels from level_from (earlier counts jump)
+      level_from: "2018"
+      index_nace: C20
+      us_naics: NAICS325180
+      base_year: "2021"           # Argus 2023 study baseline year
+    params_confirmed: false
+    note: >
+      Tests the labour part of Argus' fixed costs only (fixed = manpower,
+      maintenance, overheads, insurance, tax). Per person, not per tonne: staffing
+      per plant is in neither source. QCEW wages exclude employer health insurance
+      and payroll taxes, so EU vs US levels compare wages with wages.
+
   import_penetration:
     methodology_version: "v1.0"
     name: "Import penetration — caustic soda (dry basis)"

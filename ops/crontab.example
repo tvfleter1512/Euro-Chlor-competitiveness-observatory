@@ -41,9 +41,10 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 0 9 6 * *    $P --agent eua_price
 10 9 6 * *   $P --agent eurostat_demand
 
-# PRODCOM + SBS (annual releases) — monthly check is ample
+# PRODCOM + SBS + BLS QCEW (annual releases) — monthly check is ample
 20 9 7 * *   $P --agent prodcom
 30 9 7 * *   $P --agent eurostat_sbs
+40 9 7 * *   $P --agent bls_qcew
 
 # Postgres + API are managed by the systemd user unit euro-chlor-observatory.service
 # (enabled, restarts on failure) — no @reboot line needed here.

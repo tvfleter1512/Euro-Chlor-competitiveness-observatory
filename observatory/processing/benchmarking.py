@@ -9,7 +9,7 @@ import logging
 from collections import defaultdict
 
 from observatory import db
-from observatory.processing import carbon, dependency, margins, penetration, surges, utilisation
+from observatory.processing import carbon, dependency, labour, margins, penetration, surges, utilisation
 from observatory.processing import normalisation as norm
 from observatory.settings import load_config
 
@@ -155,6 +155,7 @@ def run() -> dict:
             n += margins.compute_cost_gap(conn, run_id, cfg)   # after carbon: reads its rows
             n += penetration.compute(conn, run_id, cfg)
             n += utilisation.compute(conn, run_id, cfg)
+            n += labour.compute(conn, run_id, cfg)
             conn.commit()
             db.finish_run(conn, run_id, "success", n)
             return {"agent": "benchmarking", "status": "success", "indicators": n}

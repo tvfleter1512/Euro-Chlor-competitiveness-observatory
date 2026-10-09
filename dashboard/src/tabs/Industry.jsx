@@ -110,6 +110,74 @@ function EcuCashCostCard({ theme }) {
   )
 }
 
+
+// Labour costs per employee: public-data check on the labour part of Argus' fixed costs
+const LABOUR_LEVEL = [['DE', 'Germany', 's2'], ['FR', 'France', 's3'], ['BE', 'Belgium', 's5'],
+                      ['ES', 'Spain', 's6'], ['US', 'United States', 's8'], ['US_GULF', 'US Gulf Coast (LA+TX)', 's7']]
+const LABOUR_INDEX = [['EU4', 'EU4 chemicals (DE/FR/BE/ES)', 's1'], ['US', 'US inorganic chemicals', 's8'],
+                      ['US_LA', 'Louisiana', 's7']]
+
+function LabourCard({ theme, memberMode }) {
+  const [view, setView] = useState('level')
+  const [d, setD] = useState(null)
+  useEffect(() => {
+    Promise.all([
+      fetchIndicators({ indicator_id: 'wages_per_employee' }),
+      fetchIndicators({ indicator_id: 'wages_index' }),
+      memberMode ? fetchSeries({ series_id: 'cost.ecu_cash_cost_argus', geo: 'EU4', band: 'fixed' })
+                 : Promise.resolve({ rows: [] }),
+    ]).then(([lvl, idx, fixed]) => setD({ lvl: lvl.rows, idx: idx.rows, fixed: fixed.rows }))
+      .catch(() => setD({ lvl: [], idx: [], fixed: [] }))
+  }, [memberMode])
+  const option = useMemo(() => {
+    if (!d) return null
+    const base = baseOption(theme)
+    const level = view === 'level'
+    const rows = level ? d.lvl : d.idx
+    const spec = level ? LABOUR_LEVEL : LABOUR_INDEX
+    // Argus EU4 fixed costs rebased to 2021 (licensed: member mode only)
+    const fx = new Map(d.fixed.map(r => [r.period, Number(r.value)]))
+    const argusIdx = !level && fx.get('2021') ? new Map([...fx].map(([y, v]) => [y, v / fx.get('2021') * 100])) : null
+    const years = [...new Set([...rows.map(r => r.period), ...(argusIdx ? [...argusIdx.keys()].filter(y => y <= '2026') : [])])]
+      .filter(y => y >= (level ? '2018' : '2015')).sort()
+    const series = spec.map(([geo, label, slot]) => {
+      const m = new Map(rows.filter(r => r.geo_id === geo).map(r => [r.period, Number(r.value)]))
+      return { ...lineSeries(label, years.map(y => m.get(y) ?? null), theme.series[slot], theme),
+               connectNulls: false, showSymbol: true, symbolSize: 5 }
+    })
+    if (argusIdx) series.push({ ...lineSeries('Argus EU4 fixed costs (forecast)', years.map(y => argusIdx.get(y) ?? null), theme.ink, theme),
+                                lineStyle: { width: 2, color: theme.ink, type: 'dashed' }, showSymbol: true, symbolSize: 5 })
+    return {
+      ...base,
+      xAxis: { ...base.xAxis, data: years },
+      yAxis: { ...base.yAxis, scale: !level },
+      tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '–' : level ? `€${v.toFixed(1)}k` : v.toFixed(1) },
+      series,
+    }
+  }, [d, view, theme])
+  const spec = view === 'level' ? LABOUR_LEVEL : LABOUR_INDEX
+  const legend = spec.map(([, label, slot]) => ({ label, color: theme.series[slot] }))
+  if (view === 'index' && d?.fixed?.length) legend.push({ label: 'Argus EU4 fixed costs (forecast)', color: theme.ink })
+  return (
+    <Card title="Labour costs — check on Argus' fixed costs"
+      subtitle={view === 'level'
+        ? 'Wages and salaries per employee, kEUR, annual. EU: Eurostat structural business statistics, other inorganic basic chemicals (NACE C20.13). US: BLS QCEW, NAICS 325180 (same sector), converted at the annual average ECB rate. Wages only on both sides: QCEW excludes employer health insurance and payroll taxes; in the EU, employer social charges add a further 22–51 % (2024: Germany lowest, France highest). Per person, not per tonne. Texas 2024 is unusually high (US Gulf line).'
+        : `Growth of wages per employee, 2021 = 100 (the Argus study's base year), each in its own currency. EU4 = Germany, France, Belgium, Spain, all chemicals (NACE C20, the complete series). Labour is only part of Argus' fixed costs (also maintenance, overheads, insurance, tax).${memberMode ? ' Dashed: Argus EU4 fixed costs, licensed.' : ''}`}
+      right={<div style={{ display: 'flex', gap: 4 }}>
+        {[['level', 'per employee'], ['index', 'growth']].map(([k, l]) => (
+          <button key={k} onClick={() => setView(k)} style={{
+            padding: '4px 12px', fontSize: 12, cursor: 'pointer', borderRadius: 999, fontWeight: 600,
+            border: `1px solid ${theme.border}`, background: view === k ? theme.accent : 'transparent',
+            color: view === k ? '#fff' : theme.inkSecondary }}>{l}</button>))}
+      </div>}
+      sourceRows={[{ source: 'Eurostat SBS + US BLS QCEW', source_dataset: 'labour_cost v1.0',
+                     retrieved_at: d?.lvl?.[0]?.computed_at, quality_flag: 'ok' }]}>
+      <Legend items={legend} />
+      {option ? <EChart option={option} height={260} theme={theme} /> : <EmptyState>Loading…</EmptyState>}
+    </Card>
+  )
+}
+
 export default function Industry({ fromDate, memberMode }) {
   const theme = useTheme()
   const [data, setData] = useState(null)
@@ -294,6 +362,7 @@ export default function Industry({ fromDate, memberMode }) {
             : <EmptyState>No margin series yet.</EmptyState>}
         </Card>
         {memberMode && <EcuCashCostCard theme={theme} />}
+        <LabourCard theme={theme} memberMode={memberMode} />
 
         <Card title="Caustic soda stocks" subtitle={`Monthly tonnes, ${note}.`}
           sourceRows={data.stocks}>
