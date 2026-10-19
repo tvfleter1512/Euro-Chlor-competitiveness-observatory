@@ -8,6 +8,7 @@ import time
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -17,10 +18,19 @@ from observatory.provenance import SeriesRow
 from observatory.settings import ENTSOE_TOKEN, HISTORY_START, load_config
 
 URL = "https://web-api.tp.entsoe.eu/api"
+# Day-ahead periods are delivery days in CET/CEST: a day starts at 23:00 or 22:00 UTC
+# the evening before, so months must be read in local time, not from the UTC string.
+LOCAL_TZ = ZoneInfo("Europe/Brussels")
 
 
 def _local(tag: str) -> str:
     return tag.rsplit("}", 1)[-1]
+
+
+def _local_month(start_utc: str) -> str:
+    """'2024-11-30T23:00Z' -> '2024-12' (the delivery month in Brussels time)."""
+    dt = datetime.fromisoformat(start_utc.replace("Z", "+00:00"))
+    return dt.astimezone(LOCAL_TZ).strftime("%Y-%m")
 
 
 class EntsoePowerAgent(IngestionAgent):
@@ -57,7 +67,7 @@ class EntsoePowerAgent(IngestionAgent):
                         time.sleep(10 * (attempt + 1))
                     resp.raise_for_status()
                     url_masked = str(resp.request.url).replace(ENTSOE_TOKEN, "***")
-                    payloads.append((url_masked, {"zone": zone["geo_id"], "xml": resp.text}))
+                    payloads.append((url_masked, {"zone": zone["geo_id"], "year": year, "xml": resp.text}))
         return payloads
 
     def parse(self, payloads):
@@ -85,8 +95,11 @@ class EntsoePowerAgent(IngestionAgent):
                                 if _local(p.tag) == "price.amount":
                                     price = float(p.text)
                             if price is not None:
-                                monthly[start[:7]].append(price)
+                                monthly[_local_month(start)].append(price)
+            year = payload.get("year")
             for month, prices in sorted(monthly.items()):
+                if year and not month.startswith(str(year)):
+                    continue   # edge day of a neighbouring year: that year's request covers it
                 rows.append(SeriesRow(
                     series_id="power.wholesale_day_ahead",
                     geo_id=zone,
