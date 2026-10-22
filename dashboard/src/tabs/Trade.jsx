@@ -7,6 +7,7 @@ import { groupAlerts } from '../alerts'
 import { forProduct, euMeasureOn, measureAgainstEU, markers, shortLabel } from '../tdlinks'
 import TradeDefence from './TradeDefence'
 import CompetitorExports from './CompetitorExports'
+import TradeMap from './TradeMap'
 
 const fmtM = v => `${(v / 1e6).toFixed(1)} M€`
 const fmtKt = v => `${(v / 1e3).toFixed(1)} kt`
@@ -294,6 +295,8 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
 
       <SectionHeading title={`Trade flows — ${productLabel}`}
         subtitle="Who supplies the EU and where it sells, month by month. Change the product in the bar above." />
+      <TradeMap product={product} productLabel={productLabel} basis={basis} />
+
       <Card sourceRows={flows}
         title={`${FLOW_LABEL[pflow]} — ${productLabel}`}
         subtitle={`Monthly extra-EU ${B.label}, top-6 partners by the last 12 months; the rest as Other.${unconfirmedNote}`}
