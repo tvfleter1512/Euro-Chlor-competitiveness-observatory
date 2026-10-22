@@ -18,6 +18,7 @@ DATABASE_URL = os.environ.get(
 ENTSOE_TOKEN = os.environ.get("ENTSOE_TOKEN", "")
 COMTRADE_KEY = os.environ.get("COMTRADE_KEY", "")
 EIA_KEY = os.environ.get("EIA_KEY", "")
+CENSUS_KEY = os.environ.get("CENSUS_KEY", "")
 API_HOST = os.environ.get("API_HOST", "0.0.0.0")
 API_PORT = int(os.environ.get("API_PORT", "8300"))
 HISTORY_START = int(os.environ.get("HISTORY_START", "2015"))

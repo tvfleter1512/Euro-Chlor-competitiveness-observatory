@@ -4,6 +4,8 @@ import { useTheme, PRODUCT_SLOTS, PARTNER_SLOT, FONT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, SectionHeading, StatTile } from '../components'
 import { groupAlerts } from '../alerts'
+import TradeDefence from './TradeDefence'
+import CompetitorExports from './CompetitorExports'
 
 const fmtM = v => `${(v / 1e6).toFixed(1)} M€`
 const fmtKt = v => `${(v / 1e3).toFixed(1)} kt`
@@ -187,6 +189,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
   }, [kpiRows])
 
   const alertGroups = useMemo(() => groupAlerts(alerts), [alerts])
+  const hs6 = basket.find(b => b.cn8.includes(product))?.hs6
 
   if (error) return <EmptyState>Failed to load: {error}</EmptyState>
   if (!product || !balances || !kpiRows) return <EmptyState>Loading…</EmptyState>
@@ -272,6 +275,8 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
         ) : <EmptyState>No open alerts in the last 6 months.</EmptyState>}
       </Card>
 
+      <TradeDefence hs6={hs6} />
+
       <SectionHeading title={`Trade flows — ${productLabel}`}
         subtitle="Who supplies the EU and where it sells, month by month. Change the product in the bar above." />
       <Card sourceRows={flows}
@@ -333,6 +338,8 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
         ) : partners ? <EmptyState>No partner rows for this product and flow.</EmptyState>
           : <EmptyState>Loading…</EmptyState>}
       </Card>
+
+      <CompetitorExports hs6={hs6} productLabel={productLabel} fromDate={fromDate} basis={basis} />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: 20 }}>
         <Card sourceRows={flows}

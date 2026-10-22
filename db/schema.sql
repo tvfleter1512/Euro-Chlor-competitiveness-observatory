@@ -39,11 +39,16 @@ CREATE TABLE IF NOT EXISTS dim_geo (
 
 CREATE TABLE IF NOT EXISTS dim_product (
     product_code TEXT PRIMARY KEY,  -- CN8 or HS6 digit string
-    nomenclature TEXT NOT NULL CHECK (nomenclature IN ('CN8', 'HS6', 'PRODCOM')),
+    nomenclature TEXT NOT NULL CHECK (nomenclature IN ('CN8', 'HS6', 'PRODCOM', 'CN8_INPUT')),
     name         TEXT NOT NULL,
     hs6          TEXT,              -- roll-up key for Comtrade comparability
     confirmed    BOOLEAN NOT NULL DEFAULT FALSE  -- human-confirmable codes (§3.5)
 );
+-- CN8_INPUT = raw materials tracked for cost checks (config/input_products.yaml);
+-- re-declared so databases created before it was added pick it up
+ALTER TABLE dim_product DROP CONSTRAINT IF EXISTS dim_product_nomenclature_check;
+ALTER TABLE dim_product ADD CONSTRAINT dim_product_nomenclature_check
+    CHECK (nomenclature IN ('CN8', 'HS6', 'PRODCOM', 'CN8_INPUT'));
 
 CREATE TABLE IF NOT EXISTS fact_series (
     id              BIGSERIAL PRIMARY KEY,

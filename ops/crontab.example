@@ -11,6 +11,7 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 
 # EIA US industrial price — monthly
 40 7 3 * *   $P --agent eia_power
+50 7 3 * *   $P --agent eia_gas
 
 # Eurostat nrg_pc_205 — semi-annual release; monthly check is ample
 50 7 5 * *   $P --agent eurostat_power
@@ -19,9 +20,12 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 # screen runs with the benchmarks after every agent, so notify right after it
 0 8 16 * *   $P --agent comext_trade && $P --notify
 30 8 16 * *  $P --agent comext_suppliers
+45 8 16 * *  $P --agent comext_inputs
 
 # UN Comtrade — monthly (annual data, but reporters trickle in)
 15 8 17 * *  $P --agent comtrade_trade
+45 8 17 * *  $P --agent comtrade_monthly
+30 8 8 * *   $P --agent census_trade
 
 # File-drop agents — daily pickup of any new curated/member files
 0 7 * * *    $P --agent proxy_power
@@ -43,6 +47,7 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 
 # PRODCOM + SBS + BLS QCEW (annual releases) — monthly check is ample
 20 9 7 * *   $P --agent prodcom
+50 9 7 * *   $P --agent eurostat_ppi
 30 9 7 * *   $P --agent eurostat_sbs
 40 9 7 * *   $P --agent bls_qcew
 

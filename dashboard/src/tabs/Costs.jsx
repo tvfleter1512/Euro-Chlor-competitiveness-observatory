@@ -6,7 +6,12 @@ import { Card, EmptyState, Legend, Segmented, SectionHeading, grid2 } from '../c
 
 const BAND = 'MWH_GE150000'   // largest Eurostat band — chlor-alkali scale
 const TAX = 'X_VAT'           // excl. recoverable VAT, incl. non-recoverable levies
-const COMPARATORS = ['EU27_2020', 'US', 'CN', 'GULF', 'IN']
+const COMPARATORS = ['EU27_2020', 'US', 'US_LA', 'US_TX', 'CN', 'GULF', 'GULF_EI', 'IN']
+const DASHED = ['GULF_EI']              // second Gulf line: energy-intensive tariff, eligibility unconfirmed
+const SHORT = { GULF: 'Gulf', GULF_EI: 'Gulf (energy-intensive)' }
+const NON_EU = COMPARATORS.slice(1)   // fetched converted to EUR by the API
+const GAS_BAND = 'GJ100000-999999'    // Eurostat middle industrial band, closest to EIA's all-industry average
+const US_GAS = ['US', 'US_LA', 'US_TX']
 const EU_DETAIL = ['EU27_2020', 'DE', 'FR', 'NL', 'BE', 'ES', 'IT', 'PL']
 const WHOLESALE_ZONES = ['DE_LU', 'FR', 'NL', 'BE', 'ES']   // ENTSO-E bidding zones ingested
 const WHOLESALE_DEFAULT_MONTHS = 36                          // initial zoom window
@@ -16,8 +21,8 @@ const WHOLESALE_DEFAULT_MONTHS = 36                          // initial zoom win
 function toSemesters(rows) {
   const buckets = new Map()
   for (const r of rows) {
-    const sems = /^\d{4}$/.test(r.period)
-      ? [`${r.period}-S1`, `${r.period}-S2`]
+    const sems = /^\d{4}$/.test(r.period) ? [`${r.period}-S1`, `${r.period}-S2`]
+      : r.period.includes('-S') ? [r.period]
       : [`${r.period.slice(0, 4)}-S${Number(r.period.slice(5, 7)) <= 6 ? 1 : 2}`]
     for (const sem of sems) {
       if (!buckets.has(sem)) buckets.set(sem, { sample: r, values: [] })
@@ -44,8 +49,10 @@ function pivotOption(rows, geos, theme, unit) {
       xAxis: { ...baseOption(theme).xAxis, data: periods },
       tooltip: { ...baseOption(theme).tooltip,
                  valueFormatter: v => v == null ? '—' : `${Number(v).toFixed(1)} ${unit}` },
-      series: present.map(g =>
-        lineSeries(GEO_LABEL[g] || g, byGeo[g], theme.series[GEO_SLOT[g]], theme)),
+      series: present.map(g => {
+        const s = lineSeries(GEO_LABEL[g] || g, byGeo[g], theme.series[GEO_SLOT[g]], theme)
+        return DASHED.includes(g) ? { ...s, lineStyle: { ...s.lineStyle, type: 'dashed' } } : s
+      }),
     },
     present,
     periods,
@@ -301,40 +308,122 @@ function LabourCard({ theme, memberMode }) {
   )
 }
 
+// Salt: public check on the salt cost in the Argus study, as wages are for its
+// fixed costs. Traded salt for electrolysis (CN 2501 00 31), EU imports from
+// other member states and from outside the EU, unit value €/t.
+const SALT = '25010031'
+const NACL_PER_CL2 = 1.648   // t NaCl per t Cl2, stoichiometric (58.44 / 35.45); plants need a few % more
+
+function SaltCard({ theme, memberMode, fromDate }) {
+  const [view, setView] = useState('salt')
+  const [d, setD] = useState(null)
+  useEffect(() => {
+    Promise.all([
+      fetchSeries({ series_id: 'trade.value', product: SALT, flow: 'import', freq: 'M' }),
+      fetchSeries({ series_id: 'trade.quantity', product: SALT, flow: 'import', freq: 'M' }),
+      memberMode ? fetchSeries({ series_id: 'cost.ecu_cash_cost_argus', geo: 'EU4', band: 'salt' }) : Promise.resolve({ rows: [] }),
+    ]).then(([v, q, a]) => setD({ v: v.rows, q: q.rows, argus: a.rows })).catch(() => setD({ v: [], q: [], argus: [] }))
+  }, [memberMode])
+
+  const built = useMemo(() => {
+    if (!d?.v?.length) return null
+    const base = baseOption(theme)
+    const uv = (partner) => {
+      const q = new Map(d.q.filter(r => r.partner_geo_id === partner).map(r => [r.period, Number(r.value)]))
+      const out = new Map()
+      for (const r of d.v.filter(r => r.partner_geo_id === partner)) {
+        const t = q.get(r.period)
+        if (t > 1000) out.set(r.period, { eur: Number(r.value), t })   // floor: tiny flows give noisy prices
+      }
+      return out
+    }
+    const intra = uv('INTRA_EU'), extra = uv('EXTRA_EU')
+    if (view === 'salt') {
+      const fromMonth = fromDate ? fromDate.slice(0, 7) : '0000'
+      const periods = [...new Set([...intra.keys(), ...extra.keys()])].filter(p => p >= fromMonth).sort()
+      const line = (m) => periods.map(p => m.has(p) ? m.get(p).eur / m.get(p).t : null)
+      return {
+        legend: [{ label: 'From other EU countries', color: theme.series.s1 }, { label: 'From outside the EU', color: theme.series.s8 }],
+        option: { ...base, xAxis: { ...base.xAxis, data: periods },
+                  tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : `€${Number(v).toFixed(0)}/t salt` },
+                  series: [lineSeries('From other EU countries', line(intra), theme.series.s1, theme),
+                           lineSeries('From outside the EU', line(extra), theme.series.s8, theme)] },
+      }
+    }
+    // per tonne ECU, annual, intra-EU price (volume-weighted over complete years)
+    const years = new Map()
+    for (const [p, x] of intra) {
+      const y = p.slice(0, 4), a = years.get(y) || { eur: 0, t: 0, n: 0 }
+      years.set(y, { eur: a.eur + x.eur, t: a.t + x.t, n: a.n + 1 })
+    }
+    const argus = new Map(d.argus.map(r => [r.period, Number(r.value)]))
+    const ys = [...new Set([...[...years].filter(([, a]) => a.n === 12).map(([y]) => y), ...argus.keys()])]
+      .filter(y => !fromDate || y >= fromDate.slice(0, 4)).sort()
+    return {
+      legend: [{ label: `Traded salt × ${NACL_PER_CL2} t per t chlorine`, color: theme.series.s1 },
+               ...(argus.size ? [{ label: 'Argus salt cost (member, licensed)', color: theme.ink }] : [])],
+      option: { ...base, xAxis: { ...base.xAxis, data: ys },
+                tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : `€${Number(v).toFixed(0)}/t ECU` },
+                series: [
+                  { ...lineSeries('Traded salt', ys.map(y => { const a = years.get(y); return a?.n === 12 ? a.eur / a.t * NACL_PER_CL2 : null }), theme.series.s1, theme), showSymbol: true },
+                  ...(argus.size ? [{ ...lineSeries('Argus salt cost', ys.map(y => argus.get(y) ?? null), theme.ink, theme),
+                                      lineStyle: { width: 2, color: theme.ink, type: 'dashed' }, showSymbol: true }] : []),
+                ] },
+    }
+  }, [d, view, theme, fromDate])
+
+  return (
+    <Card title="Salt — check on the raw-material cost"
+      subtitle={view === 'salt'
+        ? 'EU imports of salt for electrolysis (CN 2501 00 31), unit value €/t, monthly; months under 1,000 t left out. Most of this trade is within the EU. Plants on captive brine wells buy no salt, so for them this is an upper bound.'
+        : `Salt cost per tonne ECU: the intra-EU traded price (complete years, volume-weighted) × ${NACL_PER_CL2} t salt per t chlorine (stoichiometric minimum; real use is a few % higher).${memberMode ? ' Dashed: the salt cost in the Argus study (EU4), licensed.' : ''}`}
+      right={<Segmented value={view} onChange={setView} options={[['salt', '€ per t salt'], ['ecu', '€ per t ECU']]} />}
+      sourceRows={d?.v?.slice(-1)}>
+      {built ? (<><Legend items={built.legend} /><EChart option={built.option} height={250} theme={theme} /></>)
+        : <EmptyState>{d ? 'No salt trade data yet.' : 'Loading…'}</EmptyState>}
+    </Card>
+  )
+}
+
 export default function Costs({ fromDate, memberMode }) {
   const theme = useTheme()
   const [d, setD] = useState(null)
   const [priceView, setPriceView] = useState('world')
+  const [gasView, setGasView] = useState('hub')
+  const [gapGeo, setGapGeo] = useState('US')
   const [error, setError] = useState(null)
 
   useEffect(() => {
     Promise.all([
       fetchSeries({ series_id: 'power.industrial_delivered', band: BAND, tax: TAX, from: fromDate }),
-      fetchSeries({ series_id: 'power.industrial_delivered', geo: 'US', from: fromDate }),
+      Promise.all(NON_EU.map(geo => fetchSeries({ series_id: 'power.industrial_delivered', geo, from: fromDate, eur: true }))),
       fetchIndicators({ indicator_id: 'cost_gap' }),
       fetchSeries({ series_id: 'power.wholesale_day_ahead', from: fromDate }),
       fetchSeries({ series_id: 'gas.hub_price', from: fromDate }),
       fetchSeries({ series_id: 'carbon.eua_price', from: fromDate }),
       fetchIndicators({ indicator_id: 'carbon_cost_exposure' }),
-    ]).then(([eu, us, gap, spot, gas, eua, carbon]) => setD({
-      power: [...eu.rows, ...toSemesters(us.rows)],
+      fetchSeries({ series_id: 'gas.industrial_delivered', geo: 'EU27_2020', band: GAS_BAND, tax: TAX, from: fromDate }),
+      Promise.all(US_GAS.map(geo => fetchSeries({ series_id: 'gas.industrial_delivered', geo, from: fromDate, eur: true }))),
+    ]).then(([eu, others, gap, spot, gas, eua, carbon, gasEu, gasUs]) => setD({
+      power: [...eu.rows, ...others.flatMap(o => toSemesters(o.rows))],
       gap: gap.rows.filter(r => !fromDate || r.period_start >= fromDate),
       wholesale: spot.rows, gas: gas.rows, eua: eua.rows,
       carbon: carbon.rows.filter(r => !fromDate || r.period_start >= fromDate),
+      gasDelivered: [...gasEu.rows, ...gasUs.flatMap(o => toSemesters(o.rows))],
     })).catch(e => setError(String(e)))
   }, [fromDate])
 
   const costGap = useMemo(() => {
     if (!d?.gap?.length) return null
-    const comparators = [...new Set(d.gap.map(r => r.comparator_geo_id))]
-    const geo = comparators.includes('US') ? 'US' : comparators[0]
+    const comparators = COMPARATORS.filter(g => d.gap.some(r => r.comparator_geo_id === g))
+    const geo = comparators.includes(gapGeo) ? gapGeo : comparators[0]
     const rows = d.gap.filter(r => r.comparator_geo_id === geo).sort((a, b) => a.period.localeCompare(b.period))
     const base = baseOption(theme)
     const upper = rows.map(r => r.inputs?.components?.gap_uncompensated_eur_ecu ?? null)
     const lower = rows.map(r => r.inputs?.components?.gap_max_compensated_eur_ecu ?? null)
     // band = invisible base line at `lower` + stacked fill up to `upper`
     return {
-      geo,
+      geo, comparators,
       option: {
         ...base,
         xAxis: { ...base.xAxis, data: rows.map(r => r.period), boundaryGap: false },
@@ -355,7 +444,7 @@ export default function Costs({ fromDate, memberMode }) {
         ],
       },
     }
-  }, [d, theme])
+  }, [d, theme, gapGeo])
 
   const gasOption = useMemo(() => {
     if (!d?.gas?.length) return null
@@ -405,6 +494,7 @@ export default function Costs({ fromDate, memberMode }) {
     : pivotOption(detailRows, EU_DETAIL, theme, '€/MWh')
 
   const spot = pivotOption(d.wholesale, WHOLESALE_ZONES, theme, '€/MWh')
+  const gasPaid = pivotOption(d.gasDelivered, ['EU27_2020', ...US_GAS], theme, '€/MWh')
   const spotStart = spot.periods[Math.max(0, spot.periods.length - WHOLESALE_DEFAULT_MONTHS)]
   const spotOption = {
     ...spot.option,
@@ -423,11 +513,13 @@ export default function Costs({ fromDate, memberMode }) {
         subtitle="The largest cash cost of a chlor-alkali plant: about 2.6 MWh per tonne of chlorine and its caustic soda." />
       <Card sourceRows={d.gap}
         title={`Cost gap vs ${costGap ? (GEO_LABEL[costGap.geo] || costGap.geo) : 'comparator'} — € per tonne ECU`}
-        subtitle="The headline: measured power-price gap × 2.629 MWh/ECU (CO2 pass-through is inside the price — not double-counted). Band = value of maximum ETS indirect-cost compensation; actual schemes have national caps, so reality sits inside the band. Member states without compensation sit on the top line. China and the Gulf: no comparable delivered-price data yet — an open data point for the expert group."
-        right={costGap && <Legend items={[
+        subtitle="The headline: measured power-price gap × 2.629 MWh/ECU (CO2 pass-through is inside the price — not double-counted). Band = value of maximum ETS indirect-cost compensation; actual schemes have national caps, so reality sits inside the band. Member states without compensation sit on the top line. US from official EIA statistics; China, Gulf and India (when shown) from curated published tariffs — estimates, less comparable."
+        right={costGap?.comparators.length > 1 && <Segmented value={costGap.geo} onChange={setGapGeo}
+          options={costGap.comparators.map(g => [g, SHORT[g] || GEO_LABEL[g] || g])} />}>
+        {costGap && <Legend items={[
           { label: 'Uncompensated sites', color: theme.series.s1 },
           { label: 'Max ETS compensation', color: theme.series.s2 },
-        ]} />}>
+        ]} />}
         {costGap ? <EChart option={costGap.option} height={280} theme={theme} />
           : <EmptyState>Cost gap computes once comparator power + EUA data are present.</EmptyState>}
       </Card>
@@ -435,7 +527,7 @@ export default function Costs({ fromDate, memberMode }) {
       <Card sourceRows={priceView === 'world' ? comparatorRows : detailRows}
         title="Industrial delivered electricity price"
         subtitle={priceView === 'world'
-          ? `EU vs world regions. Delivered price (energy + network + non-recoverable levies), band ≥150 GWh/yr, €/MWh.${missing.length ? ` Awaiting data: ${missing.map(g => GEO_LABEL[g]).join(', ')}.` : ''}`
+          ? `EU vs world regions, €/MWh, half-yearly. EU: delivered price (energy + network + non-recoverable levies), band ≥150 GWh/yr. US, Louisiana, Texas: EIA average industrial retail price converted at the ECB monthly rate. China (Shandong), Gulf (Saudi standard tariff; dashed: energy-intensive tariff from 2023, eligibility unconfirmed), India (Gujarat, fiscal years mapped to half-years): curated published tariffs, estimated — grid prices, so likely above what plants with captive power pay.${missing.length ? ` Awaiting data: ${missing.map(g => GEO_LABEL[g]).join(', ')}.` : ''}`
           : 'EU27 and the chlor-alkali producing member states, same delivered-price basis, €/MWh.'}
         right={<Segmented value={priceView} onChange={setPriceView}
           options={[['world', 'EU vs world'], ['eu', 'by member state']]} />}>
@@ -454,12 +546,20 @@ export default function Costs({ fromDate, memberMode }) {
       <SectionHeading title="Gas and carbon"
         subtitle="The drivers behind the power price, and the carbon cost passed through it." />
       <div style={grid2}>
-        <Card title="Natural-gas hub prices — EU vs US"
-          subtitle="Monthly, USD/MMBtu. Gas sets the marginal power price in most EU hours."
-          sourceRows={d.gas}
-          right={<Legend items={[{ label: 'EU (TTF-based)', color: theme.series.s1 },
-                                 { label: 'US Henry Hub', color: theme.series.s2 }]} />}>
-          {gasOption ? <EChart option={gasOption} height={240} theme={theme} /> : <EmptyState>No gas data.</EmptyState>}
+        <Card title={gasView === 'hub' ? 'Natural-gas hub prices — EU vs US' : 'Industrial gas price paid — EU vs US'}
+          subtitle={gasView === 'hub'
+            ? 'Monthly, USD/MMBtu. Gas sets the marginal power price in most EU hours.'
+            : `Delivered price for industry, €/MWh (gross calorific value), half-yearly. EU: Eurostat nrg_pc_203, band 100,000–999,999 GJ/yr, excl. VAT. US: EIA average industrial price (all users), $/thousand cubic feet converted at 1.036 MMBtu/Mcf and the ECB rate.`}
+          sourceRows={gasView === 'hub' ? d.gas : d.gasDelivered}
+          right={<Segmented value={gasView} onChange={setGasView} options={[['hub', 'hub price'], ['delivered', 'paid by industry']]} />}>
+          {gasView === 'hub' ? (<>
+            <Legend items={[{ label: 'EU (TTF-based)', color: theme.series.s1 },
+                            { label: 'US Henry Hub', color: theme.series.s2 }]} />
+            {gasOption ? <EChart option={gasOption} height={240} theme={theme} /> : <EmptyState>No gas data.</EmptyState>}
+          </>) : (<>
+            <Legend items={geoLegend(gasPaid.present, theme)} />
+            <EChart option={gasPaid.option} height={240} theme={theme} />
+          </>)}
         </Card>
         <Card title="EUA carbon price" subtitle="Monthly average of daily secondary-market closes, EUR/tCO2 (ICAP)."
           sourceRows={d.eua}>
@@ -482,8 +582,9 @@ export default function Costs({ fromDate, memberMode }) {
       </Card>
 
       <SectionHeading title="Full ECU cost"
-        subtitle="From the electricity bill to the whole plant-gate cost, and the labour data behind the fixed costs." />
+        subtitle="From the electricity bill to the whole plant-gate cost, and public checks on its salt and labour parts." />
       <EcuEconomicsCard theme={theme} memberMode={memberMode} fromDate={fromDate} />
+      <SaltCard theme={theme} memberMode={memberMode} fromDate={fromDate} />
       <LabourCard theme={theme} memberMode={memberMode} />
     </>
   )

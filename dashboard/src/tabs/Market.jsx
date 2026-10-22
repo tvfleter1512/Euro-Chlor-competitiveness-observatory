@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { fetchSeries, fetchCapacityEvents, fetchFx } from '../api'
-import { useTheme } from '../theme'
+import { useTheme, GEO_LABEL, GEO_SLOT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, Segmented, SectionHeading, StatTile, grid2 } from '../components'
 
@@ -65,7 +65,8 @@ export default function Market({ fromDate, memberMode }) {
       fetchSeries({ series_id: 'demand.paper_production', from: fromDate }),
       fetchSeries({ series_id: 'demand.chemicals_production', from: fromDate }),
       fetchCapacityEvents(),
-    ]).then(([prod, util, stocks, caustic, cn, lyeVal, lyeQty, fxCny, pvcVal, pvcQty, pvcCn, constr, paper, chem, events]) => {
+      fetchSeries({ series_id: 'price.ppi_domestic', from: fromDate }),
+    ]).then(([prod, util, stocks, caustic, cn, lyeVal, lyeQty, fxCny, pvcVal, pvcQty, pvcCn, constr, paper, chem, events, ppi]) => {
       // member stocks carry band='TOTAL'; the public scrape has band=null —
       // prefer the member split's total when present, else the public rows
       const stockTotal = stocks.rows.some(r => r.band === 'TOTAL')
@@ -82,6 +83,7 @@ export default function Market({ fromDate, memberMode }) {
         pvcVal: pvcVal.rows, pvcQty: pvcQty.rows, pvcCn: pvcCn.rows,
         demand: { constr: constr.rows, paper: paper.rows, chem: chem.rows },
         events: events.events,
+        ppi: ppi.rows,
       })
     }).catch(e => setError(String(e)))
   }, [fromDate, memberMode])
@@ -145,6 +147,36 @@ export default function Market({ fromDate, memberMode }) {
     })
     return { caustic: option(caustic), pvc: option(pvc) }
   }, [data, theme, fromDate])
+
+  // EU domestic producer prices, other basic inorganic chemicals (C20.13); C20 dashed for context
+  const ppi = useMemo(() => {
+    if (!data?.ppi?.length) return null
+    const base = baseOption(theme)
+    const periods = [...new Set(data.ppi.map(r => r.period))].sort()
+    const geos = ['EU27_2020', 'DE', 'FR', 'NL', 'BE', 'ES', 'IT', 'PL']
+      .filter(g => data.ppi.some(r => r.geo_id === g && r.band === 'C2013'))
+    const grab = (g, band) => {
+      const m = new Map(data.ppi.filter(r => r.geo_id === g && r.band === band).map(r => [r.period, Number(r.value)]))
+      return periods.map(p => m.get(p) ?? null)
+    }
+    return {
+      legend: [...geos.map(g => ({ label: `${GEO_LABEL[g] || g}${g === 'EU27_2020' ? ' — inorganic basics' : ''}`, color: theme.series[GEO_SLOT[g]] })),
+               { label: 'EU27 — all chemicals (dashed)', color: theme.inkMuted }],
+      option: {
+        ...base,
+        xAxis: { ...base.xAxis, data: periods },
+        tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : Number(v).toFixed(1) },
+        series: [
+          ...geos.map(g => ({ ...lineSeries(GEO_LABEL[g] || g, grab(g, 'C2013'), theme.series[GEO_SLOT[g]], theme),
+                              lineStyle: { width: g === 'EU27_2020' ? 3 : 1.5, color: theme.series[GEO_SLOT[g]] } })),
+          { ...lineSeries('EU27 all chemicals', grab('EU27_2020', 'C20'), theme.inkMuted, theme),
+            lineStyle: { width: 1.5, color: theme.inkMuted, type: 'dashed' } },
+          { type: 'line', data: [], markLine: { silent: true, symbol: 'none', data: [{ yAxis: 100 }],
+              lineStyle: { color: theme.axis, type: 'dashed', width: 1 }, label: { show: false } } },
+        ],
+      },
+    }
+  }, [data, theme])
 
   const demandOption = useMemo(() => {
     if (!data?.demand) return null
@@ -239,6 +271,13 @@ export default function Market({ fromDate, memberMode }) {
           <EChart height={250} theme={theme} option={prices.pvc} />
         </Card>
       </div>
+
+      <Card title="EU producer prices — other basic inorganic chemicals"
+        subtitle="Domestic output price index, 2021 = 100, monthly, not seasonally adjusted (Eurostat sts_inppd_m, NACE C20.13: chlorine, caustic soda, hydrochloric acid, chlorates and other inorganics). What EU producers charge at home, beyond the trade unit values above. Country gaps = Eurostat confidentiality."
+        sourceRows={data.ppi}>
+        {ppi ? (<><Legend items={ppi.legend} /><EChart option={ppi.option} height={260} theme={theme} /></>)
+          : <EmptyState>No producer-price data yet.</EmptyState>}
+      </Card>
 
       <SectionHeading title="Customers and capacity" subtitle="Demand from the industries that buy chlorine derivatives and caustic soda, and plant decisions worldwide." />
       <Card title="Customer industries"

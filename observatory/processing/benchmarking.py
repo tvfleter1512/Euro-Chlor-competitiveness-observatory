@@ -41,13 +41,15 @@ def _comparator_delivered_by_semester(conn, geo: str, fx: dict) -> dict[str, dic
     buckets = defaultdict(list)
     for r in rows:
         try:
-            eur, _ = norm.to_eur(float(r["value"]), r["currency"], r["period_start"], fx)
+            eur = norm.to_eur_period(float(r["value"]), r["currency"], r["period"], r["period_start"], fx)
         except norm.FXError as exc:
             log.warning("skipping %s %s: %s", geo, r["period"], exc)
             continue
         if r["period"].isdigit():   # annual proxy row: applies to both semesters
             for sem in ("S1", "S2"):
                 buckets[f"{r['period']}-{sem}"].append((eur, r))
+        elif "-S" in r["period"]:   # half-year proxy row (e.g. India mapped from fiscal years)
+            buckets[r["period"]].append((eur, r))
         else:
             sem, _ = norm.semester_of(r["period_start"])
             buckets[sem].append((eur, r))

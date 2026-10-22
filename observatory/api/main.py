@@ -14,6 +14,7 @@ from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
 from observatory import db
+from observatory.processing import normalisation as norm
 from observatory.settings import DASHBOARD_PASSWORD, PROJECT_ROOT, load_config
 
 app = FastAPI(title="Euro Chlor Competitiveness Observatory", version="0.1.0")
@@ -70,6 +71,7 @@ def series(
     freq: str | None = Query(None, description="'M' = sub-annual periods, 'A' = annual"),
     date_from: date | None = Query(None, alias="from"),
     limit: int = Query(20000, le=100000),
+    eur: bool = Query(False, description="convert non-EUR money values to EUR (ECB monthly average; annual mean for annual periods)"),
 ):
     # member mode sees the full latest view; public mode uses the view that
     # dedupes AFTER restricting to public rows (licensed vintages must not
@@ -96,7 +98,28 @@ def series(
     params.append(limit)
     with db.get_conn() as conn:
         rows = conn.execute(q, params).fetchall()
+        if eur:
+            rows = _rows_to_eur(rows, norm.load_fx(conn))
     return {"series_id": series_id, "count": len(rows), "rows": rows}
+
+
+def _rows_to_eur(rows, fx):
+    """Money rows in another currency -> EUR, keeping the native value, at the mean
+    ECB monthly rate over the row's period (normalisation.to_eur_period). Rows
+    without any usable rate are dropped rather than shown in the wrong currency."""
+    out = []
+    for r in rows:
+        cur = r.get("currency")
+        if cur in (None, "EUR"):
+            out.append(r)
+            continue
+        try:
+            value = norm.to_eur_period(float(r["value"]), cur, r["period"], r["period_start"], fx)
+        except norm.FXError:
+            continue
+        out.append({**r, "value": value, "value_native": r["value"], "currency_native": cur,
+                    "currency": "EUR", "unit": str(r["unit"]).replace(cur, "EUR")})
+    return out
 
 
 @app.get("/api/indicators")
@@ -234,6 +257,15 @@ def meta_carbon():
 @app.get("/api/meta/references")
 def meta_references():
     return load_config("references")
+
+
+@app.get("/api/meta/trade-defence")
+def meta_trade_defence():
+    try:
+        measures = load_config("trade_defence")["measures"]
+    except FileNotFoundError:
+        measures = []
+    return {"measures": sorted(measures, key=lambda m: str(m["date"]), reverse=True)}
 
 
 @app.get("/api/meta/capacity-events")

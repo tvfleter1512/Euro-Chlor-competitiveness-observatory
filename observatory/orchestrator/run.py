@@ -17,11 +17,15 @@ from observatory.bootstrap import bootstrap
 from observatory.ingestion.ecb_fx import ECBFXAgent
 from observatory.ingestion.eurostat_power import EurostatPowerAgent
 from observatory.ingestion.eia_power import EIAPowerAgent
+from observatory.ingestion.eia_gas import EIAGasAgent
 from observatory.ingestion.entsoe_power import EntsoePowerAgent
 from observatory.ingestion.proxy_power import ProxyPowerAgent
 from observatory.ingestion.comext_trade import ComextTradeAgent
 from observatory.ingestion.comext_suppliers import ComextSupplierAgent
 from observatory.ingestion.comtrade_trade import ComtradeTradeAgent
+from observatory.ingestion.comtrade_monthly import ComtradeMonthlyAgent
+from observatory.ingestion.census_trade import CensusTradeAgent
+from observatory.ingestion.comext_inputs import ComextInputsAgent
 from observatory.ingestion.eurochlor_drop import EuroChlorDropAgent
 from observatory.ingestion.eurochlor_members import EuroChlorMemberAgent
 from observatory.ingestion.argus_study import ArgusStudyAgent
@@ -33,6 +37,7 @@ from observatory.ingestion.eurostat_demand import EurostatDemandAgent
 from observatory.ingestion.eurostat_sbs import EurostatSBSAgent
 from observatory.ingestion.bls_qcew import BLSQCEWAgent
 from observatory.ingestion.prodcom import ProdcomAgent
+from observatory.ingestion.eurostat_ppi import EurostatPPIAgent
 from observatory import notify
 from observatory.processing import benchmarking
 
@@ -45,17 +50,22 @@ AGENTS = [  # execution order = dependency order
     ComextTradeAgent(),
     ComextSupplierAgent(),
     ComtradeTradeAgent(),
+    ComtradeMonthlyAgent(),
+    CensusTradeAgent(),
+    ComextInputsAgent(),
     EuroChlorDropAgent(),
     EuroChlorMemberAgent(),
     ArgusStudyAgent(),
     EuroChlorWebAgent(),
     GasPriceAgent(),
+    EIAGasAgent(),
     SunSirsChinaAgent(),
     EUAPriceAgent(),
     EurostatDemandAgent(),
     EurostatSBSAgent(),
     BLSQCEWAgent(),
     ProdcomAgent(),
+    EurostatPPIAgent(),
 ]
 
 

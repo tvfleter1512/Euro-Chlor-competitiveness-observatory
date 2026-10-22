@@ -112,12 +112,15 @@ def screen_price(qty, val, totals, thresholds, sev_cfg, aggregate=False):
 
 
 def _load_trade(conn):
-    """{(product, flow): {partner: {period: (tonnes, eur)}}} for the whole basket."""
+    """{(product, flow): {partner: {period: (tonnes, eur)}}} for the whole basket
+    (basket CN8 codes only — raw materials such as salt are not screened)."""
+    basket = [c for p in load_config("product_basket")["products"] for c in p["cn8"]]
     rows = conn.execute(
         """SELECT series_id, product_code, flow, partner_geo_id, period, value
            FROM v_series_latest
            WHERE series_id IN ('trade.quantity', 'trade.value') AND geo_id = 'EU27_2020'
-             AND period LIKE '%-%'"""
+             AND period LIKE '%%-%%' AND product_code = ANY(%s)""",
+        (basket,),
     ).fetchall()
     data = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [0.0, 0.0])))
     for r in rows:

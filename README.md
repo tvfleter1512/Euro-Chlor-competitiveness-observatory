@@ -14,8 +14,9 @@ internal data · no dashboard auth in v1.
 
 ```
 ingestion agents (isolated, one per source)
-   ecb_fx · eurostat_power · eia_power · entsoe_power · proxy_power
-   comext_trade · comtrade_trade · eurochlor_drop
+   ecb_fx · eurostat_power · eia_power · eia_gas · entsoe_power · proxy_power
+   comext_trade · comext_inputs · comtrade_trade · comtrade_monthly · census_trade
+   eurostat_ppi · eurochlor_drop · … (full list: observatory/orchestrator/run.py)
         │  raw_landing (immutable)  →  provenance gatekeeper  →  fact_series (vintaged)
         ▼
 processing: normalisation (config/conversions.yaml) → benchmarking (config/indicators.yaml)
@@ -47,9 +48,10 @@ Dashboard: `cd dashboard && npm install && npm run build` (dev: `npm run dev`).
 
 | Agent | Needs | Where |
 |---|---|---|
-| `eia_power` (US) | `EIA_KEY` | instant: eia.gov/opendata/register.php |
+| `eia_power` (US, Louisiana, Texas power) · `eia_gas` (US industrial gas) | `EIA_KEY` | instant: eia.gov/opendata/register.php |
+| `census_trade` (US monthly exports, ~5 weeks after month end) | `CENSUS_KEY` | free: api.census.gov/data/key_signup.html |
 | `entsoe_power` (wholesale) | `ENTSOE_TOKEN` | register + email transparency@entsoe.eu |
-| `comtrade_trade` (non-EU) | `COMTRADE_KEY` | comtradeplus.un.org free tier |
+| `comtrade_trade` (non-EU, annual) · `comtrade_monthly` (competitors' monthly exports by partner) | `COMTRADE_KEY` | comtradeplus.un.org free tier |
 | `proxy_power` (CN/Gulf/IN) | curated CSVs | `data/proxy_tariffs/` (see TEMPLATE.csv) |
 | `eurochlor_drop` (Phase 2) | member data CSVs | `data/eurochlor_drop/` (see TEMPLATE.csv) |
 | `notify` (trade-surge e-mails) | `SMTP_HOST`, `SMTP_PORT` (587, STARTTLS), `SMTP_USER`, `SMTP_PASSWORD`, `ALERT_TO` (optional `ALERT_FROM`, `DASHBOARD_URL`) | `.env`; until set, digests go to `logs/alerts-YYYYMM.md` and the Trade tab |

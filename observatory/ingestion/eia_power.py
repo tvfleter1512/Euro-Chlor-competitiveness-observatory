@@ -3,6 +3,8 @@
 Dormant until EIA_KEY is set. Retail industrial price is the US analogue of the
 EU delivered price. EIA reports cents/kWh; converted to USD/MWh (×10, registry
 units.kwh_per_mwh); currency conversion to EUR happens in normalisation.
+US total plus Louisiana and Texas, the Gulf Coast states where US chlor-alkali
+capacity sits (the Argus study models the US Gulf).
 """
 from datetime import datetime, timezone
 
@@ -14,6 +16,7 @@ from observatory.provenance import SeriesRow
 from observatory.settings import EIA_KEY, HISTORY_START
 
 URL = "https://api.eia.gov/v2/electricity/retail-sales/data/"
+STATES = {"US": "US", "LA": "US_LA", "TX": "US_TX"}   # EIA stateid -> geo_id
 
 
 class EIAPowerAgent(IngestionAgent):
@@ -31,7 +34,7 @@ class EIAPowerAgent(IngestionAgent):
             "frequency": "monthly",
             "data[0]": "price",
             "facets[sectorid][]": "IND",
-            "facets[stateid][]": "US",
+            "facets[stateid][]": list(STATES),
             "start": f"{HISTORY_START}-01",
             "sort[0][column]": "period",
             "sort[0][direction]": "asc",
@@ -51,7 +54,7 @@ class EIAPowerAgent(IngestionAgent):
                 period = rec["period"]                     # '2015-01'
                 rows.append(SeriesRow(
                     series_id="power.industrial_delivered",
-                    geo_id="US",
+                    geo_id=STATES[rec["stateid"]],
                     period=period,
                     period_start=period_start(period),
                     value=round(float(rec["price"]) * 10, 4),   # cents/kWh -> USD/MWh
@@ -60,7 +63,7 @@ class EIAPowerAgent(IngestionAgent):
                     price_basis="delivered",
                     tax_treatment="retail",
                     source="US EIA",
-                    source_dataset="electricity/retail-sales (sector=IND, US total)",
+                    source_dataset=f"electricity/retail-sales (sector=IND, {rec['stateid']})",
                     reference_period=period,
                     retrieved_at=retrieved_at,
                 ))

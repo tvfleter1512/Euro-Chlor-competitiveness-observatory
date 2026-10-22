@@ -50,13 +50,15 @@ export const GEO_SLOT = {
   EU27_2020: 's1', US: 's2', CN: 's3', GULF: 's4', IN: 's5',
   DE: 's2', FR: 's3', NL: 's4', BE: 's5', ES: 's6', IT: 's7', PL: 's8',
   DE_LU: 's2',   // ENTSO-E bidding zone; same entity colour as Germany
+  US_LA: 's7', US_TX: 's8',   // US Gulf Coast states (world view only)
+  GULF_EI: 's4',              // Gulf energy-intensive tariff: Gulf's colour, drawn dashed
 }
 
 export const GEO_LABEL = {
   EU27_2020: 'EU27', US: 'United States', CN: 'China', GULF: 'Gulf (GCC)', IN: 'India',
   DE: 'Germany', FR: 'France', NL: 'Netherlands', BE: 'Belgium',
   ES: 'Spain', IT: 'Italy', PL: 'Poland', EXTRA_EU: 'Extra-EU', WORLD: 'World',
-  DE_LU: 'Germany-Luxembourg',
+  DE_LU: 'Germany-Luxembourg', US_LA: 'Louisiana', US_TX: 'Texas', GULF_EI: 'Gulf, energy-intensive tariff', EU4: 'EU4',
 }
 
 // Fixed trade-partner -> slot mapping for the by-origin/destination charts. Slots

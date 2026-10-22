@@ -38,6 +38,26 @@ def to_eur(value: float, currency: str, month_start: date, fx: dict) -> tuple[fl
     return value / rate, vintage
 
 
+def period_months(period: str, period_start: date) -> list[date]:
+    """First days of the months a period covers: 1 (monthly), 3 (quarter), 6 (half-year), 12 (year)."""
+    n = 12 if period.isdigit() else 6 if "-S" in period else 3 if "-Q" in period else 1
+    return [date(period_start.year + (period_start.month - 1 + i) // 12,
+                 (period_start.month - 1 + i) % 12 + 1, 1) for i in range(n)]
+
+
+def to_eur_period(value: float, currency: str, period: str, period_start: date, fx: dict) -> float:
+    """Like to_eur, but a period longer than a month (year, half-year, quarter) is
+    converted at the mean of the ECB monthly rates it covers (EUR per unit averaged),
+    so an annual tariff is not converted at January's rate. Falls back to to_eur
+    when none of those months has a rate yet."""
+    if currency in (None, "EUR"):
+        return value
+    inverse = [1 / fx[(currency, m)] for m in period_months(period, period_start) if (currency, m) in fx]
+    if inverse:
+        return value * sum(inverse) / len(inverse)
+    return to_eur(value, currency, period_start, fx)[0]
+
+
 def semester_of(month_start: date) -> tuple[str, date]:
     """Map a monthly period onto its semester ('2023-S1', start date) for
     alignment with the semi-annual Eurostat delivered-price series."""

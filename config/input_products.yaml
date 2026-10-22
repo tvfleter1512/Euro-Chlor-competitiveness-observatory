@@ -1,0 +1,14 @@
+# Raw materials tracked for cost checks (not part of the competitiveness basket:
+# no trade alerts, no dependency screening). Fetched by the comext_inputs agent.
+# Seeded into dim_product with nomenclature 'CN8_INPUT'.
+products:
+  - key: salt_chemical
+    name: "Salt for chemical transformation (Na/Cl separation)"
+    cn8: "25010031"
+    confirmed: true
+    note: "The CN line for salt sold to electrolysis. Plants on captive brine buy no salt, so traded prices are an upper bound for them."
+  - key: salt_other
+    name: "Salt, other (incl. de-icing and industrial)"
+    cn8: "25010099"
+    confirmed: true
+    note: "Context only."

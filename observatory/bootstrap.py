@@ -79,6 +79,8 @@ SERIES = [
      "Eurostat SBS wages and salaries, EUR million; BLS QCEW total annual wages, USD. Band = NACE/NAICS."),
     ("structure.personnel_costs", "Personnel costs (SBS)", "structure",
      "Eurostat SBS employee benefits expense = wages + employer social charges, EUR million. Band = NACE."),
+    ("price.ppi_domestic", "Industrial producer prices, domestic market", "price",
+     "Eurostat sts_inppd_m, index 2021=100, NSA; band = NACE (C2013 / C20)."),
     ("cost.ecu_cash_cost_argus", "ECU cash cost by component (Argus 2023 study)", "structure",
      "Argus Final Report Fig 5-4, EU4 average, EUR/t ECU; band = power/salt/other/fixed/total. Licensed."),
 ]
@@ -89,6 +91,7 @@ GEOS = [
     ("INTRA_EU", "Intra-EU27 aggregate", "region"),
     ("EU27_EFTA_UK", "EU-27 + Norway/Switzerland/UK (Euro Chlor reporting area)", "region"),
     ("GULF", "Gulf (GCC)", "region"),
+    ("GULF_EI", "Gulf, energy-intensive tariff (Saudi Heavy Consumption Tariff)", "region"),
     ("WORLD", "World", "world"),
     ("US", "United States", "country"), ("CN", "China", "country"),
     ("IN", "India", "country"), ("SA", "Saudi Arabia", "country"),
@@ -129,6 +132,13 @@ def bootstrap() -> None:
                    VALUES (%s,'HS6',%s,%s,%s) ON CONFLICT (product_code) DO UPDATE
                    SET name = EXCLUDED.name, confirmed = EXCLUDED.confirmed""",
                 (product["hs6"], product["name"], product["hs6"], product["confirmed"]))
+        # raw materials tracked for cost checks (not in the basket: no alerts/CDI)
+        for item in load_config("input_products")["products"]:
+            conn.execute(
+                """INSERT INTO dim_product (product_code, nomenclature, name, hs6, confirmed)
+                   VALUES (%s,'CN8_INPUT',%s,%s,%s) ON CONFLICT (product_code) DO UPDATE
+                   SET name = EXCLUDED.name, confirmed = EXCLUDED.confirmed""",
+                (item["cn8"], item["name"], item["cn8"][:6], item["confirmed"]))
         # legal-text constants: seeded from config/carbon.yaml with citation;
         # a human flips confirmed in the config after checking the source text
         for key, spec in load_config("carbon")["benchmark_constants"].items():

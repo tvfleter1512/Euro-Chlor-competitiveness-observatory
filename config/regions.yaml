@@ -16,6 +16,9 @@ comparators:
   - geo_id: GULF
     name: "Gulf (GCC)"
     power_source: proxy
+  - geo_id: GULF_EI
+    name: "Gulf, energy-intensive tariff"
+    power_source: proxy          # Saudi Heavy Consumption Tariff from 2023; eligibility unconfirmed
   - geo_id: IN
     name: "India"
     power_source: proxy
