@@ -39,6 +39,7 @@ from observatory.ingestion.bls_qcew import BLSQCEWAgent
 from observatory.ingestion.prodcom import ProdcomAgent
 from observatory.ingestion.eurostat_ppi import EurostatPPIAgent
 from observatory import notify
+from observatory.watch import trade_defence as td_watch
 from observatory.processing import benchmarking
 
 AGENTS = [  # execution order = dependency order
@@ -81,6 +82,8 @@ def main() -> None:
                        help="send/log the digest of alerts raised since the last notification")
     group.add_argument("--notify-test", action="store_true",
                        help="e-mail the current alert window as a delivery test (needs SMTP in .env)")
+    group.add_argument("--td-watch", action="store_true",
+                       help="scan official sources and news for new trade-defence cases")
     group.add_argument("--list", action="store_true")
     args = parser.parse_args()
 
@@ -102,6 +105,8 @@ def main() -> None:
             results.append(benchmarking.run())
     elif args.benchmarks:
         results = [benchmarking.run()]
+    elif args.td_watch:
+        results = [td_watch.run()]
     elif args.notify:
         results = [notify.run()]
     elif args.notify_test:

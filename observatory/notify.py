@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 
 from observatory import db
+from observatory.settings import load_config
 from observatory.settings import (ALERT_FROM, ALERT_TO, DASHBOARD_URL, PROJECT_ROOT,
                                   SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER)
 
@@ -78,6 +79,27 @@ def format_digest(alerts, now):
     return "\n".join(lines)
 
 
+def _fetch_td_signals(conn):
+    """Trade-defence watch hits not yet notified and not already cited in the measures list."""
+    cited = {u for m in load_config("trade_defence")["measures"]
+             for u in (m.get("source_url"), m.get("official_url")) if u}
+    rows = conn.execute("SELECT * FROM td_signal WHERE notified_at IS NULL "
+                        "ORDER BY published DESC NULLS LAST").fetchall()
+    return [r for r in rows if r["url"] not in cited]
+
+
+def format_td_signals(signals):
+    if not signals:
+        return ""
+    lines = ["## Trade-defence watch — new headlines to review", "",
+             "Possible new cases on basket products (official journals, TRA, Federal Register, news). "
+             "Check, then add real ones to config/trade_defence.yaml.", ""]
+    for s in signals:
+        lines.append(f"- {s['published'] or 'undated'} · {s['source']} · {', '.join(s['products'])}: "
+                     f"{s['title']} <{s['url']}>")
+    return "\n".join(lines)
+
+
 def _send_mail(subject, body):
     msg = EmailMessage()
     msg["Subject"] = subject
@@ -120,12 +142,15 @@ def run(test: bool = False) -> dict:
             return {"agent": "notify", "status": "success", "alerts": len(alerts),
                     "channel": "email (test)", "to": ALERT_TO}
         alerts = _fetch_pending(conn)
-        if not alerts:
+        signals = _fetch_td_signals(conn)
+        if not alerts and not signals:
             return {"agent": "notify", "status": "success", "alerts": 0}
-        body = format_digest(alerts, now)
+        body = "\n\n".join(part for part in (format_digest(alerts, now) if alerts else "",
+                                              format_td_signals(signals)) if part)
         channel = "log"
         if SMTP_HOST and ALERT_TO:
-            _send_mail(f"[Euro Chlor Observatory] {len(alerts)} trade alert(s)", body)
+            _send_mail(f"[Euro Chlor Observatory] {len(alerts)} trade alert(s), "
+                       f"{len(signals)} trade-defence signal(s)", body)
             channel = "email"
         else:
             logdir = PROJECT_ROOT / "logs"
@@ -134,6 +159,9 @@ def run(test: bool = False) -> dict:
                 fh.write(body + "\n\n")
         conn.execute("UPDATE alert SET notified_at = now() WHERE alert_id = ANY(%s)",
                      ([a["alert_id"] for a in alerts],))
+        conn.execute("UPDATE td_signal SET notified_at = now() WHERE signal_id = ANY(%s)",
+                     ([s["signal_id"] for s in signals],))
         conn.commit()
-    log.info("notify: %d alerts via %s", len(alerts), channel)
-    return {"agent": "notify", "status": "success", "alerts": len(alerts), "channel": channel}
+    log.info("notify: %d alerts, %d trade-defence signals via %s", len(alerts), len(signals), channel)
+    return {"agent": "notify", "status": "success", "alerts": len(alerts),
+            "td_signals": len(signals), "channel": channel}

@@ -6,12 +6,13 @@ import { fetchSeries } from '../api'
 import { useTheme, GEO_LABEL } from '../theme'
 import EChart, { baseOption } from '../EChart'
 import { Card, EmptyState, Legend, Segmented } from '../components'
+import { forProduct, markers } from '../tdlinks'
 
 const REPORTERS = [['US', 'United States'], ['IN', 'India'], ['SA', 'Saudi Arabia'], ['CN', 'China']]
 const REGION = new Intl.DisplayNames(['en'], { type: 'region' })
 const name = g => GEO_LABEL[g] || (() => { try { return REGION.of(g) } catch { return g } })()
 
-export default function CompetitorExports({ hs6, productLabel, fromDate, basis }) {
+export default function CompetitorExports({ hs6, productLabel, fromDate, basis, measures }) {
   const theme = useTheme()
   const [reporter, setReporter] = useState('US')
   const [rows, setRows] = useState(null)
@@ -55,15 +56,18 @@ export default function CompetitorExports({ hs6, productLabel, fromDate, basis }
         xAxis: { ...base.xAxis, data: periods },
         tooltip: { ...base.tooltip, axisPointer: { type: 'shadow' },
                    valueFormatter: v => v == null ? '—' : `${v.toFixed(1)} ${unit}` },
-        series: [bar('To the EU27', toEu, theme.series.s1, false), bar('Rest of world', rest, theme.axis, true)],
+        series: [bar('To the EU27', toEu, theme.series.s1, false), bar('Rest of world', rest, theme.axis, true),
+                 // measures any market imposed on this exporter's product (e.g. EU or Brazil duties on US PVC)
+                 ...markers(forProduct(measures, hs6).filter(m => m.targets?.includes(reporter)
+                   && !['expired', 'terminated'].includes(m.stage)), periods, theme, true)],
       },
     }
-  }, [rows, theme, volume])
+  }, [rows, theme, volume, measures, hs6, reporter])
 
   const td = { padding: '5px 8px', fontSize: 12.5, borderBottom: `1px solid ${theme.grid}`, color: theme.ink }
   return (
     <Card title={`Where competitors export — ${productLabel}`}
-      subtitle={`Monthly exports of the selected country, ${volume ? 'tonnes' : '€ (converted from USD at the ECB monthly rate)'}, split into the EU27 and the rest of the world; top destinations over the last 12 months. UN Comtrade${built?.sources.includes('US Census Bureau') ? ' and US Census' : ''}. Coverage depends on each country's filing: in Oct 2026 the US and India ran to mid-2026, Saudi Arabia lagged a quarter, China stopped at Dec 2024.`}
+      subtitle={`Monthly exports of the selected country, ${volume ? 'tonnes' : '€ (converted from USD at the ECB monthly rate)'}, split into the EU27 and the rest of the world; top destinations over the last 12 months. UN Comtrade${built?.sources.includes('US Census Bureau') ? ' and US Census' : ''}. Dashed markers: trade-defence steps by other markets against this exporter (code of the imposing country; see the table above). Coverage depends on each country's filing: in Oct 2026 the US and India ran to mid-2026, Saudi Arabia lagged a quarter, China stopped at Dec 2024.`}
       sourceRows={rows?.slice(-1)}
       right={<Segmented value={reporter} onChange={setReporter} options={REPORTERS} />}>
       {!rows ? <EmptyState>Loading…</EmptyState> : built ? (

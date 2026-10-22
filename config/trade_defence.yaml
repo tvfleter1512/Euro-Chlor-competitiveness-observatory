@@ -1,26 +1,13 @@
 # Trade-defence measures on basket products (anti-dumping, anti-subsidy, safeguards),
-# 2015 onwards. Compiled 2026-10-22 from official notices and trade press (see each
-# source_url); every item confirmed: false until a human checks it. Product keys follow
+# 2015 onwards. Compiled 2026-10-22 from official notices and trade press.
+# stage not_imposed = recommended by the investigating authority but never imposed.
+# confirmed: true = checked against the official text (official_url; verification_note
+# says what was checked); false = trade press only or not yet checked. Product keys follow
 # config/product_basket.yaml families; 'EU' as a target means the whole Union.
+# New cases surface through the weekly watch (observatory/watch/trade_defence.py).
 measures:
-- imposing: EU
-  targets:
-  - EG
-  - US
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: definitive
-  date: '2025-01-10'
-  expires: '2030-01-11'
-  duty: EG 74.2–100.1 %; US 58.0–77.0 %
-  case_ref: 'Implementing Regulation (EU) 2025/36 (provisional: (EU) 2024/1896; initiation OJ C/2023/1033)'
-  source_url: https://policy.trade.ec.europa.eu/news/commission-counters-dumped-polyvinyl-chloride-usa-and-egypt-2025-01-10_en
-  confirmed: false
-  note: S-PVC not mixed (TARIC 3904100015/80); EPC 100.1, TCI Sanmar 74.2, Formosa 71.2, Westlake 58.0, OxyVinyls/Shintech 62.3, US residual 77.0 % (text of Reg 2025/36 read via lawplayer.com mirror; EUR-Lex
-    blocked); expiry = standard 5 years from entry into force (day after OJ publication) computed, not read; AD case number not verified.
-- imposing: EU
+- id: eu-pvc-cn-kr-mx-tw-2026-09
+  imposing: EU
   targets:
   - CN
   - KR
@@ -34,12 +21,128 @@ measures:
   date: '2026-09-23'
   expires: null
   duty: null
-  case_ref: AD762; Notice of initiation OJ C/2026/4912
+  case_ref: AD762; Notice of initiation OJ C/2026/4912, 23.9.2026
   source_url: https://www.gtai.de/de/trade/eu/zoll/antidumping-pvc-china-mexiko-suedkorea-taiwan-2028904
+  confirmed: true
+  note: S-PVC and M-PVC (bulk/mass) in pure form, not mixed, incl. commodity, extender and specialty S-PVC; E-PVC
+    excluded. CN ex 3904 10 00 (TARIC 3904100021, 3904100081). Complaint lodged 10 Aug 2026 by the PVC Trade Committee.
+    IP 1 Apr 2025–31 Mar 2026, injury period from 1 Jan 2022. Provisional measures due within 7, at most 8 months
+    of publication (i.e. by ~23 Apr–23 May 2027); investigation to close within 14 months (~Nov 2027). Commission
+    states it intends to make imports subject to registration by a separate regulation; none published in the OJ
+    as of 2026-10-22 (Publications Office index check). China treated under Art. 2(6a) significant distortions.
+  official_url: http://publications.europa.eu/resource/celex/52026XC04912
+  verified: official
+  verification_note: Read the full OJ notice C/2026/4912; date, countries, product scope, TARIC codes, investigation
+    period and AD762 (case mailboxes TRADE-AD762-PVC-...) all confirmed. Added deadlines and the planned (not yet
+    published) registration.
+- id: eg-pvc-eu-2026-09
+  imposing: EG
+  targets:
+  - EU
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: definitive
+  date: '2026-09-08'
+  expires: null
+  duty: 35% of CIF, minimum USD 274/t (K65 and K67+/-1 grades)
+  case_ref: Case 02/2025/EU (WTO); Ministerial Decision 364/2026 (press)
+  source_url: https://amwalalghad.com/6xby
   confirmed: false
-  note: S-PVC and M-PVC (TARIC 3904100021/81), E-PVC excluded, IP 1 Apr 2025–31 Mar 2026, complaint by PVC Trade Committee; provisional pre-disclosure expected ~23 Apr 2027 (Argus); case no. AD762 from
-    Global Trade Alert state-act 100659; OJ notice text itself not opened (EUR-Lex blocked).
-- imposing: GB
+  note: 'S-PVC (tariff 39 04 10 00 00) from the EU. Investigation initiated 29.09.2025 (POI dumping 1 Apr 2024-31
+    Mar 2025). Definitive decision 364/2026 issued 20 Aug 2026, published Official Gazette 197 bis (A) 8 Sep 2026,
+    35% CIF min USD 274/t, 5 years: press only.'
+  official_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N426EGY.pdf
+  verified: secondary_only
+  verification_note: WTO G/ADP/N/426/EGY confirms only the initiation (29.09.2025, case 02/2025/EU), still pending
+    on 30 Jun 2026. The definitive decision, rate and gazette date come from press (Amwal Al Ghad); Egyptian gazette
+    not accessible.
+- id: kr-caustic_soda-cn-tw-2026-08
+  imposing: KR
+  targets:
+  - CN
+  - TW
+  product: caustic_soda
+  hs:
+  - '281511'
+  instrument: anti_dumping
+  stage: initiated
+  date: '2026-08-20'
+  expires: null
+  duty: 'KTC recommended provisional: CN Shandong Befar Group Dongrui Chemical and related 3.66%, Skyey Impex Ltd
+    22.21%, Tianjin Unilion Supply Chain 19.93%, other CN 17.58%; TW Formosa Plastics Corp and others 38.89%'
+  case_ref: KTC cases 26-001 (CN), 26-002 (TW)
+  source_url: https://en.nocutnews.co.kr/news/6565506
+  confirmed: true
+  note: 'Solid sodium hydroxide, HSK 2815.11.0000; petition by Youngjin Co. (Mar 2026), initiated 2026-04-07 (POI
+    dumping 2025, injury 2022-2025). Item = KTC affirmative preliminary determination at its 476th meeting on 2026-08-20,
+    recommending provisional duties to the Minister of Economy and Finance. MOEF imposition not found. No KTC final
+    determination found as of 2026-10-22 (the "October final" in the press release refers to another case). Stage
+    set to initiated: the KTC preliminary finding (20 Aug 2026) recommended provisional rates, but no Ministry of
+    Economy and Finance rule imposing them was found as of 22 Oct 2026.'
+  official_url: https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172116/view
+  verified: official
+  verification_note: MOTIR/KTC press release of 2026-08-20 and its PDF annex read (rates by supplier); WTO G/ADP/N/426/KOR
+    confirms initiation 07.04.2026 with case numbers 26-001/26-002. Stage is a KTC recommendation; MOEF provisional-duty
+    rule not found on law.go.kr.
+- id: br-pvc-cn-2026-08
+  imposing: BR
+  targets:
+  - CN
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: extended
+  date: '2026-08-06'
+  expires: '2031-08-06'
+  duty: 21.6% ad valorem, all Chinese producers/exporters
+  case_ref: Resolução GECEX nº 947, de 04/08/2026 (DOU 06/08/2026, Ed. 147); sunset review opened by Circular SECEX
+    nº 63, de 13/08/2025 (DOU 14/08/2025); SEI 19972.000695/2025-27
+  source_url: https://www.in.gov.br/web/dou/-/resolucao-gecex-n-947-de-4-de-agosto-de-2026-723743585
+  confirmed: true
+  note: 'PVC-S, NCM 3904.10.10. Petitioners Braskem and Unipar Indupa. History: original measure CAMEX 51/2008 (CN,
+    KR), extended by CAMEX 68/2014, then GECEX 73/2020 (21.6%, CN only, suspended at once) and reapplied by GECEX
+    255/2021 (DOU 27 Sep 2021). This is the next extension, with no suspension and no public-interest action. Expiry
+    2031-08-06 is derived as DOU publication + 5 years (same rule as ¶64 of the annex: GECEX 73/2020 of 14 Aug 2020
+    ran to 14 Aug 2025).'
+  official_url: https://www.in.gov.br/web/dou/-/resolucao-gecex-n-947-de-4-de-agosto-de-2026-723743585
+  verified: official
+  verification_note: 'Read GECEX 947 on in.gov.br: Art. 1 extends for up to 5 years at 21,6% for all Chinese firms,
+    in force from publication 06/08/2026. Circular SECEX 98/2025 extended the review deadline to 12 months.'
+- id: kr-pvc-de-fr-no-se-2026-08
+  imposing: KR
+  targets:
+  - DE
+  - FR
+  - 'NO'
+  - SE
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: definitive
+  date: '2026-08-05'
+  expires: '2031-08-04'
+  duty: 'DE: Westlake Vinnolit GmbH & Co. KG and related 31.55%, other DE 30.60%; FR: KEM ONE and related and all
+    others 31.55%; NO: Inovyn Europe Ltd and related and all others 25.79%; SE: Inovyn Trade Services SA and related
+    and all others 28.15%'
+  case_ref: MOEF Ordinance (재정경제부령) No. 43 of 2026-08-05; KTC cases 25-008 (FR), 25-009 (DE), 25-0010 (NO), 25-0011
+    (SE)
+  source_url: https://view.asiae.co.kr/en/article/2026071009245442634
+  confirmed: true
+  note: PVC paste resin, HSK 3904.10.0000; suspension PVC (suspension polymerised, rigid-pipe use, no viscosity
+    value, mean particle size 100-180 um) excluded. Hanwha petition; KTC initiation 2025-08-06; provisional duty
+    2026-02-25 (prelim margins FR 37.68%, DE 30.60-42.81%, NO 25.79%, SE 28.15%); definitive rule in force 2026-08-05.
+    Expiry 2031-08-04 = 5 years (from MOEF draft notice/press).
+  official_url: https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=288631&efYd=20260805
+  verified: official
+  verification_note: Read the promulgated rule on law.go.kr (MOEF Ordinance No. 43, in force 2026-08-05) and its
+    annex rates; WTO G/ADP/N/426/KOR gives initiation 06.08.2025 and provisional 25.02.2026. The rule text read
+    has no expiry clause; 2031-08-04 follows the 5-year statutory term and press, not a text read.
+- id: gb-pvc-cn-mx-kr-2026-08
+  imposing: GB
   targets:
   - CN
   - MX
@@ -54,73 +157,281 @@ measures:
   duty: null
   case_ref: TRA AD0092 (registration notice 2026/22)
   source_url: https://www.gov.uk/government/publications/trade-remedies-notices-s-pvc-from-china-mexico-and-south-korea/trade-remedies-notice-202622-registration-of-imports-of-suspension-polyvinyl-chloride-s-pvc-originating-from-china-mexico-and-south-korea
-  confirmed: false
-  note: UK TRA investigation into S-PVC not mixed (UK codes 3904100015/21/80/81); imports registered from 11 Aug 2026 so duties could be applied retroactively.
-- imposing: BR
+  confirmed: true
+  note: TRA investigation on application of INOVYN ChlorVinyls Ltd into S-PVC not mixed with any other substance.
+    POI 1 Jul 2025–30 Jun 2026, injury period 1 Jul 2022–30 Jun 2026. Registration of imports (TRN 2026/22, published
+    10 Aug 2026) applies from 11 Aug 2026 under UKGT codes 3904100015/21/80/81 (codes 21 and 81 added by update
+    of 21 Oct 2026); definitive duties may be collected up to 90 days before any provisional remedy.
+  official_url: https://www.trade-remedies.service.gov.uk/public/cases/
+  verified: official
+  verification_note: Confirmed AD0092 and initiation date 4 Aug 2026 on the TRA public case list; read TRN 2026/22
+    and the TRA news release (5 Aug 2026) on gov.uk. No correction; added POI/injury period and the 21 Oct 2026
+    commodity-code update.
+- id: pk-pvc-us-id-2026-07
+  imposing: PK
   targets:
   - US
+  - ID
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: definitive
-  date: '2025-05-29'
+  stage: provisional
+  date: '2026-07-23'
   expires: null
-  duty: 43.7% ad valorem (raised from 8.2%)
-  case_ref: Resolução GECEX nº 737/2025 (amends Resolução GECEX nº 399/2022); changed-circumstances review opened by Circular SECEX nº 23/2024
-  source_url: https://www.legisweb.com.br/legislacao/?id=478806
-  confirmed: false
-  note: PVC-S (NCM 3904.10.10). GECEX 737 (DOU 29 May 2025) raised the US rate after a review requested by Braskem; the underlying measure was extended for up to 5 years by GECEX 399 (DOU 19 Sep 2022),
-    so expiry is about Sep 2027 (not stated explicitly, hence null).
-- imposing: BR
-  targets:
-  - MX
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: extended
-  date: '2022-09-19'
-  expires: null
-  duty: 13.6% ad valorem, suspended immediately on extension
-  case_ref: Resolução GECEX nº 399/2022 (amended by GECEX nº 436/2022)
-  source_url: https://www.legisweb.com.br/legislacao/?id=436429
-  confirmed: false
-  note: PVC-S (NCM 3904.10.10). Sunset extension for up to 5 years, with the Mexico duty suspended at once; it can be reapplied if imports rise, on petition. Expiry about Sep 2027 (not stated). No reapplication
-    found.
-- imposing: BR
+  duty: 'US: Westlake Vinyls Co LP 37.30%, Westlake Vinyls Inc 22.28%, others 37.30%; ID: all 17.70%'
+  case_ref: A.D.C No. 71/2026/NTC/PVC
+  source_url: https://www.ntc.gov.pk/wp-content/uploads/2026/07/ADC-71-PD-Notice-of-PVC.pdf
+  confirmed: true
+  note: Suspension-grade PVC under PCT 3904.1090, initiated 2026-04-17 on application by Engro. The notice is dated
+    2026-07-23, and the provisional duty runs 4 months from press publication (exact publication date unknown, so
+    about late Nov 2026). Final determination is due within 180 days.
+  official_url: https://www.ntc.gov.pk/wp-content/uploads/2026/07/ADC-71-PD-Notice-of-PVC.pdf
+  verified: official
+  verification_note: 'NTC notice A.D.C No. 71/2026/NTC/PVC (dated 2026-07-23) read: initiated 2026-04-17 (Engro),
+    provisional duties US Westlake Vinyls Co LP 37.30%, Westlake Vinyls Inc 22.28%, all others 37.30%, Indonesia
+    all 17.70%, for 4 months from press publication (date not in the notice); final due within 180 days of that
+    publication. Initiation also in WTO G/ADP/N/426/PAK.'
+- id: kr-pvc-cn-2026-07
+  imposing: KR
   targets:
   - CN
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: extended
-  date: '2026-08-06'
-  expires: null
-  duty: 21.6% ad valorem
-  case_ref: Resolução GECEX nº 947/2026; sunset review opened by Circular SECEX nº 63/2025
-  source_url: https://www.legisweb.com.br/legislacao/?id=498951
-  confirmed: false
-  note: PVC-S (NCM 3904.10.10). Second extension for up to 5 years (DOU 6 Aug 2026), so expiry is about Aug 2031 (not stated). The original measure was CAMEX 68/2014; the 2020 extension (GECEX 73/2020)
-    was suspended until GECEX 255/2021 reinstated it. No Korean PVC measure found.
-- imposing: BR
-  targets:
-  - US
-  product: caustic_soda
-  hs:
-  - '281512'
-  instrument: anti_dumping
-  stage: terminated
-  date: '2022-08-09'
+  stage: initiated
+  date: '2026-07-08'
   expires: null
   duty: null
-  case_ref: Circular SECEX nº 34/2022 (initiation Circular SECEX nº 7/2021)
-  source_url: https://www.normasbrasil.com.br/norma/circular-34-2022_434958.html
-  confirmed: false
-  note: Liquid caustic soda (NCM 2815.12.00). Initiated 18 Feb 2021 and closed with no measure after a negative causation finding (other factors caused the injury). It was not a public-interest suspension,
-    so the "2018 Brazil AD on US caustic soda" lead does not hold.
-- imposing: MX
+  case_ref: null
+  source_url: https://globaltradealert.org/state-act/99171-republic-of-korea-initiation-of-anti-dumping-investigation-on-imports-of-polyvinyl-chloride-suspension-resin-from-china
+  confirmed: true
+  note: Suspension PVC resin from China; KTC reported at its 475th meeting (2026-07-23) the opening of the dumping
+    investigation, covering Tianjin Bohua and one other supplier and their affiliates; final determination planned
+    April 2027. Initiation date 2026-07-08 and case no. 2026-13 come from GTA only; petitioner (Hanwha) not confirmed
+    officially. HS not stated (assumed 3904.10).
+  official_url: https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172047/view
+  verified: official
+  verification_note: 'MOTIR/KTC press release of 2026-07-23 read: S-PVC from China initiation reported, 2 Chinese
+    suppliers incl. Tianjin Bohua, final April 2027. Exact initiation date and case number not in that text (date
+    kept from GTA).'
+- id: tr-pvc-us-de-2026-07
+  imposing: TR
+  targets:
+  - US
+  - DE
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: expiry_review
+  date: '2026-07-03'
+  expires: null
+  duty: 7.93% of CIF (both countries)
+  case_ref: Tebliğ No. 2026/25 (Resmî Gazete 33299)
+  source_url: https://www.resmigazete.gov.tr/eskiler/2026/07/20260703-13.htm
+  confirmed: true
+  note: 'Expiry review of S-PVC (GTIP 3904.10.00.00.19) measure, opened by Tebliğ 2026/25 on Petkim application
+    after the notice of impending expiry (Tebliğ 2026/4, RG 33160, 6 Feb 2026). History: Tebliğ 2003/2 (RG 25016,
+    6 Feb 2003) imposed USD 25-45/t firm-specific on DE, BE, IT, IL, RO and USD 45/t on US, FI, NL, HU, GR; review
+    2008/7 kept only US, DE, IT, RO; continued by 2009/18 (RG 27269); IT and RO lapsed 25 Jun 2014; 2015/24 (RG
+    29412) changed to US 18.81%, DE 16.44% of CIF; 2021/29 (RG 31541, 14 Jul 2021) to 7.93% CIF for both. Duty continues
+    during the review.'
+  official_url: https://www.resmigazete.gov.tr/eskiler/2026/07/20260703-13.htm
+  verified: official
+  verification_note: Resmî Gazete 33299 of 2026-07-03 (Tebliğ 2026/25) read; history in Art. 6 confirmed and corrected
+    (2003 duties were specific USD/t, not %). WTO G/ADP/N/426/TUR lists the measure (IDs 150.DEU, 150.USA). Final
+    determination date not official.
+- id: th-pvc-cn-tw-2026-06
+  imposing: TH
+  targets:
+  - CN
+  - TW
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: initiated
+  date: '2026-06-29'
+  expires: null
+  duty: null
+  case_ref: DFT cases AD2026-03 (CN), AD2026-04 (TW)
+  source_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N426THA.pdf
+  confirmed: true
+  note: Thailand AD investigation on PVC, HS 3904.10.10, 3904.10.91, 3904.10.92, 3904.10.99, initiated 29.06.2026;
+    POI dumping 1 Apr 2025-31 Mar 2026, injury 1 Jan 2023-31 Mar 2026. No preliminary result by 30 Jun 2026.
+  official_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N426THA.pdf
+  verified: official
+  verification_note: Read in WTO G/ADP/N/426/THA (Jan-Jun 2026). Thai DFT notice itself not read; petitioner not
+    stated.
+- id: mx-pvc-us-2026-03
+  imposing: MX
+  targets:
+  - US
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: provisional
+  date: '2026-03-24'
+  expires: '2026-07-24'
+  duty: USD 0.6315/kg (USD 631.5/t), provisional, all US exporters (single margin)
+  case_ref: Expediente AD_36-24 (UPCI); inicio DOF 28/04/2025 (DOF codigo 5755991); Resolución preliminar DOF 24/03/2026
+    (DOF codigo 5783023, signed 10 Mar 2026)
+  source_url: https://www.gob.mx/cms/uploads/attachment/file/1069618/20260324_RPAd_Homopol_mero_de_mon_mero.pdf
+  confirmed: true
+  note: Suspension PVC homopolymer (TIGIE 3904.10.03, or any other line). Petitioner Mexichem Resinas Vinílicas
+    (10 Dec 2024). Investigation period Oct 2023-Sep 2024. In force from 25 Mar 2026 for 4 months (point 454), so
+    it lapsed about 24 Jul 2026 (computed date). No final resolution appears in the SNICE list of DOF trade publications
+    up to 15 Oct 2026. The "USD 639/t" press figure is not in the official text.
+  official_url: https://www.gob.mx/cms/uploads/attachment/file/1069618/20260324_RPAd_Homopol_mero_de_mon_mero.pdf
+  verified: official
+  verification_note: 'Read the preliminary DOF text as uploaded by SE on gob.mx: points 452-454 and 462 confirm
+    USD 0.6315/kg, a 4-month term and entry into force the day after publication. The gob.mx PDF is SE''s reproduction
+    of the DOF page; dof.gob.mx itself was unreachable.'
+- id: in-pvc-eu-jp-2025-01
+  imposing: IN
+  targets:
+  - EU
+  - JP
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: not_imposed
+  date: '2026-03-19'
+  expires: null
+  duty: Recommended USD 417-469/t (EU 417-464, JP 469; Kaneka JP undertaking)
+  case_ref: AD (OI) - 31/2024 (F. No. 6/33/2024-DGTR)
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-poly-vinyl-chloride-pvc-paste
+  confirmed: true
+  note: 'PVC paste resin, tariff item 39041010 (indicative). Excluded: K-value below 60K, blending resin, co-polymers,
+    battery separator resins, grades 173GB/174GY, Biovyn/Neovyn/Recovyn and cross-linked resins. Investigation opened
+    24 Jan 2025. Recommended on 19 Mar 2026, not imposed: no CBIC Customs (ADD) notification appears up to the latest
+    listed (24/2026 of 24 Sep 2026), and the 3-month window under Rule 18 ran out around 19 Jun 2026. The DGTR page
+    lists no non-acceptance OM. Stage not_imposed: DGTR recommended a duty that the Finance Ministry did not notify
+    (date = decision or recommendation date).'
+  official_url: https://dgtr.gov.in/sites/default/files/2026-03/FF%20NCV%20PVC%20Paste%2019.03.2026%20%281%29.pdf
+  verified: official
+  verification_note: 'Read the DGTR final findings of 19 Mar 2026 (Case AD (OI)-31/2024): rates EU 417-464 and JP
+    469, with a Kaneka/Mitsui undertaking. Searched the full CBIC ADD list and found no implementing notification.
+    No corrections to rates.'
+- id: in-pvc-cn-2026-02
+  imposing: IN
+  targets:
+  - CN
+  product: pvc
+  hs:
+  - '390410'
+  - '390421'
+  - '390422'
+  - '390490'
+  instrument: anti_subsidy
+  stage: initiated
+  date: '2026-02-26'
+  expires: null
+  duty: null
+  case_ref: Case No. CVD 02/2025 (F. No. 06/67/2025-DGTR); SETU CVD/OI/1522025/01
+  source_url: https://www.dgtr.gov.in/en/countervailing-duty-investigation/initiation-countervailing-duty-investigation-concerning-imports-1
+  confirmed: true
+  note: 'Countervailing duty investigation on PVC suspension resins (K-value above 55 and up to 77) from China PR,
+    opened 26 Feb 2026 at the request of Chemplast Cuddalore Vinyls, DCM Shriram and DCW. Applicants asked for provisional
+    assessment and retrospective duty. Status in Oct 2026: interested-party lists published; sampling of Chinese
+    exporters notified 25 Sep 2026 and withdrawn 5 Oct 2026; no findings yet.'
+  official_url: https://dgtr.gov.in/sites/default/files/2026-02/PVC%20suspension%20Resin%20English%20Notification%20.pdf
+  verified: official
+  verification_note: Read the DGTR initiation notification (scanned, pages 1-2) and the case page. HS lines are
+    those named in the notification (3904 at 4-digit level).
+- id: ma-pvc-eg-2026-02
+  imposing: MA
+  targets:
+  - EG
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: definitive
+  date: '2026-02-03'
+  expires: null
+  duty: Egyptian Petrochemicals Co. 74.87%; others 92.19%
+  case_ref: Avis public DDC/13/2025 (final results, 2025-11-24); WTO ID AD-16.24.PVC.EGY; provisional arrêté conjoint
+    1346-25 (BO 7410)
+  source_url: https://www.mcinet.gov.ma/sites/default/files/documents/Avis%20public%20n%C2%B0%20DDC-13-2025%20relatif%20aux%20r%C3%A9sultats%20et%20la%20cl%C3%B4ture%20de%20l%27enqu%C3%AAte%20antidumping%20sur%20les%20importations%20de%20PVC%20originaires%20d%27Egypte.pdf
+  confirmed: true
+  note: Suspension PVC (SH 39.04.10.90.00) from Egypt; investigation opened 27 Nov 2024 (SNEP complaint); provisional
+    duty from 6 Jun 2025 (arrêté 1346-25, BO 7410 of 5 Jun 2025); investigation closed 25 Nov 2025; definitive duty
+    published BO 7479 of 02.02.2026, collected from 03.02.2026. 5-year expiry (~Feb 2031) not seen in an official
+    text.
+  official_url: https://www.mcinet.gov.ma/sites/default/files/documents/Avis%20public%20n%C2%B0%20DDC-13-2025%20relatif%20aux%20r%C3%A9sultats%20et%20la%20cl%C3%B4ture%20de%20l%27enqu%C3%AAte%20antidumping%20sur%20les%20importations%20de%20PVC%20originaires%20d%27Egypte.pdf
+  verified: official
+  verification_note: 'Avis DDC/13/2025 read (EPC 74.87%, others 92.19%); WTO G/ADP/N/426/MAR confirms definitive
+    measure P: 02.02.2026 (BO 7479), C: 03.02.2026. Arrêté number of the definitive measure not seen.'
+- id: pk-pvc-cn-tw-kr-th-2026-01
+  imposing: PK
+  targets:
+  - CN
+  - TW
+  - KR
+  - TH
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: extended
+  date: '2026-01-02'
+  expires: '2028-06-07'
+  duty: 'CN: Xinjiang Tianye 3.44%, Inner Mongolia Wuhai 6.65%, Tianjin LG Bohai 20.47%, Tianjin Dagu 14.34%, other
+    CN 20.47%; KR: LG Chem 4.00%, other KR 14.97%; TH: all 13.98%; TW: all 16.68% (ad val)'
+  case_ref: A.D.C No. 50/2016/NTC/PVC/SR-II/2025
+  source_url: https://www.ntc.gov.pk/wp-content/uploads/2026/04/ADC-50-Notice-of-Conclusion-of-Second-Sunset-Review.pdf
+  confirmed: true
+  note: Suspension-grade PVC, PCT 3904.1090. Definitive duty from 2017-06-13, extended 3 years from 2022-06-08 (SR-I),
+    then by the second sunset review (initiated 2025-06-02 on Engro application) for another 3 years from 2025-06-08;
+    notice dated 2026-01-02. Expiry computed as 3 years from 2025-06-08.
+  official_url: https://www.ntc.gov.pk/wp-content/uploads/2026/04/ADC-50-Notice-of-Conclusion-of-Second-Sunset-Review.pdf
+  verified: official
+  verification_note: 'NTC notice A.D.C No. 50/2016/NTC/PVC/SR-II/2025 (dated 2026-01-02) read: duties continued
+    for 3 years from 2025-06-08 at per-producer rates (corrected duty string). Expiry date 2028-06-07 is inferred
+    from the 3-year term, not stated. WTO G/ADP/N/426/PAK lists the SR-II extension; it gives the original imposition
+    as 25.04.2018 (re-issued determination), the NTC notice says 13 Jun 2017.'
+- id: in-pvc-cn-id-jp-kr-tw-th-us-2024-03
+  imposing: IN
+  targets:
+  - CN
+  - ID
+  - JP
+  - KR
+  - TW
+  - TH
+  - US
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: not_imposed
+  date: '2025-08-14'
+  expires: null
+  duty: Recommended USD 0-284/t (Hanwha nil; CN 122-232; ID 55-204; JP 49-148 (Taiyo 64 after corrigendum); KR 46-169;
+    TW 22-205; TH 60-193; US 72-284); never imposed
+  case_ref: AD-OI-30/2023 (F. No. 6/33/2023-DGTR)
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-pvc-suspension-resins-originating
+  confirmed: true
+  note: 'PVC suspension resin, K-value above 55 and up to 77. Preliminary findings 30 Oct 2024; no provisional duty
+    notification appears in the CBIC ADD series. Recommended on 14 Aug 2025, not imposed. The final findings (corrigendum
+    29 Oct 2025) are expressly subject to the Supreme Court outcome on the Gujarat High Court scope order. No Customs
+    (ADD) notification appears up to 24/2026 (24 Sep 2026). Separately, DGFT Notif. 25/2026-27 of 24 Jul 2026 made
+    imports of S-PVC under ITC(HS) 39041020 at CIF of USD 0.766/kg or less "Restricted" for 6 months (a minimum
+    import price under the FT(D&R) Act; EOU/SEZ/Advance Authorisation exempt). That is not a trade-defence duty.
+    A CVD case on China opened 26 Feb 2026 (separate entry). Stage not_imposed: DGTR recommended a duty that the
+    Finance Ministry did not notify (date = decision or recommendation date).'
+  official_url: https://dgtr.gov.in/sites/default/files/2025-08/FF-NCV_PVC_14.08.2025.pdf
+  verified: official
+  verification_note: Read the DGTR final findings (14 Aug 2025) duty table, the corrigendum of 29 Oct 2025 (Taiyo
+    87 changed to 64) and DGFT Notif. 25/2026-27 (https://content.dgft.gov.in/Website/dgftprod/8458a65d-e8ac-4242-a3f6-15f9b84cc1dd/Noti-25-E.pdf).
+    Corrected the bottom of the range to nil (Hanwha).
+- id: mx-caustic_soda-us-2025-07
+  imposing: MX
   targets:
   - US
   product: caustic_soda
@@ -130,210 +441,53 @@ measures:
   stage: expiry_review
   date: '2025-07-11'
   expires: null
-  duty: USD 195/t (dry basis)
-  case_ref: null
-  source_url: https://www.trade.gov/print/pdf/node/45386
-  confirmed: false
-  note: Liquid caustic soda (TIGIE 2815.12.01), in force since 12 Jul 1995. Extended in 2016 and 2021 (USD 288.71/t then); cut to USD 195/t by administrative review Rev. 11/21 (DOF 29 May 2025, per idconline).
-    Expiry review opened 11 Jul 2025, duty stays during review; trade.gov estimated the final for 28 Mar 2026, but no final found. Case number not found; DOF unreachable.
-- imposing: MX
+  duty: USD 195/t (dry basis, 100% NaOH), specific duty, all US exporters; continues during expiry review
+  case_ref: Expiry review EC_17-25 (inicio DOF 11/07/2025); USD 195/t set by administrative review Rev. 11/21 (Resolución
+    Final DOF 29/05/2025, signed 9 May 2025)
+  source_url: https://www.gob.mx/cms/uploads/attachment/file/1012224/20250711_RI_Ex_Sosa_ca_ustica_li_quida.pdf
+  confirmed: true
+  note: 'Liquid caustic soda, TIGIE 2815.12.01 (NICO 00). Original final DOF 12 Jul 1995; extended in 2003, 2006,
+    2012, 2016 and 2021. Correction: until 2025 the duty was a reference-price system (duty = gap between the ex-works
+    export price and a USD 288.71/t dry-basis reference price, capped at the dumping margin). USD 288.71/t was that
+    reference price, not a flat duty. Rev. 11/21 replaced it with a flat USD 195/t. Mexican producers asking for
+    the review: Iquisa, Mexichem Derivados, PMV. Nominal expiry was 12 Jul 2025 (Aviso DOF 14 Feb 2025); the duty
+    continues only because the expiry review is pending, and that review has now been open for more than 15 months.
+    No final expiry-review resolution appears in the SNICE list of DOF trade publications up to 15 Oct 2026; check
+    DOF directly for any later final.'
+  official_url: https://www.gob.mx/cms/uploads/attachment/file/1012224/20250711_RI_Ex_Sosa_ca_ustica_li_quida.pdf
+  verified: official
+  verification_note: 'Read the DOF texts as copies uploaded by the Secretaría de Economía on gob.mx: EC_17-25 initiation
+    (points 35-37) and the Rev. 11/21 final (points 187-190). These gob.mx PDFs are the issuing authority''s reproduction
+    of the DOF pages (header "DIARIO OFICIAL <date>"). dof.gob.mx itself was unreachable. The SNICE (snice.gob.mx)
+    DOF list was checked for a final.'
+- id: br-pvc-us-2025-05
+  imposing: BR
   targets:
   - US
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: provisional
-  date: '2026-03-24'
-  expires: null
-  duty: USD 0.6315/kg (about USD 632/t; Expansion reports USD 639/t), provisional for 4 months
-  case_ref: null
-  source_url: https://www.trade.gov/mexico-issues-preliminary-determination-antidumping-duty-investigation-pvc-suspension-united-states
-  confirmed: false
-  note: Suspension PVC homopolymer (TIGIE 3904.10.03). Petitioner Mexichem Resinas Vinílicas (Orbia). Initiated DOF 28 Apr 2025; preliminary DOF 24 Mar 2026 (idconline, stratego-st). Final was expected
-    by end Sep 2026 but none found as of 22 Oct 2026. Case number not found.
-- imposing: CO
-  targets:
-  - US
-  - CN
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: terminated
-  date: '2024-04-30'
-  expires: null
-  duty: null
-  case_ref: Expediente D-249-01/215-59-124; Resolución 108/2024
-  source_url: https://www.mincit.gov.co/mincomercioexterior/defensa-comercial/dumping/investigaciones-antidumping-concluidas/cloruro-de-polivinilo-pvc-2023
-  confirmed: false
-  note: PVC suspension (subpartida 3904.10.20.00). Petitioner Mexichem Resinas Colombia. Initiated by Res. 142 (DO 19 Jul 2023), no provisional duty (Res. 252/2023), final Res. 108 of 24 Apr 2024 (DO 30
-    Apr 2024) closed it with no duties; Mexichem request to revoke rejected by Res. 057/2025.
-- imposing: IN
-  targets:
-  - CN
-  - KR
-  product: caustic_soda
-  hs:
-  - '281511'
-  - '281512'
-  instrument: anti_dumping
-  stage: expired
-  date: '2020-11-18'
-  expires: '2020-11-17'
-  duty: USD 48.39/DMT (CN), USD 21.90/DMT (KR); Tianjin Dagu and Hanwha nil
-  case_ref: SSR 01/2020 (F. No. 7/1/2020-DGTR); in force under Notif. 42/2015-Customs (ADD)
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/caustic-soda-china-pr-and-korea-rp
-  confirmed: false
-  note: Duty extended 18 Aug 2015 (Notif. 42/2015-Customs (ADD)) after the 2nd sunset review. DGTR recommended continuing it in the 3rd sunset review (final findings 29 Oct 2020), but a MoF/TRU office memorandum
-    of 18 Nov 2020 decided not to impose, so the measure lapsed. An interested party quoted in the 2021 DGTR findings (AD-OI-30/2020) says the duties were deemed to have expired on 17 Nov 2020; this is
-    not an official notification.
-- imposing: IN
-  targets:
-  - SA
-  - US
-  product: caustic_soda
-  hs:
-  - '281511'
-  - '281512'
-  instrument: anti_dumping
-  stage: expired
-  date: '2018-08-01'
-  expires: null
-  duty: USD 16.24/DMT (SA), USD 55.96/DMT (US) per 2017 mid-term review
-  case_ref: F. No. 7/16/2017-DGAD (3rd sunset review); Notif. 39/2017 and 55/2017-Customs (ADD)
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/final-finding-notification-3rd-sunset-review-anti-dumping-investigation
-  confirmed: false
-  note: Measure dates from 2001. Rates were revised by the mid-term review (final findings 20 Jun 2017, Notif. 39/2017, 23 Aug 2017) and the duty was continued by Notif. 55/2017 of 24 Nov 2017 while the
-    sunset review ran. The 3rd sunset review (final findings 1 Aug 2018) recommended discontinuing it. The date is the date of those findings; the exact lapse date is not verified.
-- imposing: IN
-  targets:
-  - IR
-  product: caustic_soda
-  hs:
-  - '281511'
-  - '281512'
-  instrument: anti_dumping
-  stage: expired
-  date: '2017-11-25'
-  expires: '2017-11-25'
-  duty: USD 9.75/DMT (Arvand Petrochemical nil) per 2017 mid-term review
-  case_ref: F. No. 15/19/2015-DGAD (mid-term review); Notif. 49/2012 as modified by 39/2017-Customs (ADD)
-  source_url: https://dgtr.gov.in/sites/default/files/2024-08/Final%20Finding%20NCV%20English.pdf
-  confirmed: false
-  note: The 2017 mid-term review findings say the Notif. 49/2012 duties were valid until 25 Nov 2017. The 3rd sunset review covered only Saudi Arabia and the USA, so the Iran duty presumably lapsed on that
-    date (inferred). The Japan rate under 49/2012 was nil.
-- imposing: IN
-  targets:
-  - JP
-  - QA
-  product: caustic_soda
-  hs:
-  - '281511'
-  - '281512'
-  instrument: anti_dumping
-  stage: terminated
-  date: '2018-01-10'
-  expires: null
-  duty: null
-  case_ref: F. No. 14/31/2015-DGAD
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/caustic-soda-originating-or-exported-japan-and-qatar
-  confirmed: false
-  note: Original investigation opened 14 Oct 2016. DGTR final findings of 10 Jan 2018 found no material injury and recommended termination under Rule 14(b).
-- imposing: IN
-  targets:
-  - TW
-  product: caustic_soda
-  hs:
-  - '281511'
-  - '281512'
-  instrument: anti_dumping
-  stage: expired
-  date: '2017-07-31'
-  expires: null
-  duty: null
-  case_ref: F. No. 15/10/2016-DGAD (sunset review); original Notif. 79/2011-Customs
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/caustic-soda-originating-or-exported-thailand-chinese-taipei-and-norway
-  confirmed: false
-  note: Duty imposed 23 Aug 2011 (Notif. 79/2011-Customs). The sunset review covered only Chinese Taipei, and its final findings of 31 Jul 2017 said continuation was not required. The rate and the exact
-    lapse date were not captured.
-- imposing: IN
-  targets:
-  - TH
-  - 'NO'
-  product: caustic_soda
-  hs:
-  - '281511'
-  - '281512'
-  instrument: anti_dumping
-  stage: expired
-  date: '2016-08-22'
-  expires: '2016-08-22'
-  duty: null
-  case_ref: F. No. 14/1/2010-DGAD; Notif. 79/2011-Customs
-  source_url: https://dgtr.gov.in/sites/default/files/2024-06/Final%20Finding%20NCV%20FinalCS.pdf
-  confirmed: false
-  note: Five-year duty from 23 Aug 2011. No sunset review was sought for Thailand or Norway (the review covered Chinese Taipei only), so the expiry date of about 22 Aug 2016 is inferred. Rates were not
-    captured.
-- imposing: IN
-  targets:
-  - JP
-  - IR
-  - QA
-  - OM
-  product: caustic_soda
-  hs:
-  - '281511'
-  - '281512'
-  instrument: anti_dumping
-  stage: terminated
-  date: '2022-02-23'
-  expires: null
-  duty: Recommended USD 8.32-72.24/DMT (never imposed)
-  case_ref: AD-OI-30/2020 (F. No. 6/36/2020-DGTR)
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-caustic-soda-originating-or
-  confirmed: false
-  note: 'Opened 17 Dec 2020; DGTR final findings (dated 16 Dec 2021) recommended a 5-year duty. Recommended rates: Japan about USD 11.82-24.60, Iran 72.24, Oman 66.41-66.44, Qatar 8.32-24.09 per DMT. A
-    MoF/TRU office memorandum of 23 Feb 2022 decided not to accept the recommendation.'
-- imposing: IN
-  targets:
-  - KR
-  - TW
-  - CN
-  - MY
-  - TH
-  - EU
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: expired
-  date: '2021-06-22'
-  expires: '2021-06-22'
-  duty: USD 0-379/t (KR others 379, EU 298, MY 214, TH 111, TW 101, CN 88; Hanwha/LG Chem nil)
-  case_ref: Final findings 15/19/2014-DGAD (sunset review); Notif. 27/2016-Customs (ADD)
-  source_url: https://taxguru.in/?p=543428
-  confirmed: false
-  note: PVC paste/emulsion resin, Customs heading 3904 (HS6 lines not specified). Duty was extended for five years by Notif. 27/2016 of 23 Jun 2016; Russia was dropped. No further sunset review appears
-    on the DGTR case page, only a 2020 name-change mid-term review, so the duty expired. The 2024 DGTR preliminary findings (AD(OI)-16/2023) state that it expired on 22 Jun 2021.
-- imposing: IN
-  targets:
-  - 'NO'
-  - MX
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: expired
-  date: '2020-04-06'
-  expires: '2020-04-06'
-  duty: USD 319/t (NO), USD 309-429/t (MX)
-  case_ref: F. No. 14/5/2013-DGAD
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/poly-vinyl-chloride-pasteemulsion-resin-originating-or-exported-norway-and
-  confirmed: false
-  note: PVC paste/emulsion resin. DGTR final findings 21 Jan 2015 recommended the duty, and Global Trade Alert gives an implementation date of 7 Apr 2015. The MoF notification number was not found. No sunset
-    review is listed, so expiry around Apr 2020 is inferred.
-- imposing: IN
+  stage: definitive
+  date: '2025-05-29'
+  expires: '2027-09-19'
+  duty: 43.7% ad valorem, all US producers/exporters (raised from 8.2% set by GECEX 399/2022)
+  case_ref: Resolução GECEX nº 737, de 28/05/2025 (DOU 29/05/2025, Ed. 100) amending Resolução GECEX nº 399/2022;
+    changed-circumstances review opened by Circular SECEX nº 23, de 29/05/2024 (DOU 03/06/2024); Parecer DECOM nº
+    1050/2025
+  source_url: https://www.in.gov.br/web/dou/-/resolucao-gecex-n-737-de-28-de-maio-de-2025-632527441
+  confirmed: true
+  note: 'PVC-S, NCM 3904.10.10 (indicative). Petitioners Unipar (22 Dec 2023) and Braskem (31 Jan 2024). GECEX 737
+    only changed the US rate; the measure keeps the term of GECEX 399/2022 (up to 5 years from DOU 19 Sep 2022).
+    Expiry 2027-09-19 is derived, not stated in the text. The rule is publication + 5 years: the GECEX 947 annex
+    ¶64 shows that GECEX 73/2020 (DOU 14 Aug 2020) ran until 14 Aug 2025. No public-interest suspension of the US
+    duty.'
+  official_url: https://www.in.gov.br/web/dou/-/resolucao-gecex-n-737-de-28-de-maio-de-2025-632527441
+  verified: official
+  verification_note: 'Read GECEX 737 on in.gov.br: Art. 1 sets 43,7% ad valorem for all US producers/exporters,
+    in force from publication 29/05/2025. Background confirmed again in the GECEX 947/2026 annex.'
+- id: in-pvc-cn-kr-my-no-tw-th-2025-03
+  imposing: IN
   targets:
   - CN
   - KR
@@ -346,111 +500,187 @@ measures:
   - '390410'
   - '390421'
   - '390422'
+  - '390430'
+  - '390440'
+  - '390490'
   instrument: anti_dumping
   stage: definitive
   date: '2025-03-21'
   expires: '2029-06-12'
-  duty: USD 0-707/t (CN 248-707, NO 495, MY 516, TH 343-421, TW 247-373, KR 89; Hanwha nil; Kaneka MY undertaking)
-  case_ref: AD(OI)-16/2023 (F. No. 6/17/2023-DGTR); provisional Notif. 09/2024-Customs (ADD)
+  duty: USD 0-707/t (CN 248-707, Formosa Ningbo 595; NO 495; MY 516, Kaneka MY exempt under price undertaking; TH
+    343-421; TW 247-373; KR 89, Hanwha nil)
+  case_ref: AD(OI)-16/2023 (F. No. 6/17/2023-DGTR); provisional Notif. 09/2024-Customs (ADD); definitive Notif.
+    05/2025-Customs (ADD) of 21 Mar 2025
   source_url: https://www.argusmedia.com/en/news-and-insights/latest-market-news/2670801-india-amends-finalises-e-pvc-anti-dumping-duties
-  confirmed: false
-  note: PVC paste/emulsion resin; the findings list tariff items 39041010/20/90, 39042100, 39042200 and others. Provisional duty was imposed 13 Jun 2024 and DGTR final findings came on 24 Dec 2024. The
-    MoF definitive notification dated 21 Mar 2025 runs 5 years from 13 Jun 2024. Its number was not found.
-- imposing: IN
+  confirmed: true
+  note: 'PVC paste/emulsion resin. Tariff items 39041010/20/90, 39042100, 39042200, 39043010/90, 39044000, 39049000
+    and 39049090 (indicative). Excluded: K-value below 60K, blending resin, co-polymers, battery separator resins
+    and Biovyn. Provisional duty applied from 13 Jun 2024. DGTR final findings came on 24 Dec 2024. Notif. 05/2025
+    runs 5 years from 13 Jun 2024. No duty was levied between 12 Dec 2024 (the provisional duty lapsed) and the
+    publication of 05/2025.'
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1010334/ENG
+  verified: official
+  verification_note: Read Notif. 05/2025-Customs (ADD) (scanned, read page by page) and 09/2024-Customs (ADD). This
+    supplies the missing definitive notification number. Added Formosa Ningbo 595 and widened the HS list; rates
+    and expiry confirmed. (CBIC notification texts read via the taxinformation.cbic.gov.in download API, which returns
+    the PDF base64-encoded in JSON.)
+- id: eg-pvc-us-2025-02
+  imposing: EG
   targets:
-  - EU
-  - JP
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: initiated
-  date: '2025-01-24'
-  expires: null
-  duty: Recommended USD 417-469/t (EU 417-464, JP 469; Kaneka JP undertaking)
-  case_ref: AD (OI) - 31/2024 (F. No. 6/33/2024-DGTR)
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-poly-vinyl-chloride-pvc-paste
-  confirmed: false
-  note: PVC paste resin. Investigation opened 24 Jan 2025; DGTR final findings of 19 Mar 2026 recommended a 5-year duty. No MoF notification was found, so whether the duty was imposed is unknown. The DGTR
-    page lists no non-acceptance memorandum.
-- imposing: IN
-  targets:
-  - CN
   - US
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: expired
-  date: '2022-02-12'
-  expires: '2022-02-12'
-  duty: USD 29.99-147.96/t (CN 61.14-147.96, US 29.99-115.54)
-  case_ref: F. No. 7/34/2018-DGTR (2nd sunset review); earlier Notif. 27/2014 and 23/2019-Customs (ADD)
-  source_url: https://antidumping.vn/indias-anti-dumping-duty-levy-on-pvc-suspension-expires-without-govt-notification-n24334.html
-  confirmed: false
-  note: PVC suspension resin. Sunset review findings of 18 Jul 2019 recommended a 30-month continuation for China and the USA only. MoF continued it from 13 Aug 2019 (notification number not found), and
-    the duty expired 12 Feb 2022 without extension.
-- imposing: IN
+  stage: definitive
+  date: '2025-02-09'
+  expires: null
+  duty: 13% of CIF, all exporters (WTO); press adds a minimum of USD 107/t and a K65/K67 grade scope, not seen officially
+  case_ref: Case 8/2020/USA; Ministerial Decision 40/2025 (decree of 2025-02-05) amending Decision 605/2021
+  source_url: https://amwalalghad.com/klyl
+  confirmed: true
+  note: 'PVC (tariff 39 04 10 00 90) from the US. Initiated 29.12.2020; original definitive duty 9% of CIF (all
+    exporters) from 06.12.2021 (Official Gazette No. 274 suppl.). Interim review opened 06.02.2024; final 09.02.2025
+    affirmative, measure changed to 13% CIF for all exporters, ministerial decree of 05.02.2025, published and collected
+    from 09.02.2025. Expiry: interim review does not usually restart the term (original would end ~Dec 2026), not
+    confirmed.'
+  official_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N412EGY.pdf
+  verified: official
+  verification_note: 'WTO G/ADP/N/412/EGY (Jan-Jun 2025) read: interim review result 13% CIF from 09.02.2025; G/ADP/N/426/EGY
+    lists the measure in force; G/ADP/N/364/EGY confirms the original 9% CIF of 06.12.2021. Minimum USD/t and grade
+    limits not confirmed.'
+- id: eu-pvc-eg-us-2025-01
+  imposing: EU
   targets:
-  - TW
-  - ID
-  - JP
-  - MY
+  - EG
+  - US
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: expired
-  date: '2019-06-12'
-  expires: '2019-06-12'
-  duty: 'USD 9.47-70.58/t (2014 SSR rates: ID 70.58, MY 42.92, TW 9.47-61.25, JP 14.95)'
-  case_ref: No. 21/29/2011-DGAD (1st sunset review); Notif. 27/2014-Customs (ADD)
-  source_url: https://taxguru.in/custom-duty/anti-dumping-duty-imposed-pvc-continue-till-12th-august-2019.html
-  confirmed: false
-  note: PVC suspension resin. The 2014 sunset review continued the duty on all subject countries except Korea (Notif. 27/2014, 13 Jun 2014). The 2nd sunset review covered only China, Thailand and the USA.
-    Thailand was extended to 12 Aug 2019 by Notif. 23/2019 and then dropped. The five-year term of Notif. 27/2014 implies Taiwan, Indonesia, Japan and Malaysia lapsed on 12 Jun 2019 (inferred; no notification
-    seen).
-- imposing: IN
+  stage: definitive
+  date: '2025-01-10'
+  expires: '2030-01-11'
+  duty: EG 74.2–100.1 %; US 58.0–77.0 %
+  case_ref: 'AD697; Implementing Regulation (EU) 2025/36 of 9 Jan 2025, OJ L 2025/36, 10.1.2025 (provisional: (EU)
+    2024/1896, OJ L 12.7.2024; initiation OJ C/2023/1033, 15.11.2023)'
+  source_url: https://policy.trade.ec.europa.eu/news/commission-counters-dumped-polyvinyl-chloride-usa-and-egypt-2025-01-10_en
+  confirmed: true
+  note: S-PVC not mixed with any other substance, CN ex 3904 10 00 (TARIC 3904100015, 3904100080). EG - Egyptian
+    Petrochemicals Co 100.1, TCI Sanmar 74.2, all other EG 100.1; US - Formosa Plastics Corp 71.2, Westlake Chemicals
+    58.0, Oxy Vinyls 62.3, Shintech 62.3, all other US 77.0 %. Provisional duties definitively collected. Complaint
+    by PVC Trade Committee (2 Oct 2023). Published OJ 10.1.2025, in force 11.1.2025; expiry computed (5 years from
+    entry into force), not stated in the act.
+  official_url: http://publications.europa.eu/resource/celex/32025R0036
+  verified: official
+  verification_note: Read the full OJ text of Reg (EU) 2025/36 (Publications Office Cellar) and the 2023 notice
+    of initiation; stage, publication date, product scope, TARIC codes and all company rates match. Case number
+    AD697 added (from the official notice of initiation C/2023/1033 contact addresses); expiry 2030-01-11 is computed
+    (entry into force 11.1.2025 + 5 years).
+- id: gb-pvc-us-2025-01
+  imposing: GB
+  targets:
+  - US
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: definitive
+  date: '2025-01-09'
+  expires: '2030-01-10'
+  duty: Formosa Plastics Corporation, USA 38.43%; all other US 56.01%
+  case_ref: AD0049; Trade remedies notice 2025/01
+  source_url: https://www.gov.uk/government/publications/trade-remedies-notice-provisional-anti-dumping-duty-on-suspension-poly-vinyl-chloride-s-pvc-from-the-united-states-of-america/trade-remedies-notice-202501-definitive-anti-dumping-duty-on-suspension-poly-vinyl-chloride-s-pvc-from-the-united-states-of-america
+  confirmed: true
+  note: UK TRA S-PVC case initiated 8 Jan 2024 on INOVYN application; provisional duty from 29 Nov 2024 (TRN 2024/16).
+    Definitive notice published 9 Jan 2025, with effect from 29 Nov 2024, same rates as provisional; UKGT codes
+    3904100015, 3904100080. Expiry 10 Jan 2030 is stated in the notice. TRA case file shown as closed 2 Oct 2025
+    (measure remains in force).
+  official_url: https://www.gov.uk/government/publications/trade-remedies-notice-provisional-anti-dumping-duty-on-suspension-poly-vinyl-chloride-s-pvc-from-the-united-states-of-america/trade-remedies-notice-202501-definitive-anti-dumping-duty-on-suspension-poly-vinyl-chloride-s-pvc-from-the-united-states-of-america
+  verified: official
+  verification_note: Read TRN 2025/01 in full on gov.uk; rates (38.43% Formosa, 56.01% residual), codes, AD0049
+    and the stated expiry 10 Jan 2030 all match. Only the company name was refined (Formosa Plastics Corporation,
+    USA, additional code 8A30).
+- id: ma-pvc-us-2025-01
+  imposing: MA
+  targets:
+  - US
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: extended
+  date: '2025-01-03'
+  expires: null
+  duty: 24.88% ad valorem (single rate)
+  case_ref: Avis public DDC/14/2023 (initiation); DDC/14/2024 (closure, dated 2024-11-22); WTO ID AD-2.12.PVC.USA
+  source_url: https://mcinet.gov.ma/sites/default/files/documents/Avis%20de%20cl%C3%B4ture%20n%20DDC-14-2024-%20R%C3%A9examen%20PVC-USA.pdf
+  confirmed: true
+  note: S-PVC (SH 3904.10.90.00). Original arrêté conjoint 3035-13 (BO 6216, 26 Dec 2013), extended by arrêté 221-20
+    (BO 6857, 17 Feb 2020) to 27 Dec 2023. Joint expiry/revision review opened 11 Dec 2023; duty replaced by a 5.5%
+    deposit under arrêté 159.24 (BO 7270, 1 Feb 2024). Review closed 27 Nov 2024 recommending extension with a revised
+    24.88%; extension effective 03.01.2025, BO 7366 of 02.01.2025. Arrêté number and expiry not seen (5 years would
+    be ~Jan 2030).
+  official_url: https://mcinet.gov.ma/sites/default/files/documents/Avis%20de%20cl%C3%B4ture%20n%20DDC-14-2024-%20R%C3%A9examen%20PVC-USA.pdf
+  verified: official
+  verification_note: Avis DDC/14/2024 read (rate 24.88%, recommendation, closure 27 Nov 2024). WTO G/ADP/N/426/MAR
+    lists the extension of 03.01.2025 (BO 7366 of 02.01.2025), so the date is confirmed. The implementing arrêté
+    itself was not read.
+- id: co-pvc-us-cn-2024-04
+  imposing: CO
+  targets:
+  - US
+  - CN
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: terminated
+  date: '2024-04-30'
+  expires: null
+  duty: null
+  case_ref: Expediente D-249-01/215-59-124; Res. 142 de 18/07/2023 (DO 52.461, 19/07/2023) inicio; Res. 252 de 03/11/2023
+    (no provisional duty); Res. 108 de 24/04/2024 (DO 52.743, 30/04/2024) terminación; Res. 057 de 13/03/2025 (no
+    revocar)
+  source_url: https://www.mincit.gov.co/mincomercioexterior/defensa-comercial/dumping/investigaciones-antidumping-concluidas/cloruro-de-polivinilo-pvc-2023
+  confirmed: true
+  note: Suspension PVC, subpartida 3904.10.20.00. Petitioner Mexichem Resinas Colombia. Dumping margins were found
+    (2.39% US, 8.69% China, per Res. 057) but the case was closed without duties for lack of a causal link. Mexichem
+    asked to revoke Res. 108 and was refused by Res. 057/2025, against which no appeal lies.
+  official_url: https://www.mincit.gov.co/getattachment/7cb4bc84-d54a-4812-afd3-84451ae389bb/Resolucion-108-del-24-de-abril-de-2024.aspx
+  verified: official
+  verification_note: 'Read Res. 108/2024 on mincit.gov.co. It is a scanned PDF, read visually from the page image:
+    Art. 1 ends the investigation, Art. 2 imposes no definitive AD duties on PVC-S (3904.10.20.00) from the US and
+    China. Also read Res. 057/2025, which refuses revocation. Res. 252/2023 (no provisional duty) was not opened.'
+- id: ma-pvc-eu-gb-mx-2023-08
+  imposing: MA
   targets:
   - EU
+  - GB
   - MX
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: expired
-  date: '2019-10-22'
+  stage: extended
+  date: '2023-08-10'
   expires: null
-  duty: 'USD 39.65-189.99/t (EU: INEOS 39.65, others 189.99; MX 88.10-163.05)'
-  case_ref: No. 14/1012/2012-DGAD
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/polyvinyl-chloride-pvc-suspension-grade-resin-european-union-and-mexico
-  confirmed: false
-  note: PVC suspension resin. DGTR final findings of 4 Apr 2014 recommended the duty, imposed in 2014 (MoF notification number and date not found). Plasteurope (22 Oct 2019) reports it phased out with no
-    review; a secondary summary says it lapsed in June 2019. The date is that article's publication date, not the expiry; the exact expiry date is unknown.
-- imposing: IN
-  targets:
-  - CN
-  - ID
-  - JP
-  - KR
-  - TW
-  - TH
-  - US
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: initiated
-  date: '2024-03-26'
-  expires: null
-  duty: Recommended USD 22-284/t (never imposed)
-  case_ref: AD-OI-30/2023 (F. No. 6/33/2023-DGTR)
-  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-pvc-suspension-resins-originating
-  confirmed: false
-  note: 'PVC suspension resin, K-value 55-77. Preliminary findings 30 Oct 2024 (no provisional duty found). DGTR final findings of 14 Aug 2025 (corrigendum 29 Oct 2025) recommended USD 22-284/t, subject
-    to the Supreme Court case. No MoF notification was found and no formal non-acceptance memorandum is listed. As of Jul 2026 the duty had not been imposed: DGFT Notif. 25/2026-27 of 24 Jul 2026 instead
-    set a 6-month import restriction below USD 766/t CIF (not a trade-defence instrument).'
-- imposing: IN
+  duty: EU 5.5%; UK 5.5%; Mexico 8% (revised definitive)
+  case_ref: Avis public DDC/07/2022 (review opening); DDC/06/2023 (results, 2023-07-05); DDC/09/2023 (revised rates,
+    2023-08-02); WTO IDs AD-7.15.PVC.UE / .UK / .MEX
+  source_url: https://www.mcinet.gov.ma/sites/default/files/documents/Avis%20n%C2%B0DDC-09-2023%20compl%C3%A9mentaire%20de%20l%27avis%20n%C2%B0DDC-06-2023_0.pdf
+  confirmed: true
+  note: 'S-PVC (SH 39.04.10.90.00) from EU, UK, MX. Original arrêté conjoint 1650.17 of 28 Jun 2017 (BO 13 Jul 2017;
+    in force 14.07.2017). Joint expiry/revision review opened 13 Jul 2022 (SNEP and importer Plastima); measure
+    kept as a 10% deposit under arrêté 2079.22 (BO 4 Aug 2022). Review margins: EU 8.17%, UK 43.15%, MX 17.5% (recurrence);
+    revised rates EU 5.5%, UK 5.5%, MX 8% applied from 10.08.2023 (BO 7220 of 10.08.2023). Expiry not seen (5 years
+    would be ~Aug 2028).'
+  official_url: https://www.mcinet.gov.ma/sites/default/files/documents/Avis%20n%C2%B0DDC-09-2023%20compl%C3%A9mentaire%20de%20l%27avis%20n%C2%B0DDC-06-2023_0.pdf
+  verified: official
+  verification_note: Ministry avis DDC/06/2023 and DDC/09/2023 read on mcinet.gov.ma; date corrected from 2023-08-02
+    (avis date) to 2023-08-10 (BO 7220 publication, from WTO G/ADP/N/426/MAR). Implementing arrêté not read.
+- id: in-sodium_chlorate-ca-cn-eu-2022-11
+  imposing: IN
   targets:
   - CA
   - CN
@@ -465,26 +695,323 @@ measures:
   duty: USD 17.77/t (CN), 120.14/t (CA), 60.51-95.35/t (EU; Arkema 60.51)
   case_ref: No. 14/13/2015-DGAD; Notif. 53/2017-Customs (ADD)
   source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/sodium-chlorate-originating-or-exported-canada-peoples-republic-china-and-eu
-  confirmed: false
-  note: Investigation opened 12 May 2016; DGTR final findings 10 Aug 2017. MoF imposed a 5-year duty by Notif. 53/2017-Customs (ADD) of 2 Nov 2017. Global Trade Alert gives expiry 1 Nov 2022; no sunset
-    review is listed on the DGTR page.
-- imposing: IN
+  confirmed: true
+  note: Investigation opened 12 May 2016; DGTR final findings 10 Aug 2017. Notif. 53/2017-Customs (ADD) of 2 Nov
+    2017 imposed a 5-year duty on tariff item 28291100. The DGTR page lists no sunset review, and the CBIC ADD series
+    has no extension, so the duty expired on 1 Nov 2022.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001477/ENG
+  verified: official
+  verification_note: 'Read Notif. 53/2017-Customs (ADD): rates CN 17.77, CA 120.14, EU 60.51 (Arkema) and 95.35.
+    Expiry derived from the 5-year term with no extension found. No corrections. (CBIC notification texts read via
+    the taxinformation.cbic.gov.in download API, which returns the PDF base64-encoded in JSON.)'
+- id: br-pvc-mx-2022-09
+  imposing: BR
   targets:
-  - TH
+  - MX
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: extended
+  date: '2022-09-19'
+  expires: '2027-09-19'
+  duty: 13.6% ad valorem, all Mexican producers/exporters; extended and suspended at once (Art. 109 Decreto 8.058/2013)
+  case_ref: Resolução GECEX nº 399, de 16/09/2022 (DOU 19/09/2022, Ed. 178); amended by Resolução GECEX nº 436,
+    de 23/12/2022 (DOU 26/12/2022); sunset review opened by Circular SECEX nº 63, de 27/09/2021
+  source_url: https://www.in.gov.br/web/dou/-/resolucao-gecex-n-399-de-16-de-setembro-de-2022-430043586
+  confirmed: true
+  note: PVC-S, NCM 3904.10.10. Suspended because future import trends from Mexico were uncertain (Art. 109). This
+    is not a public-interest suspension; GECEX 399 Art. 3 separately closed the public-interest evaluation. Collection
+    resumes if imports rise, on a petition with at least 6 months of data. GECEX 436/2022 only relaxed those petition
+    rules. Appeals by Braskem and Unipar were rejected by Resolução CEC nº 8/2023. No reapplication found in DOU
+    searches as of 22 Oct 2026. Expiry 2027-09-19 is derived as publication + 5 years (rule shown in GECEX 947 annex
+    ¶64).
+  official_url: https://www.in.gov.br/web/dou/-/resolucao-gecex-n-399-de-16-de-setembro-de-2022-430043586
+  verified: official
+  verification_note: 'Read GECEX 399 (Arts. 1-3: US 8,2%, Mexico 13,6% suspended) and GECEX 436 on in.gov.br. Stage
+    left as extended (schema value); the Mexico duty is extended but not collected (suspended).'
+- id: in-pvc-all-2022-09
+  imposing: IN
+  targets:
+  - ALL
+  product: pvc
+  hs:
+  - '390410'
+  instrument: safeguard
+  stage: initiated
+  date: '2022-09-16'
+  expires: null
+  duty: Recommended quantitative restriction (import quota) for 1 year on PVC suspension resin with residual VCM
+    above 2 ppm
+  case_ref: Case No. (SG) 02/2022 (File No. 22/2/2022-DGTR)
+  source_url: https://www.dgtr.gov.in/en/safe-guard-investigation-india/safeguard-quantitative-restrictions-investigation-concerning-imports
+  confirmed: true
+  note: 'Safeguard investigation under the Safeguard Measures (Quantitative Restrictions) Rules 2012, opened Sep
+    2022 (DGTR page date 16 Sep 2022). Recommended on 15 May 2023, not verified as implemented: final findings recommend
+    a 1-year quota on PVC suspension resins with residual VCM above 2 ppm. Imports from developing countries other
+    than China PR are exempt, and resin with VCM up to 2 ppm stays free. No DGFT implementing notification was found
+    (not exhaustively searched). Targets: all origins except exempt developing countries.'
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/Final%20Finding%20Notification_0.pdf
+  verified: official
+  verification_note: Read the DGTR final findings (scanned; pages 1, 68, 70-71 viewed). The initiation date is taken
+    from the DGTR case page listing, not from the initiation PDF. Whether DGFT implemented the measure is unknown.
+- id: br-caustic_soda-us-2022-08
+  imposing: BR
+  targets:
+  - US
+  product: caustic_soda
+  hs:
+  - '281512'
+  instrument: anti_dumping
+  stage: terminated
+  date: '2022-08-09'
+  expires: null
+  duty: null
+  case_ref: Circular SECEX nº 34, de 05/08/2022 (DOU 09/08/2022, Seção 1, p. 21); initiated by Circular SECEX nº
+    7, de 17/02/2021 (DOU 18/02/2021); SEI 19972.101395/2021-31
+  source_url: https://www.in.gov.br/web/dou/-/circular-n-34-de-5-de-agosto-de-2022-421127747
+  confirmed: true
+  note: Liquid caustic soda, NCM 2815.12.00. Closed with no measure under Art. 65 §4 Decreto 8.058/2013, keeping
+    the negative preliminary causation finding (other factors caused the injury). The parallel public-interest evaluation
+    was closed as moot. There was no duty and no public-interest suspension.
+  official_url: https://www.in.gov.br/web/dou/-/circular-n-34-de-5-de-agosto-de-2022-421127747
+  verified: official
+  verification_note: Read the official DOU page of Circular 34/2022. The text is an embedded image, read visually.
+    Its items 1-2 confirm the termination without measure and that the public-interest evaluation was closed.
+- id: in-caustic_soda-jp-ir-qa-om-2022-02
+  imposing: IN
+  targets:
+  - JP
+  - IR
+  - QA
+  - OM
+  product: caustic_soda
+  hs:
+  - '281511'
+  - '281512'
+  instrument: anti_dumping
+  stage: not_imposed
+  date: '2022-02-23'
+  expires: null
+  duty: Recommended USD 8.32-88.61/DMT (JP 11.82-24.60 named producers, 88.61 others; IR 72.24; OM 66.41-66.44;
+    QA 8.32-24.09); never imposed
+  case_ref: AD-OI-30/2020 (F. No. 6/36/2020-DGTR)
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-caustic-soda-originating-or
+  confirmed: true
+  note: 'Recommended on 16 Dec 2021, not imposed: the MoF/TRU office memorandum F. No. CBIC-190354/26/2022-TO(TRU-I)-CBEC
+    of 23 Feb 2022 declined to accept the recommendation. Investigation opened 17 Dec 2020 (Case AD-OI-30/2020).
+    The DGTR final findings, dated 16 Dec 2021 and posted 17 Dec 2021, recommended a 5-year duty. Stage not_imposed:
+    DGTR recommended a duty that the Finance Ministry did not notify (date = decision or recommendation date).'
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/OM%20caustic%20soda%20%281%29.pdf
+  verified: official
+  verification_note: 'Read the DGTR final findings duty table and the TRU OM of 23 Feb 2022. Stage changed from
+    terminated to initiated (with the initiation date), per the rule for recommendations not implemented. Corrected
+    the duty range: the Japanese residual rate is 88.61, so the top of the range is 88.61, not 72.24.'
+- id: in-pvc-cn-us-2022-02
+  imposing: IN
+  targets:
+  - CN
+  - US
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
   stage: expired
-  date: '2019-08-12'
-  expires: '2019-08-12'
-  duty: USD 48.21/t (2014 SSR rate)
-  case_ref: No. 21/29/2011-DGAD; Notif. 27/2014 extended by 23/2019-Customs (ADD)
-  source_url: https://taxguru.in/custom-duty/anti-dumping-duty-imposed-pvc-continue-till-12th-august-2019.html
-  confirmed: false
-  note: PVC suspension resin. Notif. 23/2019 (11 Jun 2019) extended the China, Thailand and USA duties to 12 Aug 2019 pending the 2nd sunset review. That review (final findings 18 Jul 2019) found likelihood
-    of injury only for China and the USA, so the Thailand duty lapsed on 12 Aug 2019.
-- imposing: CN
+  date: '2022-02-12'
+  expires: '2022-02-12'
+  duty: 'USD 29.99-147.96/t (CN: Tianjin LG Dagu 61.14, others 147.96; US: Westlake 29.99, OxyVinyls 49.10, others
+    115.54)'
+  case_ref: F. No. 7/34/2018-DGTR (2nd sunset review); Notif. 27/2014, 23/2019 and 32/2019-Customs (ADD)
+  source_url: https://antidumping.vn/indias-anti-dumping-duty-levy-on-pvc-suspension-expires-without-govt-notification-n24334.html
+  confirmed: true
+  note: PVC suspension resin. Sunset review final findings of 18 Jul 2019 found likely injury only from China and
+    the USA. Notif. 32/2019-Customs (ADD) of 10 Aug 2019 imposed the duty for 30 months from 13 Aug 2019, i.e. to
+    12 Feb 2022, and it was not extended. The DGTR 2023 safeguard findings say the ADD was in place until February
+    2022. A DGTR page "anti-dumping duties due expiry 2024" shows an expiry of 09/08/2024 and a 197.96 maximum;
+    both conflict with the notification text and look like errors on that page.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001385/ENG
+  verified: official
+  verification_note: Read Notif. 32/2019-Customs (ADD), including the 30-month clause and rates. This supplies the
+    missing notification number and adds producer-level rates. Expiry confirmed as 12 Feb 2022. (CBIC notification
+    texts read via the taxinformation.cbic.gov.in download API, which returns the PDF base64-encoded in JSON.)
+- id: cn-pvc-us-2021-09
+  imposing: CN
+  targets:
+  - US
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: terminated
+  date: '2021-09-23'
+  expires: null
+  duty: null
+  case_ref: MOFCOM Announcement No. 27 of 2021 (initiated by Announcement No. 40 of 2020, 2020-09-25)
+  source_url: https://www.waizi.org.cn/law/121435.html
+  confirmed: true
+  note: Pure PVC powder under CN tariff 39041090. Dumping found, but no material injury or threat to Chinese industry,
+    so the investigation was terminated with no duty. Text read via a reprint, and the ruling PDF was also read
+    on swt.xinjiang.gov.cn; MOFCOM site itself blocked.
+  official_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N364CHN.pdf
+  verified: official
+  verification_note: WTO G/ADP/N/364/CHN (Jul-Dec 2021) lists PVC from the US, CN tariff 39041090, case 20-0004,
+    initiated 2020-09-25, final determination 2021-09-23 negative, no measure, Gazette 2021 No. 27. MOFCOM site
+    itself not reachable from here.
+- id: cn-pvc-us-2021-09-2
+  imposing: CN
+  targets:
+  - US
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_subsidy
+  stage: terminated
+  date: '2021-09-23'
+  expires: null
+  duty: null
+  case_ref: MOFCOM Announcement No. 28 of 2021 (initiated by Announcement No. 41 of 2020, 2020-10-14)
+  source_url: https://swt.xinjiang.gov.cn/xjswt/c114341/202109/948b8a549e264c89a379b0aac1168a72.shtml
+  confirmed: true
+  note: Parallel countervailing case on the same US PVC (CN tariff 39041090). Subsidy found but no material injury,
+    so it was terminated with no duty. Source is a reprint by the Xinjiang commerce department of the MOFCOM notice
+    dated 2021-09-23.
+  official_url: https://swt.xinjiang.gov.cn/xjswt/c114341/202109/948b8a549e264c89a379b0aac1168a72.shtml
+  verified: official
+  verification_note: 'Full text of MOFCOM Announcement No. 28 of 2021 (dated 2021-09-23) read on the Xinjiang Department
+    of Commerce site (a government reprint; mofcom.gov.cn not reachable): subsidy found, no material injury or threat,
+    investigation (opened by No. 41/2020, 2020-10-14) terminated from the announcement date.'
+- id: in-pvc-jp-2021-07
+  imposing: IN
+  targets:
+  - JP
+  product: pvc
+  hs:
+  - '390410'
+  instrument: safeguard
+  stage: terminated
+  date: '2021-07-23'
+  expires: null
+  duty: null
+  case_ref: Case No. (SG) 6/2020 (F. No. 20/6/2020-DGTR)
+  source_url: https://www.dgtr.gov.in/en/safe-guard-investigation-india/bilateral-safeguard-investigation-concerning-imports-pvc-suspension
+  confirmed: true
+  note: Bilateral safeguard investigation under the India-Japan CEPA (Bilateral Safeguard Measures) Rules 2017 on
+    PVC suspension grade resin from Japan, opened 8 Sep 2020. The applicants (DCW, DCM Shriram, Chemplast Cuddalore)
+    withdrew on 8 Mar 2021, and DGTR terminated the investigation on 23 Jul 2021.
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/Termination%20Order%20%28Eng.%29_0.pdf
+  verified: official
+  verification_note: Read the DGTR initiation notification (8 Sep 2020) and termination order (23 Jul 2021).
+- id: in-pvc-kr-tw-cn-my-th-eu-2021-06
+  imposing: IN
+  targets:
+  - KR
+  - TW
+  - CN
+  - MY
+  - TH
+  - EU
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: expired
+  date: '2021-06-22'
+  expires: '2021-06-22'
+  duty: USD 0-379/t (KR others 379, LG Chem and Hanwha nil; EU 298; MY 214; TH 111; TW 101; CN 88)
+  case_ref: F. No. 15/19/2014-DGAD (SSR, final findings 26 Apr 2016); Notif. 27/2016-Customs (ADD)
+  source_url: https://taxguru.in/?p=543428
+  confirmed: true
+  note: PVC paste resin, heading 3904 (no HS6 split in the notification). Earlier duties were Notif. 66/2011-Customs
+    (KR, TW, CN, MY, TH, RU) and 70/2010-Customs (EU), extended to 25 Jul 2016 and 24 Jun 2016. Notif. 27/2016 of
+    23 Jun 2016 re-imposed the duty for 5 years from publication; Russia was dropped. The only later proceeding
+    was a 2020 mid-term review (name change, final findings 29 Oct 2020). No extension appears in the CBIC ADD series,
+    so the duty expired on 22 Jun 2021.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001560/ENG
+  verified: official
+  verification_note: 'Read Notif. 27/2016-Customs (ADD): rates, 5-year term, and the LG Chem and Hanwha nil rows.
+    Checked the DGTR case page and the CBIC ADD list for extensions and found none. Added LG Chem nil; expiry confirmed.
+    (CBIC notification texts read via the taxinformation.cbic.gov.in download API, which returns the PDF base64-encoded
+    in JSON.)'
+- id: ua-caustic_soda-ru-2021-06
+  imposing: UA
+  targets:
+  - RU
+  product: caustic_soda
+  hs:
+  - '281512'
+  instrument: anti_dumping
+  stage: expired
+  date: '2021-06-05'
+  expires: '2021-06-05'
+  duty: 26%
+  case_ref: MKMT decision AD-355/2016/4411-05 (investigation AD-324/2014/4421-06)
+  source_url: https://zakon.rada.gov.ua/rada/show/n0003915-20
+  confirmed: true
+  note: Diaphragm-process caustic soda (UKTZED 2815 12 00 10) from Russia; investigation AD-324/2014/4421-06 opened
+    07.11.2014; definitive 26% by MKMT decision AD-355/2016/4411-05 of 28 Apr 2016, published Uryadoviy Kurier No.
+    85 of 06.05.2016, applied from early June 2016 (WTO gives 04.06.2016). Ministry notice of 4 Nov 2020 announced
+    expiry on 05.06.2021; no expiry review found.
+  official_url: https://zakon.rada.gov.ua/rada/show/n0003915-20
+  verified: official
+  verification_note: 'Ministry notice of 04.11.2020 read (via Wayback copy of zakon.rada.gov.ua): measures under
+    decision AD-355/2016/4411-05 end 05.06.2021. WTO G/ADP/N/286/UKR and 294/UKR confirm the 26% duty (6% press
+    figure is wrong). Lapse after June 2021 inferred.'
+- id: in-caustic_soda-cn-kr-2020-11
+  imposing: IN
+  targets:
+  - CN
+  - KR
+  product: caustic_soda
+  hs:
+  - '281511'
+  - '281512'
+  instrument: anti_dumping
+  stage: expired
+  date: '2020-11-17'
+  expires: '2020-11-17'
+  duty: USD 48.39/DMT (CN), USD 21.90/DMT (KR); nil for Tianjin Dagu (CN) and Hanwha (KR) with named exporters
+  case_ref: Case No. (SSR) 01/2020 (F. No. 7/1/2020-DGTR); Notif. 42/2015-Customs (ADD), extended by 25/2020-Customs
+    (ADD); TRU OM F. No. 354/192/2011-TRU (Pt. I) of 18 Nov 2020
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/caustic-soda-china-pr-and-korea-rp
+  confirmed: true
+  note: Duty from 2003 (CN, KR). Continued for 5 years by Notif. 42/2015-Customs (ADD) of 18 Aug 2015 after the
+    2nd sunset review. Notif. 25/2020-Customs (ADD) of 17 Aug 2020 kept it in force up to and including 17 Nov 2020
+    while the 3rd sunset review ran. DGTR final findings of 29 Oct 2020 recommended continuing it, but the MoF/TRU
+    office memorandum of 18 Nov 2020 decided not to impose, so the duty lapsed after 17 Nov 2020.
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/OM_Caustic-Soda-not%20accepted.pdf
+  verified: official
+  verification_note: Read the TRU OM of 18 Nov 2020 (non-acceptance), the DGTR SSR final findings of 29 Oct 2020,
+    and Notifs. 42/2015 and 25/2020-Customs (ADD). Rates confirmed. Corrected the date to the lapse date of 17 Nov
+    2020, which is now official, no longer inferred. (CBIC notification texts read via the taxinformation.cbic.gov.in
+    download API, which returns the PDF base64-encoded in JSON.)
+- id: in-pvc-no-mx-2020-04
+  imposing: IN
+  targets:
+  - 'NO'
+  - MX
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: expired
+  date: '2020-04-06'
+  expires: '2020-04-06'
+  duty: USD 319/t (NO), USD 309-429/t (MX)
+  case_ref: F. No. 14/5/2013-DGAD; Notif. 10/2015-Customs (ADD)
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/poly-vinyl-chloride-pasteemulsion-resin-originating-or-exported-norway-and
+  confirmed: true
+  note: 'PVC paste/emulsion resin, heading 3904. DGTR final findings of 21 Jan 2015. Notif. 10/2015-Customs (ADD)
+    of 7 Apr 2015 imposed the duty for 5 years (Mexico: 309 for the named producer/exporter row, 429 for others).
+    The DGTR case page lists no sunset review, and the CBIC ADD series has no extension, so the duty lapsed on 6
+    Apr 2020.'
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1002355/ENG
+  verified: official
+  verification_note: Read Notif. 10/2015-Customs (ADD); it supplies the missing notification number and confirms
+    rates and the 5-year term. Date and expiry (6 Apr 2020) confirmed; they are derived from the 5-year term. (CBIC
+    notification texts read via the taxinformation.cbic.gov.in download API, which returns the PDF base64-encoded
+    in JSON.)
+- id: cn-pvc-us-kr-jp-tw-2019-09
+  imposing: CN
   targets:
   - US
   - KR
@@ -498,80 +1025,230 @@ measures:
   date: '2019-09-28'
   expires: null
   duty: null
-  case_ref: MOFCOM Announcement No. 43 of 2019 (original No. 48/2003; extended No. 69/2009 and No. 36/2015; expiry review opened No. 68/2018)
+  case_ref: MOFCOM Announcement No. 43 of 2019 (original No. 48/2003; extended No. 69/2009 and No. 36/2015; expiry
+    review opened No. 68/2018)
   source_url: https://english.mofcom.gov.cn/Policies/AnnouncementsOrders/art/2019/art_0375eebfc6d249ceb9761a15a6cebe05.html
-  confirmed: false
-  note: Original 2003 AD on PVC (US, KR, JP, RU, TW) was extended 3 years from 2015-09-29 (Russia dropped). The expiry review was terminated at the domestic applicants request, measures ended 2019-09-28
-    and no duty from 2019-09-29; the announcement is dated 2019-10-30; duty rates not captured.
-- imposing: CN
+  confirmed: true
+  note: Original 2003 AD on PVC (US, KR, JP, RU, TW) was extended 3 years from 2015-09-29 (Russia dropped). The
+    expiry review was terminated at the domestic applicants request, measures ended 2019-09-28 and no duty from
+    2019-09-29; the announcement is dated 2019-10-30; duty rates not captured.
+  official_url: https://english.mofcom.gov.cn/Policies/AnnouncementsOrders/art/2019/art_0375eebfc6d249ceb9761a15a6cebe05.html
+  verified: official
+  verification_note: 'MOFCOM Announcement No. 43 of 2019 (dated 2019-10-30) read on english.mofcom.gov.cn: the expiry
+    review was terminated at the applicants request (24 Sep 2019), measures ended 2019-09-28 and no duty from 2019-09-29.
+    Chain No. 48/2003, No. 69/2009, No. 36/2015 (Russia dropped), No. 68/2018 confirmed. The announcement gives
+    no duty rates.'
+- id: in-pvc-th-2019-08
+  imposing: IN
   targets:
-  - US
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: terminated
-  date: '2021-09-23'
-  expires: null
-  duty: null
-  case_ref: MOFCOM Announcement No. 27 of 2021 (initiated by Announcement No. 40 of 2020, 2020-09-25)
-  source_url: https://www.waizi.org.cn/law/121435.html
-  confirmed: false
-  note: Pure PVC powder under CN tariff 39041090. Dumping found, but no material injury or threat to Chinese industry, so the investigation was terminated with no duty. Text read via a reprint, and the
-    ruling PDF was also read on swt.xinjiang.gov.cn; MOFCOM site itself blocked.
-- imposing: CN
-  targets:
-  - US
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_subsidy
-  stage: terminated
-  date: '2021-09-23'
-  expires: null
-  duty: null
-  case_ref: MOFCOM Announcement No. 28 of 2021 (initiated by Announcement No. 41 of 2020, 2020-10-14)
-  source_url: https://swt.xinjiang.gov.cn/xjswt/c114341/202109/948b8a549e264c89a379b0aac1168a72.shtml
-  confirmed: false
-  note: Parallel countervailing case on the same US PVC (CN tariff 39041090). Subsidy found but no material injury, so it was terminated with no duty. Source is a reprint by the Xinjiang commerce department
-    of the MOFCOM notice dated 2021-09-23.
-- imposing: PK
-  targets:
-  - CN
-  - TW
-  - KR
   - TH
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: extended
-  date: '2026-01-02'
-  expires: '2028-06-07'
-  duty: 3.44-20.47% ad val (CN 3.44-20.47%, KR 4.00/14.97%, TH 13.98%, TW 16.68%)
-  case_ref: A.D.C No. 50/2016/NTC/PVC/SR-II/2025
-  source_url: https://www.ntc.gov.pk/wp-content/uploads/2026/04/ADC-50-Notice-of-Conclusion-of-Second-Sunset-Review.pdf
-  confirmed: false
-  note: Suspension-grade PVC under PCT 3904.1090. Definitive duty since 2017-06-13, extended 3 years from 2022-06-08 (SR-I), then by the second sunset review for another 3 years from 2025-06-08; the notice
-    is dated 2026-01-02. The expiry is computed as 3 years from 2025-06-08.
-- imposing: PK
+  stage: expired
+  date: '2019-08-12'
+  expires: '2019-08-12'
+  duty: USD 48.21/t (2014 SSR rate)
+  case_ref: No. 21/29/2011-DGAD; Notif. 27/2014 extended by 23/2019-Customs (ADD)
+  source_url: https://taxguru.in/custom-duty/anti-dumping-duty-imposed-pvc-continue-till-12th-august-2019.html
+  confirmed: true
+  note: PVC suspension resin. Notif. 23/2019 (11 Jun 2019) extended the China, Thailand and USA duties to 12 Aug
+    2019 pending the 2nd sunset review. That review (final findings 18 Jul 2019) found likelihood of injury only
+    for China and the USA, so the Thailand duty lapsed on 12 Aug 2019.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001394/ENG
+  verified: official
+  verification_note: Read Notif. 23/2019-Customs (ADD) (extension to 12 Aug 2019), Notif. 27/2014 (TH 48.21) and
+    Notif. 32/2019, which re-imposed the duty on China and the USA only. No corrections. (CBIC notification texts
+    read via the taxinformation.cbic.gov.in download API, which returns the PDF base64-encoded in JSON.)
+- id: in-pvc-eu-mx-2019-10
+  imposing: IN
   targets:
-  - US
-  - ID
+  - EU
+  - MX
   product: pvc
   hs:
   - '390410'
   instrument: anti_dumping
-  stage: provisional
-  date: '2026-07-23'
+  stage: expired
+  date: '2019-06-12'
+  expires: '2019-06-12'
+  duty: 'USD 39.65-189.99/t (EU: INEOS 39.65, others 189.99; MX 88.10-163.05)'
+  case_ref: No. 14/1012/2012-DGAD; Notif. 26/2014-Customs (ADD)
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/polyvinyl-chloride-pvc-suspension-grade-resin-european-union-and-mexico
+  confirmed: true
+  note: PVC suspension resin. DGTR final findings of 4 Apr 2014. Notif. 26/2014-Customs (ADD) of 13 Jun 2014 imposed
+    the duty for 5 years from publication. The DGTR case page lists no sunset review (only a name-change order,
+    listed 25 Feb 2022), and the CBIC ADD series has no extension, so the duty lapsed on 12 Jun 2019. This matches
+    the secondary report of a June 2019 lapse.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001601/ENG
+  verified: official
+  verification_note: 'Read Notif. 26/2014-Customs (ADD): rates and 5-year term. This supplies the notification number
+    and date. Corrected the date from the Oct 2019 article date to the 12 Jun 2019 lapse, which is derived from
+    the 5-year term. (CBIC notification texts read via the taxinformation.cbic.gov.in download API, which returns
+    the PDF base64-encoded in JSON.)'
+- id: in-pvc-tw-id-jp-my-2019-06
+  imposing: IN
+  targets:
+  - TW
+  - ID
+  - JP
+  - MY
+  product: pvc
+  hs:
+  - '390410'
+  instrument: anti_dumping
+  stage: expired
+  date: '2019-06-12'
+  expires: '2019-06-12'
+  duty: USD 0-70.58/t (ID 70.58; MY 42.92; JP 14.95; TW 9.47-61.25, Formosa nil)
+  case_ref: No. 21/29/2011-DGAD (1st sunset review); Notif. 27/2014-Customs (ADD)
+  source_url: https://taxguru.in/custom-duty/anti-dumping-duty-imposed-pvc-continue-till-12th-august-2019.html
+  confirmed: true
+  note: PVC suspension resin. The 2014 sunset review continued the duty on all subject countries except Korea (Notif.
+    27/2014, 13 Jun 2014, 5 years from publication). Notif. 23/2019 extended only the China, Thailand and USA rows
+    to 12 Aug 2019. Taiwan, Indonesia, Japan and Malaysia therefore lapsed on 12 Jun 2019.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001600/ENG
+  verified: official
+  verification_note: Read Notifs. 27/2014 and 23/2019-Customs (ADD); the lapse now rests on official text and is
+    no longer inferred. The only other amendment of 27/2014, Notif. 08/2016-Customs (ADD), corrects the export-country
+    column. Corrected the bottom of the duty range to nil (Formosa, TW). (CBIC notification texts read via the taxinformation.cbic.gov.in
+    download API, which returns the PDF base64-encoded in JSON.)
+- id: in-caustic_soda-sa-us-2018-08
+  imposing: IN
+  targets:
+  - SA
+  - US
+  product: caustic_soda
+  hs:
+  - '281511'
+  - '281512'
+  instrument: anti_dumping
+  stage: expired
+  date: '2018-11-25'
+  expires: '2018-11-25'
+  duty: USD 16.24/DMT (SA), USD 55.96/DMT (US) per 2017 mid-term review
+  case_ref: F. No. 7/16/2017-DGAD (3rd SSR, final findings 1 Aug 2018); Notif. 49/2012-Customs (ADD) as amended
+    by 39/2017 and extended by 55/2017-Customs (ADD)
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/final-finding-notification-3rd-sunset-review-anti-dumping-investigation
+  confirmed: true
+  note: Measure dates from 2001. Rates were set by Notif. 49/2012-Customs (ADD) and revised by Notif. 39/2017 of
+    23 Aug 2017 after the mid-term review. Notif. 55/2017 of 24 Nov 2017 kept 49/2012 in force up to and including
+    25 Nov 2018. The 3rd sunset review (final findings 1 Aug 2018) recommended discontinuing the duty. No rescinding
+    notification appears in the CBIC ADD series, so the duty ran until 25 Nov 2018 and then lapsed.
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/Final_Finding_NCV.pdf
+  verified: official
+  verification_note: Read the DGTR 3rd SSR final findings (1 Aug 2018), which state the duties were extended to
+    25.11.2018 and recommend discontinuance, plus Notifs. 49/2012, 39/2017 and 55/2017-Customs (ADD). Corrected
+    the date and expiry to 25 Nov 2018, replacing the findings date. (CBIC notification texts read via the taxinformation.cbic.gov.in
+    download API, which returns the PDF base64-encoded in JSON.)
+- id: in-caustic_soda-ir-2017-11
+  imposing: IN
+  targets:
+  - IR
+  product: caustic_soda
+  hs:
+  - '281511'
+  - '281512'
+  instrument: anti_dumping
+  stage: expired
+  date: '2018-11-25'
+  expires: '2018-11-25'
+  duty: USD 9.75/DMT (Arvand Petrochemical nil) per 2017 mid-term review
+  case_ref: Notif. 49/2012-Customs (ADD) as amended by 39/2017 and extended by 55/2017-Customs (ADD); MTR F. No.
+    15/19/2015-DGAD
+  source_url: https://dgtr.gov.in/sites/default/files/2024-08/Final%20Finding%20NCV%20English.pdf
+  confirmed: true
+  note: 'Iran rows were set by Notif. 49/2012 (Arvand 1.34 or nil, others 8.75) and revised by Notif. 39/2017 (Arvand
+    nil, others 9.75). The 3rd sunset review was not opened for Iran or Japan (insufficient evidence). However,
+    Notif. 55/2017 extends "this notification" as a whole, and the Iran rows were still in its table, up to 25 Nov
+    2018. The DGTR 2018 findings also say the "duties in force" were extended to 25.11.2018. On a literal reading,
+    Iran therefore lapsed on 25 Nov 2018. The alternative reading is 25 Nov 2017: the preamble of 55/2017 names
+    only Saudi Arabia and the USA, and no review was opened for Iran under s.9A(5). No official text found states
+    the Iran lapse date expressly; the 2021 AD-OI-30/2020 findings do not settle it.'
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001475/ENG
+  verified: official
+  verification_note: Read Notifs. 49/2012, 39/2017 and 55/2017-Customs (ADD) and the 2018 DGTR SSR findings. Corrected
+    the expiry from the inferred 25 Nov 2017 to 25 Nov 2018, based on the whole-notification extension (a legal
+    reading; ambiguity flagged in the note). The rate of 9.75 is confirmed. (CBIC notification texts read via the
+    taxinformation.cbic.gov.in download API, which returns the PDF base64-encoded in JSON.)
+- id: in-caustic_soda-jp-qa-2018-01
+  imposing: IN
+  targets:
+  - JP
+  - QA
+  product: caustic_soda
+  hs:
+  - '281511'
+  - '281512'
+  instrument: anti_dumping
+  stage: terminated
+  date: '2018-01-10'
   expires: null
-  duty: 'US: Westlake Vinyls Co LP 37.30%, Westlake Vinyls Inc 22.28%, others 37.30%; ID: all 17.70%'
-  case_ref: A.D.C No. 71/2026/NTC/PVC
-  source_url: https://www.ntc.gov.pk/wp-content/uploads/2026/07/ADC-71-PD-Notice-of-PVC.pdf
-  confirmed: false
-  note: Suspension-grade PVC under PCT 3904.1090, initiated 2026-04-17 on application by Engro. The notice is dated 2026-07-23, and the provisional duty runs 4 months from press publication (exact publication
-    date unknown, so about late Nov 2026). Final determination is due within 180 days.
-- imposing: AU
+  duty: null
+  case_ref: F. No. 14/31/2015-DGAD
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/caustic-soda-originating-or-exported-japan-and-qatar
+  confirmed: true
+  note: Original investigation opened 14 Oct 2016. DGTR final findings of 10 Jan 2018 found no material injury and
+    recommended termination under Rule 14(b).
+  official_url: https://dgtr.gov.in/sites/default/files/2024-07/Final%20Finding%20NCV2.pdf
+  verified: official
+  verification_note: Read the DGTR final findings of 10 Jan 2018 (F. No. 14/31/2015-DGAD), which recommend termination
+    under Rule 14(b). No corrections.
+- id: in-caustic_soda-tw-2017-07
+  imposing: IN
+  targets:
+  - TW
+  product: caustic_soda
+  hs:
+  - '281511'
+  - '281512'
+  instrument: anti_dumping
+  stage: expired
+  date: '2017-08-22'
+  expires: '2017-08-22'
+  duty: 'Reference-price duty: the difference between USD 361/DMT and the landed value (Notif. 79/2011-Customs)'
+  case_ref: F. No. 15/10/2016-DGAD (sunset review); Notif. 79/2011-Customs extended by 46/2016-Customs (ADD)
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/caustic-soda-originating-or-exported-thailand-chinese-taipei-and-norway
+  confirmed: true
+  note: Duty imposed 23 Aug 2011 by Notif. 79/2011-Customs (F. No. 14/1/2010-DGAD). The sunset review opened 8 Aug
+    2016 covered Chinese Taipei only. Notif. 46/2016-Customs (ADD) of 19 Aug 2016 extended the Taiwan rows up to
+    and including 22 Aug 2017. The SSR final findings of 31 Jul 2017 found continuation not required, so the duty
+    lapsed after 22 Aug 2017.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001541/ENG
+  verified: official
+  verification_note: Read Notifs. 79/2011-Customs and 46/2016-Customs (ADD), the DGTR SSR initiation (8 Aug 2016)
+    and the final findings (31 Jul 2017). Added the rate (a USD 361/DMT reference price) and the official lapse
+    date of 22 Aug 2017. (CBIC notification texts read via the taxinformation.cbic.gov.in download API, which returns
+    the PDF base64-encoded in JSON.)
+- id: in-caustic_soda-th-no-2016-08
+  imposing: IN
+  targets:
+  - TH
+  - 'NO'
+  product: caustic_soda
+  hs:
+  - '281511'
+  - '281512'
+  instrument: anti_dumping
+  stage: expired
+  date: '2016-08-22'
+  expires: '2016-08-22'
+  duty: 'Reference-price duty: the difference between USD 379/DMT and the landed value (both countries)'
+  case_ref: F. No. 14/1/2010-DGAD; Notif. 79/2011-Customs
+  source_url: https://dgtr.gov.in/sites/default/files/2024-06/Final%20Finding%20NCV%20FinalCS.pdf
+  confirmed: true
+  note: Five-year duty from 23 Aug 2011 (Notif. 79/2011-Customs), valid until 22 Aug 2016 according to the DGTR
+    SSR initiation. The sunset review covered only Chinese Taipei. Notif. 46/2016-Customs (ADD) records that Thailand
+    and Norway were allowed to lapse.
+  official_url: https://taxinformation.cbic.gov.in/api/cbic-notification-msts/download/1001541/ENG
+  verified: official
+  verification_note: Read Notif. 79/2011-Customs (rates, 5-year term), Notif. 46/2016-Customs (ADD) (Thailand and
+    Norway lapse) and the DGTR SSR initiation of 8 Aug 2016, which says duties are valid until 22 Aug 2016. Added
+    the rates; the expiry is now officially supported. (CBIC notification texts read via the taxinformation.cbic.gov.in
+    download API, which returns the PDF base64-encoded in JSON.)
+- id: au-pvc-jp-kr-us-2016-04
+  imposing: AU
   targets:
   - JP
   - KR
@@ -586,189 +1263,12 @@ measures:
   duty: null
   case_ref: Anti-Dumping Notice No. 2016/27 (revocation review REP 317, ADN 2015/128)
   source_url: https://web.archive.org/web/2020/https://www.industry.gov.au/sites/default/files/adc/public-record/013_-_adn_notice_2016-27-_pvc_revocation_decision.pdf
-  confirmed: false
-  note: PVC homopolymer resin. The revocation review began 2015-11-06 after sole AU producer Australian Vinyls announced it would close. Dumping duty notices revoked with effect from 2016-01-01 (notice
-    dated 2016-04-13). Measure was in force through 2015; rates not captured.
-- imposing: KR
-  targets:
-  - DE
-  - FR
-  - 'NO'
-  - SE
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: definitive
-  date: '2026-08-05'
-  expires: '2031-08-04'
-  duty: Westlake Vinnolit (DE) 31.55%, other DE 30.60%, KEM ONE (FR) 31.55%, Inovyn (NO) 25.79%, Inovyn Trade Services (SE) 28.15%
-  case_ref: null
-  source_url: https://view.asiae.co.kr/en/article/2026071009245442634
-  confirmed: false
-  note: PVC paste (emulsion) resin, HSK 3904.10.0000 per source; Hanwha petition, KTC investigation from Aug 2025, provisional Feb 2026 (up to 42.81 %); MOEF announced 2026-07-10 a draft enforcement-rule
-    amendment (comments to 28 Jul) applying duties 2026-08-05 to 2031-08-04 — final promulgation not seen; KTC case no. not found.
-- imposing: KR
-  targets:
-  - CN
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: initiated
-  date: '2026-07-08'
-  expires: null
-  duty: null
-  case_ref: KTC Announcement/Case No. 2026-13
-  source_url: https://globaltradealert.org/state-act/99171-republic-of-korea-initiation-of-anti-dumping-investigation-on-imports-of-polyvinyl-chloride-suspension-resin-from-china
-  confirmed: false
-  note: Suspension PVC resin from China, petition by Hanwha Solutions; still in progress per GTA. Exporters named in press as Tianjin Bohua and Wanhua (secondary source, not verified). No preliminary determination
-    found; HS not stated.
-- imposing: KR
-  targets:
-  - CN
-  - TW
-  product: caustic_soda
-  hs:
-  - '281511'
-  instrument: anti_dumping
-  stage: provisional
-  date: '2026-08-20'
-  expires: null
-  duty: 'KTC proposed provisional: CN Dongrui 3.66%, Unilion 19.93%, Sky Impex 22.21%, other CN 17.58%; TW Formosa & others 38.89%'
-  case_ref: null
-  source_url: https://en.nocutnews.co.kr/news/6565506
-  confirmed: false
-  note: Solid caustic soda, petition by Youngjin 2026-03-17, initiated 2026-04-07. This item is the KTC affirmative preliminary determination of 2026-08-20 recommending provisional duties to MOEF; MOEF
-    imposition date not verified, and KTC final decision expected about Oct 2026. Case no. unknown.
-- imposing: TR
-  targets:
-  - US
-  - DE
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: expiry_review
-  date: '2026-07-03'
-  expires: null
-  duty: 7.93% of CIF (both countries)
-  case_ref: Tebliğ No. 2026/25 (Resmî Gazete 33299)
-  source_url: https://www.resmigazete.gov.tr/eskiler/2026/07/20260703-13.htm
-  confirmed: false
-  note: Expiry review of S-PVC (GTIP 3904.10.00.00.19) measure in force since 6 Feb 2003 (Tebliğ 2003/2), on application by Petkim; previously extended by Tebliğ 2015/24 (US 18.81%, DE 16.44% CIF) and Tebliğ
-    2021/29 of 14 Jul 2021 (7.93% CIF); duty continues during review, final determination estimated Jul 2027 per trade.gov.
-- imposing: GB
-  targets:
-  - US
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: definitive
-  date: '2025-01-09'
-  expires: '2030-01-10'
-  duty: Formosa Plastics USA 38.43%; all other US 56.01%
-  case_ref: AD0049; Trade remedies notice 2025/01
-  source_url: https://www.gov.uk/government/publications/trade-remedies-notice-provisional-anti-dumping-duty-on-suspension-poly-vinyl-chloride-s-pvc-from-the-united-states-of-america/trade-remedies-notice-202501-definitive-anti-dumping-duty-on-suspension-poly-vinyl-chloride-s-pvc-from-the-united-states-of-america
-  confirmed: false
-  note: UK TRA S-PVC case initiated 8 Jan 2024 on INOVYN application; provisional duty from 29 Nov 2024 (TRN 2024/16), definitive at same rates published 9 Jan 2025 (commodity codes 3904100015, 3904100080).
-- imposing: MA
-  targets:
-  - US
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: extended
-  date: '2025-01-03'
-  expires: null
-  duty: 24.88% ad valorem (single rate)
-  case_ref: Avis public DDC/14/2023 (initiation); DDC/14/2024 (closure)
-  source_url: https://mcinet.gov.ma/sites/default/files/documents/Avis%20de%20cl%C3%B4ture%20n%20DDC-14-2024-%20R%C3%A9examen%20PVC-USA.pdf
-  confirmed: false
-  note: S-PVC (SH 3904.10.90.00) measure originally arrêté 3035-13 (BO 26 Dec 2013), extended by arrêté 221-20 to 27 Dec 2023; joint expiry/revision review opened 11 Dec 2023 (5.5% deposit from 1 Feb 2024),
-    closed 27 Nov 2024 recommending 24.88%; effective date 3 Jan 2025 and 5-year duration from Hespress/Bladi press, arrêté number and exact expiry not seen.
-- imposing: MA
-  targets:
-  - EU
-  - GB
-  - MX
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: extended
-  date: '2023-08-02'
-  expires: null
-  duty: EU 5.5%; UK 5.5%; Mexico 8%
-  case_ref: Avis public DDC/06/2023; DDC/09/2023
-  source_url: https://vno-ncw.nl/sites/default/files/echo_68_bijlage_2.pdf
-  confirmed: false
-  note: Original investigation opened 25 Jun 2015 (avis 10/15) on S-PVC from EU and Mexico, final determination avis 24/16 (margins EU 17-48%, MX ~42%), measure arrêté 1650.17 (BO 13 Jul 2017); joint expiry/revision
-    review opened 13 Jul 2022 (UK added post-Brexit), results 5 Jul 2023, revised rates announced in DDC/09/2023 dated 2 Aug 2023 (copy hosted by VNO-NCW); implementing arrêté date/number and expiry not
-    verified.
-- imposing: MA
-  targets:
-  - EG
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: definitive
-  date: '2026-02-03'
-  expires: null
-  duty: Egyptian Petrochemicals Co. 74.87%; others 92.19%
-  case_ref: null
-  source_url: https://fr.le360.ma/economie/pvc-egyptien-le-maroc-impose-des-droits-antidumping-massifs_ED3N2BVKDZECPIOF3TEPEBTUII/
-  confirmed: false
-  note: Investigation opened 27 Nov 2024 on SNEP complaint (suspension PVC; emulsion PVC exempt), provisional duty from 6 Jun 2025 for 4 months, definitive joint arrêté dated 29 Dec 2025 published BO 2
-    Feb 2026, in force 3 Feb 2026 for 5 years (expiry ~Feb 2031 not officially seen); avis/arrêté numbers not found.
-- imposing: EG
-  targets:
-  - US
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: definitive
-  date: '2025-02-09'
-  expires: null
-  duty: 13% of CIF, minimum USD 107/t (K65 and K67+/-1 grades only)
-  case_ref: Ministerial Decision 40/2025 amending Decision 605/2021
-  source_url: https://amwalalghad.com/klyl
-  confirmed: false
-  note: Original definitive duty 9% CIF on US PVC (tariff 3904100090) imposed Dec 2021 (Egypt Independent 7 Dec 2021; GTA implementation 6 Dec 2021) after Dec 2020 initiation; amended by Decision 40/2025
-    published Official Gazette 9 Feb 2025; press says 5 years from publication but unclear whether the 2025 decision restarts the 5-year term, so expiry left null.
-- imposing: EG
-  targets:
-  - EU
-  product: pvc
-  hs:
-  - '390410'
-  instrument: anti_dumping
-  stage: definitive
-  date: '2026-09-08'
-  expires: null
-  duty: 35% of CIF, minimum USD 274/t (K65 and K67+/-1 grades)
-  case_ref: Ministerial Decision 364/2026
-  source_url: https://amwalalghad.com/6xby
-  confirmed: false
-  note: Decision issued 20 Aug 2026, published Official Gazette no. 197 bis (A) 8 Sep 2026, 5 years (expiry ~Sep 2031 not officially seen); corroborated by S&P Global headline (Egypt ADD on EU S-PVC); initiation
-    date not found.
-- imposing: UA
-  targets:
-  - RU
-  product: caustic_soda
-  hs:
-  - '281512'
-  instrument: anti_dumping
-  stage: expired
-  date: '2021-06-05'
-  expires: '2021-06-05'
-  duty: 26%
-  case_ref: MKMT decision AD-355/2016/4411-05 (investigation AD-324/2014/4421-06)
-  source_url: https://zakon.rada.gov.ua/rada/show/n0003915-20
-  confirmed: false
-  note: Diaphragm-process caustic soda lye (UKTZED 2815 12 00 10, NaCl >= 2%) from Russia, imposed by decision of 28 Apr 2016, effective 6 Jun 2016 (26% rate from Dengi.ua; an NV.ua snippet said 6%, official
-    decision text not seen); Ministry notice of 4 Nov 2020 announced expiry on 5 Jun 2021; no expiry review found, so assumed lapsed.
+  confirmed: true
+  note: PVC homopolymer resin. The revocation review began 2015-11-06 (after sole AU producer Australian Vinyls
+    announced closure). Under s.269ZDB(1)(a)(ii) the dumping duty notices are taken to be revoked with effect from
+    2016-01-01; ADN 2016/27 dated 2016-04-13, per REP 317. Rates not captured.
+  official_url: https://web.archive.org/web/2020/https://www.industry.gov.au/sites/default/files/adc/public-record/013_-_adn_notice_2016-27-_pvc_revocation_decision.pdf
+  verified: official
+  verification_note: 'Anti-Dumping Notice No. 2016/27 read (official ADC PDF via the Wayback copy of industry.gov.au;
+    live site not reachable from here): revocation of the notices for JP, KR and US effective 2016-01-01, decision
+    dated 13 Apr 2016.'

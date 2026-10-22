@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { fetchSeries, fetchIndicators, fetchProducts, fetchAlerts, fetchTradePartners } from '../api'
+import { fetchSeries, fetchIndicators, fetchProducts, fetchAlerts, fetchTradePartners, fetchTradeDefence } from '../api'
 import { useTheme, PRODUCT_SLOTS, PARTNER_SLOT, FONT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
 import { Card, EmptyState, Legend, SectionHeading, StatTile } from '../components'
 import { groupAlerts } from '../alerts'
+import { forProduct, euMeasureOn, measureAgainstEU, markers, shortLabel } from '../tdlinks'
 import TradeDefence from './TradeDefence'
 import CompetitorExports from './CompetitorExports'
 
@@ -55,6 +56,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
   const [pflow, setPflow] = useState('import')      // partner section: imports | exports
   const [partners, setPartners] = useState(null)
   const [alerts, setAlerts] = useState([])
+  const [measures, setMeasures] = useState([])   // config/trade_defence.yaml
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
     fetchIndicators({ indicator_id: 'import_penetration' })
       .then(d => setPenetration(d.rows)).catch(() => {})
     fetchAlerts(6).then(d => setAlerts(d.rows)).catch(() => {})
+    fetchTradeDefence().then(d => setMeasures(d.measures)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -126,6 +129,9 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
     }
   }, [balance, theme, basis])
 
+  const hs6Of = cn8 => basket.find(b => b.cn8.includes(cn8))?.hs6
+  const hs6 = hs6Of(product)
+
   // by-partner stacked bars: top-6 partners in fixed entity colours + Other
   const partnerColor = geo => PARTNER_SLOT[geo] ? theme.series[PARTNER_SLOT[geo]] : theme.inkMuted
   const partnerOption = useMemo(() => {
@@ -146,9 +152,12 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
       series: [
         ...partners.series.map(s => stack(s.name, s.values, partnerColor(s.geo), false)),
         stack('Other', partners.other, theme.inkMuted, true),
+        // trade-defence dates: EU measures on imports, or partners' measures on EU exports
+        ...markers(forProduct(measures, hs6).filter(m => pflow === 'import'
+          ? m.imposing === 'EU' : m.targets?.includes('EU')), partners.periods, theme),
       ],
     }
-  }, [partners, theme, basis])
+  }, [partners, theme, basis, measures, hs6, pflow])
 
   // ranked net-balance list, last 12 months, all basket products (Flup countries-list style)
   const ranked = useMemo(() => {
@@ -189,7 +198,6 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
   }, [kpiRows])
 
   const alertGroups = useMemo(() => groupAlerts(alerts), [alerts])
-  const hs6 = basket.find(b => b.cn8.includes(product))?.hs6
 
   if (error) return <EmptyState>Failed to load: {error}</EmptyState>
   if (!product || !balances || !kpiRows) return <EmptyState>Loading…</EmptyState>
@@ -214,6 +222,8 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
                borderBottom: `1px solid ${theme.grid}`, fontVariantNumeric: 'tabular-nums',
                whiteSpace: 'nowrap' }
   const fmtCell = v => v == null ? '—' : fmtKt(Number(v))   // screening table is always tonnes
+  const tdTag = { marginLeft: 8, fontSize: 10.5, fontWeight: 650, padding: '1px 7px', borderRadius: 999,
+                  border: `1px solid ${theme.status.serious}`, color: theme.ink, whiteSpace: 'nowrap' }
 
   return (
     <>
@@ -260,6 +270,11 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
                       <td style={{ ...td, textAlign: 'left' }}>
                         {a.flow === 'import' ? 'from' : 'to'}{' '}
                         {a.partner_geo_id === 'EXTRA_EU' ? 'all extra-EU' : `${a.partner_name} (${a.partner_geo_id})`}
+                        {(() => {
+                          const m = a.flow === 'import' ? euMeasureOn(measures, hs6Of(a.product_code), a.partner_geo_id)
+                                                        : measureAgainstEU(measures, hs6Of(a.product_code), a.partner_geo_id)
+                          return m && <span title={`${m.duty || ''} ${m.case_ref || ''}`} style={tdTag}>{shortLabel(m)}</span>
+                        })()}
                       </td>
                       <td style={td}>{a.period}{periods.size > 1 ? ` +${periods.size - 1}` : ''}</td>
                       <td style={td}>{a.kind === 'trade_price_drop' ? `${Number(a.value).toFixed(0)} €/t on ${fmtKt(inp.quantity_t)}` : fmtKt(Number(a.value))}</td>
@@ -275,7 +290,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
         ) : <EmptyState>No open alerts in the last 6 months.</EmptyState>}
       </Card>
 
-      <TradeDefence hs6={hs6} />
+      <TradeDefence hs6={hs6} measures={measures} />
 
       <SectionHeading title={`Trade flows — ${productLabel}`}
         subtitle="Who supplies the EU and where it sells, month by month. Change the product in the bar above." />
@@ -325,6 +340,10 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
                       <td style={{ ...td, color: s.uv_change != null && s.uv_change <= -0.2 ? theme.bad : theme.ink }}>{s.uv_change == null ? '—' : `${s.uv_change >= 0 ? '+' : '−'}${Math.abs(s.uv_change * 100).toFixed(0)} %`}</td>
                       <td style={{ ...td, textAlign: 'left', color: theme.status.critical, fontWeight: 650 }}>
                         {s.flags.map(f => TEST_LABEL[f]).join(', ')}
+                        {(() => {
+                          const m = pflow === 'import' ? euMeasureOn(measures, hs6, s.geo) : measureAgainstEU(measures, hs6, s.geo)
+                          return m && <span title={`${m.duty || ''} ${m.case_ref || ''}`} style={tdTag}>{shortLabel(m)}</span>
+                        })()}
                       </td>
                     </tr>
                   ))}
@@ -339,7 +358,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
           : <EmptyState>Loading…</EmptyState>}
       </Card>
 
-      <CompetitorExports hs6={hs6} productLabel={productLabel} fromDate={fromDate} basis={basis} />
+      <CompetitorExports hs6={hs6} productLabel={productLabel} fromDate={fromDate} basis={basis} measures={measures} />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: 20 }}>
         <Card sourceRows={flows}

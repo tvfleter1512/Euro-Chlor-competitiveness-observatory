@@ -268,6 +268,22 @@ def meta_trade_defence():
     return {"measures": sorted(measures, key=lambda m: str(m["date"]), reverse=True)}
 
 
+@app.get("/api/trade-defence/signals")
+def trade_defence_signals(days: int = Query(120, le=730)):
+    """Watch hits not yet cited in config/trade_defence.yaml, newest first."""
+    try:
+        cited = {u for m in load_config("trade_defence")["measures"]
+                 for u in (m.get("source_url"), m.get("official_url")) if u}
+    except FileNotFoundError:
+        cited = set()
+    with db.get_conn() as conn:
+        rows = conn.execute(
+            """SELECT signal_id, source, title, url, published, products, first_seen FROM td_signal
+               WHERE COALESCE(published, first_seen::date) >= current_date - %s
+               ORDER BY COALESCE(published, first_seen::date) DESC""", (days,)).fetchall()
+    return {"signals": [r for r in rows if r["url"] not in cited]}
+
+
 @app.get("/api/meta/capacity-events")
 def meta_capacity_events():
     try:

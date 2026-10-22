@@ -186,3 +186,16 @@ CREATE TABLE IF NOT EXISTS alert (
     notified_at     TIMESTAMPTZ,
     UNIQUE (kind, product_code, flow, partner_geo_id, period, test)
 );
+
+-- Trade-defence watch (observatory/watch/trade_defence.py): candidate headlines
+-- for a human to read; config/trade_defence.yaml stays the curated list.
+CREATE TABLE IF NOT EXISTS td_signal (
+    signal_id   BIGSERIAL PRIMARY KEY,
+    source      TEXT NOT NULL,
+    title       TEXT NOT NULL,
+    url         TEXT NOT NULL UNIQUE,
+    published   DATE,
+    products    TEXT[] NOT NULL,
+    first_seen  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    notified_at TIMESTAMPTZ
+);

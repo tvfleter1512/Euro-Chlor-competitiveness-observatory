@@ -34,6 +34,7 @@ P=/home/tva/Euro-Chlor-competitiveness-observatory/ops/run_agent.sh
 
 # Euro Chlor public monthly stats — first-of-month posts land early each month
 30 8 * * 1   $P --agent eurochlor_web
+30 7 * * 1   $P --td-watch
 
 # Gas hub prices (FRED monthly) + Eurostat nrg_pc_203 — monthly
 45 7 4 * *   $P --agent gas_prices

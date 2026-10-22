@@ -1,14 +1,16 @@
 // Trade-defence measures on the basket products (config/trade_defence.yaml):
 // who protects their market against whom. Context for the trade alerts.
 import React, { useEffect, useState } from 'react'
-import { fetchTradeDefence } from '../api'
+import { fetchTradeDefenceSignals } from '../api'
 import { useTheme, GEO_LABEL } from '../theme'
 import { Card, EmptyState, Segmented } from '../components'
+import { isLive } from '../tdlinks'
 
 const LIVE = ['initiated', 'provisional', 'definitive', 'extended', 'expiry_review']
 const STAGE = {
   initiated: 'investigation opened', provisional: 'provisional duty', definitive: 'definitive duty',
   extended: 'extended', expiry_review: 'expiry review', expired: 'expired', terminated: 'terminated',
+  not_imposed: 'recommended, not imposed',
 }
 const INSTRUMENT = { anti_dumping: 'anti-dumping', anti_subsidy: 'anti-subsidy', safeguard: 'safeguard' }
 const PRODUCT = {
@@ -17,21 +19,22 @@ const PRODUCT = {
 }
 const REGION = new Intl.DisplayNames(['en'], { type: 'region' })
 const geo = g => {
+  if (g === 'ALL') return 'all origins'
   if (g === 'EU' || GEO_LABEL[g]) return GEO_LABEL[g] || 'EU'
   try { return REGION.of(g) } catch { return g }
 }
 
-export default function TradeDefence({ hs6 }) {
+export default function TradeDefence({ hs6, measures }) {
   const theme = useTheme()
-  const [measures, setMeasures] = useState(null)
   const [scope, setScope] = useState('product')
+  const [signals, setSignals] = useState([])
 
   useEffect(() => {
-    fetchTradeDefence().then(d => setMeasures(d.measures)).catch(() => setMeasures([]))
+    fetchTradeDefenceSignals().then(d => setSignals(d.signals)).catch(() => {})
   }, [])
 
   const all = measures || []
-  const live = all.filter(m => LIVE.includes(m.stage))
+  const live = all.filter(isLive)
   const forProduct = live.filter(m => hs6 && m.hs?.includes(hs6))
   const rows = { product: forProduct, live, all }[scope]
   const th = { textAlign: 'left', padding: '8px 10px', fontSize: 10.5, color: theme.inkMuted, fontWeight: 700,
@@ -41,7 +44,7 @@ export default function TradeDefence({ hs6 }) {
 
   return (
     <Card title="Trade-defence measures — anti-dumping, anti-subsidy, safeguards"
-      subtitle={`Measures in force or under investigation on the selected product (switch to all products or the full history since 2015), newest first. Rows for the selected product are highlighted; EU-related rows in bold. Compiled Oct 2026 from official notices and trade press — all pending confirmation (see each source).`}
+      subtitle={`Measures in force or under investigation on the selected product (switch to all products or the full history since 2015), newest first. In the wider views the selected product is highlighted; EU-related rows are in bold. ✓ = checked against the official notice. The same measures are marked on the trade-flow charts below and tagged in the alert and partner tables.`}
       right={<Segmented value={scope} onChange={setScope}
         options={[['product', `this product (${forProduct.length})`], ['live', `all products, live (${live.length})`], ['all', `history (${all.length})`]]} />}>
       {!measures ? <EmptyState>Loading…</EmptyState> : rows.length ? (
@@ -53,7 +56,7 @@ export default function TradeDefence({ hs6 }) {
             </tr></thead>
             <tbody>
               {rows.map((m, i) => {
-                const mine = hs6 && m.hs?.includes(hs6)
+                const mine = scope !== 'product' && hs6 && m.hs?.includes(hs6)
                 return (
                   <tr key={i} title={m.note || ''} style={{ background: mine ? theme.accentSoft : 'transparent',
                                                            fontWeight: hitsEU(m) ? 650 : 400 }}>
@@ -61,21 +64,45 @@ export default function TradeDefence({ hs6 }) {
                     <td style={td}>{(m.targets || []).map(geo).join(', ')}</td>
                     <td style={td}>{PRODUCT[m.product] || m.product}</td>
                     <td style={{ ...td, color: theme.inkSecondary }}>{INSTRUMENT[m.instrument] || m.instrument}</td>
-                    <td style={{ ...td, whiteSpace: 'nowrap', color: LIVE.includes(m.stage) ? theme.ink : theme.inkMuted }}>{STAGE[m.stage] || m.stage}</td>
+                    <td style={{ ...td, whiteSpace: 'nowrap', color: isLive(m) ? theme.ink : theme.inkMuted }}>{STAGE[m.stage] || m.stage}{!isLive(m) && LIVE.includes(m.stage) ? ' (lapsed)' : ''}</td>
                     <td style={{ ...td, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{m.date}</td>
                     <td style={{ ...td, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: theme.inkSecondary }}>{m.expires || '—'}</td>
                     <td style={{ ...td, fontSize: 12, maxWidth: 260 }}>{m.duty || '—'}</td>
                     <td style={{ ...td, fontSize: 12, whiteSpace: 'nowrap' }}>
-                      {m.source_url && <a href={m.source_url} target="_blank" rel="noreferrer" style={{ color: theme.accentText }}>source ↗</a>}
+                      {m.confirmed && m.official_url
+                        ? <a href={m.official_url} target="_blank" rel="noreferrer" style={{ color: theme.accentText }}
+                             title={m.verification_note || ''}>✓ official ↗</a>
+                        : m.source_url && <a href={m.source_url} target="_blank" rel="noreferrer" style={{ color: theme.inkSecondary }}
+                             title={m.verification_note || 'not yet checked against the official text'}>◐ source ↗</a>}
                     </td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
-          <div style={{ fontSize: 11, color: theme.inkMuted, marginTop: 6 }}>Hover a row for the case reference notes.</div>
+          <div style={{ fontSize: 11, color: theme.inkMuted, marginTop: 6 }}>
+            ✓ official = checked against the official notice ({all.filter(m => m.confirmed).length} of {all.length}); ◐ = trade press or unverified. Hover a row for notes.
+          </div>
         </div>
       ) : <EmptyState>{scope === 'product' ? 'No measure in force or under investigation on this product — see all products.' : 'No measures listed.'}</EmptyState>}
+      {signals.length > 0 && (
+        <details style={{ marginTop: 14 }}>
+          <summary style={{ cursor: 'pointer', fontSize: 13, fontWeight: 650, color: theme.ink }}>
+            Weekly watch — {signals.length} headline{signals.length > 1 ? 's' : ''} not yet in the list above
+          </summary>
+          <div style={{ fontSize: 11.5, color: theme.inkMuted, margin: '6px 0' }}>
+            Official journals (EU, UK, US) and trade press, scanned every Monday. Some describe a case already listed via another source; real new cases are added to the list after checking.
+          </div>
+          {signals.map(sg => (
+            <div key={sg.signal_id} style={{ display: 'flex', gap: 10, fontSize: 12.5, padding: '5px 0',
+                                             borderBottom: `1px solid ${theme.grid}` }}>
+              <span style={{ color: theme.inkMuted, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{sg.published || '—'}</span>
+              <span style={{ color: theme.inkSecondary, whiteSpace: 'nowrap' }}>{sg.source}</span>
+              <a href={sg.url} target="_blank" rel="noreferrer" style={{ color: theme.ink, flex: 1 }}>{sg.title} ↗</a>
+            </div>
+          ))}
+        </details>
+      )}
     </Card>
   )
 }
