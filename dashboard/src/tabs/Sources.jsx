@@ -16,13 +16,14 @@ export default function Sources() {
   const theme = useTheme()
   const [health, setHealth] = useState(null)
   const [products, setProducts] = useState(null)
+  const [basket, setBasket] = useState([])
   const [references, setReferences] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
     Promise.all([fetchHealth(), fetchProducts(), fetchReferences()])
       .then(([h, p, r]) => {
-        setHealth(h.agents); setProducts(p.products); setReferences(r.references || [])
+        setHealth(h.agents); setProducts(p.products); setBasket(p.basket); setReferences(r.references || [])
       })
       .catch(e => setError(String(e)))
   }, [])
@@ -36,13 +37,18 @@ export default function Sources() {
   const td = { padding: '9px 12px', fontSize: 13, color: theme.ink,
                borderBottom: `1px solid ${theme.grid}` }
 
+  const prodcom = (products || []).filter(p => p.nomenclature === 'PRODCOM')
+  const confirmed = ok => ok
+    ? <span><span style={{ color: theme.status.good, marginRight: 6 }}>●</span>confirmed</span>
+    : <span><span style={{ color: theme.status.warning, marginRight: 6 }}>◐</span>pending review</span>
+
   return (
     <>
       <Card title="Source health"
-        subtitle="Each source is isolated — a broken source marks its own metrics stale, never the observatory.">
+        subtitle="Each source is isolated — a broken source marks its own metrics stale, never the observatory. 'Data up to' is the newest period the source has delivered (forecast sources reach into the future).">
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
-            <th style={th}>Agent</th><th style={th}>Status</th><th style={th}>Last run</th>
+            <th style={th}>Agent</th><th style={th}>Status</th><th style={th}>Data up to</th><th style={th}>Last run</th>
             <th style={th}>Rows</th><th style={th}>Quarantined</th><th style={th}>Notes</th>
           </tr></thead>
           <tbody>
@@ -55,7 +61,10 @@ export default function Sources() {
                     <span style={{ color: theme.status[s.role], marginRight: 6 }}>{s.icon}</span>
                     {s.label}
                   </td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 650 }}>
+                    {a.latest_period || '—'}
+                  </td>
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', color: theme.inkSecondary }}>
                     {a.started_at ? String(a.started_at).slice(0, 16).replace('T', ' ') : '—'}
                   </td>
                   <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{a.rows_ingested}</td>
@@ -75,28 +84,44 @@ export default function Sources() {
         subtitle="Codes are configuration, surfaced for review (spec §3.5). CBAM: whole basket excluded from Regulation (EU) 2023/956 Annex I at launch — Commission review of extension to organic chemicals/polymers due end-2027; EU carbon costs currently face no border adjustment.">
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
-            <th style={th}>Code</th><th style={th}>Nomenclature</th>
-            <th style={th}>Product</th><th style={th}>Confirmed</th>
-            <th style={th}>CBAM</th>
+            <th style={th}>Product</th><th style={th}>CN8 (Comext)</th><th style={th}>HS6 (Comtrade)</th>
+            <th style={th}>Confirmed</th><th style={th}>CBAM</th>
           </tr></thead>
           <tbody>
-            {(products || []).map(p => (
-              <tr key={p.product_code}>
-                <td style={{ ...td, fontFamily: 'monospace', fontSize: 12 }}>{p.product_code}</td>
-                <td style={td}>{p.nomenclature}</td>
-                <td style={td}>{p.name}</td>
-                <td style={td}>
-                  {p.confirmed
-                    ? <span><span style={{ color: theme.status.good, marginRight: 6 }}>●</span>confirmed</span>
-                    : <span><span style={{ color: theme.status.warning, marginRight: 6 }}>◐</span>pending review</span>}
-                </td>
-                <td style={{ ...td, fontSize: 11.5, color: theme.inkSecondary, whiteSpace: 'nowrap' }}>
-                  excluded · review 2027
-                </td>
-              </tr>
-            ))}
+            {basket.map(b => {
+              const codes = [...b.cn8, b.hs6]
+              const ok = codes.every(c => (products || []).find(p => p.product_code === c)?.confirmed)
+              return (
+                <tr key={b.key}>
+                  <td style={td}>{b.name}</td>
+                  <td style={{ ...td, fontFamily: 'monospace', fontSize: 12 }}>{b.cn8.join(', ')}</td>
+                  <td style={{ ...td, fontFamily: 'monospace', fontSize: 12 }}>{b.hs6}</td>
+                  <td style={td}>{confirmed(ok)}</td>
+                  <td style={{ ...td, fontSize: 11.5, color: theme.inkSecondary, whiteSpace: 'nowrap' }}>
+                    excluded · review 2027
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
+        {prodcom.length > 0 && (
+          <>
+            <div style={{ fontSize: 12.5, fontWeight: 650, color: theme.ink, margin: '18px 0 4px' }}>
+              PRODCOM codes (sold production, used for import penetration)</div>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+              <tbody>
+                {prodcom.map(p => (
+                  <tr key={p.product_code}>
+                    <td style={{ ...td, fontFamily: 'monospace', fontSize: 12, width: 120 }}>{p.product_code}</td>
+                    <td style={td}>{p.name}</td>
+                    <td style={td}>{confirmed(p.confirmed)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
       </Card>
 
       <Card title="Reference library"

@@ -1,45 +1,48 @@
-// Data series: validated reference palette (dataviz skill, references/palette.md).
-// UI chrome: Euro Chlor brand palette (as supplied for the Industry Review site) —
-// black #272525, blue-dark #325da7, blue-light #719dc3, yellow #fde62f, plus the
-// navy/blue tints derived from it. White cards on a blue-tinted page, navy title band.
+// UI chrome: Euro Chlor palette as used on the 17 Connections / Water pages —
+// green #3DA434 (darkened to #2F8228 wherever it carries white or small text),
+// yellow #FFE500, ink #231F20, greys #6D6E71 / #C9C9C2 / #ECECEC / #F1F2F2.
+// Near-black title band. Data series: validated categorical palette (dataviz
+// validator, adjacent pairs) with the brand blue #005CAB for the EU, brand
+// cyan #04BBEE and orange #F47B20 in slots 7 and 8.
 // Categorical hues are fixed per ENTITY, never assigned by rank or cycled.
 import { createContext, useContext } from 'react'
 
 export const BRAND = {
-  black: '#272525', blueDark: '#325da7', blueLight: '#719dc3', yellow: '#fde62f',
-  navy: '#1c3260', blueMid: '#4a7ac0', bluePale: '#a8c4dc', blueWash: '#eaf1f8', blueTint: '#f5f8fc',
+  ink: '#231F20', grey: '#6D6E71', greyLight: '#C9C9C2', greyLine: '#ECECEC', greyWash: '#F1F2F2',
+  green: '#3DA434', greenDark: '#2F8228', greenWash: '#E9F4E7', yellow: '#FFE500',
+  blue: '#005CAB', blueLight: '#579EC6', cyan: '#04BBEE', orange: '#F47B20',
 }
 
 export const LIGHT = {
   mode: 'light',
   // UI chrome
-  page: BRAND.blueTint, header: '#ffffff', band: BRAND.navy, surface: '#ffffff',
-  accent: BRAND.blueDark, accentSoft: BRAND.blueWash, accentText: BRAND.blueDark,
-  highlight: BRAND.yellow, highlightText: BRAND.navy,
-  ink: BRAND.black, inkSecondary: '#4f4c4c', inkMuted: '#7d7a7a',
-  grid: '#e8e6e6', axis: '#d6d3d3', border: 'rgba(39,37,37,0.10)',
-  shadow: '0 1px 2px rgba(28,50,96,0.04), 0 6px 20px rgba(28,50,96,0.06)',
-  good: '#0ca30c', bad: '#d03b3b',
+  page: BRAND.greyWash, header: '#ffffff', band: BRAND.ink, surface: '#ffffff',
+  accent: BRAND.greenDark, accentSoft: BRAND.greenWash, accentText: BRAND.greenDark,
+  highlight: BRAND.yellow, highlightText: BRAND.ink,
+  ink: BRAND.ink, inkSecondary: '#3F3F3A', inkMuted: BRAND.grey,
+  grid: BRAND.greyLine, axis: BRAND.greyLight, border: 'rgba(35,31,32,0.10)',
+  shadow: '0 1px 2px rgba(35,31,32,0.04), 0 6px 20px rgba(35,31,32,0.05)',
+  good: '#2F8228', bad: '#d03b3b',
   // data series (validated palette, light mode; s1 = EU on brand blue)
-  series: { s1: '#325da7', s2: '#1baf7a', s3: '#eda100', s4: '#008300',
-            s5: '#4a3aa7', s6: '#e34948', s7: '#e87ba4', s8: '#eb6834' },
-  divergingPos: '#325da7', divergingNeg: '#e34948',
-  status: { good: '#0ca30c', warning: '#fab219', serious: '#ec835a', critical: '#d03b3b' },
+  series: { s1: BRAND.blue, s2: '#1baf7a', s3: '#eda100', s4: '#008300',
+            s5: '#4a3aa7', s6: '#e34948', s7: BRAND.cyan, s8: BRAND.orange },
+  divergingPos: BRAND.blue, divergingNeg: '#e34948',
+  status: { good: '#2F8228', warning: '#fab219', serious: '#ec835a', critical: '#d03b3b' },
 }
 
 export const DARK = {
   mode: 'dark',
-  page: '#0f1626', header: '#161f33', band: '#141c2f', surface: '#1a2338',
-  accent: BRAND.blueLight, accentSoft: 'rgba(113,157,195,0.16)', accentText: BRAND.bluePale,
-  highlight: BRAND.yellow, highlightText: BRAND.navy,
-  ink: '#f2f4f8', inkSecondary: '#b9c2d0', inkMuted: '#7f8a9c',
-  grid: '#2a3348', axis: '#374158', border: 'rgba(255,255,255,0.09)',
+  page: '#161515', header: '#1f1d1d', band: '#0e0d0d', surface: '#1f1d1d',
+  accent: BRAND.greenDark, accentSoft: 'rgba(61,164,52,0.16)', accentText: '#6cc463',
+  highlight: BRAND.yellow, highlightText: BRAND.ink,
+  ink: '#f3f3f1', inkSecondary: '#c4c4bf', inkMuted: '#8f8f8a',
+  grid: '#2e2c2c', axis: '#433f3f', border: 'rgba(255,255,255,0.09)',
   shadow: 'none',
-  good: '#0ca30c', bad: '#e66767',
-  series: { s1: '#719dc3', s2: '#199e70', s3: '#c98500', s4: '#008300',
-            s5: '#9085e9', s6: '#e66767', s7: '#d55181', s8: '#d95926' },
-  divergingPos: '#719dc3', divergingNeg: '#e66767',
-  status: { good: '#0ca30c', warning: '#fab219', serious: '#ec835a', critical: '#d03b3b' },
+  good: '#4cb843', bad: '#e66767',
+  series: { s1: '#4f8fd6', s2: '#199e70', s3: '#c98500', s4: '#008300',
+            s5: '#9085e9', s6: '#e66767', s7: '#1aa3d1', s8: '#d96a1e' },
+  divergingPos: '#4f8fd6', divergingNeg: '#e66767',
+  status: { good: '#4cb843', warning: '#fab219', serious: '#ec835a', critical: '#e66767' },
 }
 
 // Fixed entity -> categorical slot mapping (color follows the entity)

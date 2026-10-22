@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { fetchIndicators, fetchProducts, fetchRegions } from '../api'
 import { useTheme, GEO_LABEL } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
-import { Card, EmptyState, Legend, StatTile } from '../components'
+import { Card, EmptyState, SectionHeading } from '../components'
 
 const CDIS = [
   { id: 'cdi1_hhi', short: 'CDI 1 — HHI', label: 'Import concentration (HHI)',
@@ -20,10 +20,7 @@ const CLASS_STYLE = {
   low_dependency: { label: 'Low dependency', risk: 'Low disruption risk', role: 'good' },
 }
 
-// stable slot colors for the stacked market chart, assigned in first-appearance order
-const MARKET_SLOTS = ['s1', 's2', 's3', 's5', 's8']
-
-export default function Dependency({ product, productLabel }) {
+export default function Dependency({ product, productLabel, setProduct }) {
   const theme = useTheme()
   const [rows, setRows] = useState(null)           // CDI 1/2/3 series, this product
   const [classRows, setClassRows] = useState(null) // cdi_class rows, this product (all windows)
@@ -55,9 +52,6 @@ export default function Dependency({ product, productLabel }) {
 
   const current = useMemo(
     () => classRows?.find(r => r.period === 'L12M') || null, [classRows])
-  const annualClass = useMemo(
-    () => (classRows || []).filter(r => r.period !== 'L12M')
-      .sort((a, b) => a.period.localeCompare(b.period)), [classRows])
   const thresholds = current?.inputs?.thresholds || {}
 
   const shortName = (geo) => {
@@ -65,48 +59,6 @@ export default function Dependency({ product, productLabel }) {
     const clean = raw.replace(/\s*\(.*$/, '')
     return clean.length > 22 ? clean.slice(0, 21) + '…' : clean
   }
-
-  // "Imports markets over the years" — stacked annual value by top supplier + Other
-  const marketOption = useMemo(() => {
-    if (!annualClass.length) return null
-    const totals = {}
-    for (const r of annualClass) {
-      for (const s of r.inputs?.top_suppliers || []) {
-        totals[s.geo] = (totals[s.geo] || 0) + s.value_eur
-      }
-    }
-    const topGeos = Object.entries(totals).sort((a, b) => b[1] - a[1])
-      .slice(0, 5).map(([g]) => g)
-    const years = annualClass.map(r => r.period)
-    const colorOf = (g, i) => theme.series[MARKET_SLOTS[i % MARKET_SLOTS.length]]
-    const base = baseOption(theme)
-    const mk = (name, data, color) => ({
-      name, type: 'line', stack: 'imports', data, symbol: 'none',
-      lineStyle: { width: 0 }, areaStyle: { color, opacity: 0.85 },
-      itemStyle: { color }, emphasis: { focus: 'series' },
-    })
-    const series = topGeos.map((g, i) => mk(shortName(g), annualClass.map(r => {
-      const s = (r.inputs?.top_suppliers || []).find(x => x.geo === g)
-      return s ? Math.round(s.value_eur / 1e6) : 0
-    }), colorOf(g, i)))
-    series.push(mk('Other', annualClass.map(r => {
-      const listed = (r.inputs?.top_suppliers || [])
-        .filter(x => topGeos.includes(x.geo))
-        .reduce((a, x) => a + x.value_eur, 0)
-      return Math.max(0, Math.round(((r.inputs?.supplier_total_eur || 0) - listed) / 1e6))
-    }), theme.axis))
-    return {
-      legendItems: [...topGeos.map((g, i) => ({ label: shortName(g), color: colorOf(g, i) })),
-                    { label: 'Other', color: theme.axis }],
-      option: {
-        ...base,
-        xAxis: { ...base.xAxis, data: years, boundaryGap: false },
-        yAxis: { ...base.yAxis },
-        tooltip: { ...base.tooltip, valueFormatter: v => `${v} M€` },
-        series,
-      },
-    }
-  }, [annualClass, theme, geoNames])
 
   const marketsBar = (items, denomLabel) => {
     if (!items?.length) return null
@@ -161,33 +113,8 @@ export default function Dependency({ product, productLabel }) {
         },
       }
     })
-    // 4th panel: extra-EU imports indexed to the first year = 100
-    if (annualClass.length > 1) {
-      const first = annualClass[0].inputs?.extra_eu_imports_eur || 0
-      if (first > 0) {
-        const base = baseOption(theme)
-        charts.push({
-          id: 'index', short: 'Extra-EU imports', label: `Index ${annualClass[0].period} = 100`,
-          option: {
-            ...base,
-            grid: { ...base.grid, left: 40, right: 12 },
-            xAxis: { ...base.xAxis, data: annualClass.map(r => r.period) },
-            tooltip: { ...base.tooltip, valueFormatter: v => `${Number(v).toFixed(0)}` },
-            series: [
-              lineSeries('Index', annualClass.map(r =>
-                Math.round((r.inputs?.extra_eu_imports_eur || 0) / first * 100)),
-                theme.series.s8, theme),
-              { type: 'line', data: [], markLine: {
-                  silent: true, symbol: 'none', data: [{ yAxis: 100 }],
-                  lineStyle: { color: theme.axis, type: 'dashed', width: 1 },
-                  label: { show: false } } },
-            ],
-          },
-        })
-      }
-    }
     return charts
-  }, [rows, annualClass, theme, thresholds])
+  }, [rows, theme, thresholds])
 
   if (error) return <EmptyState>Failed to load: {error}</EmptyState>
   if (!screening) return <EmptyState>Loading…</EmptyState>
@@ -197,19 +124,6 @@ export default function Dependency({ product, productLabel }) {
 
   const nameOf = (code) => products.find(p => p.product_code === code)?.name || code
   const cls = current ? CLASS_STYLE[current.inputs?.class] : null
-  const tile = (cdi) => {
-    const v = current?.inputs?.cdi_values?.[cdi.id]
-    const t = thresholds[cdi.id]
-    if (v == null || t == null) return { value: '—' }
-    const diff = v - t
-    return {
-      value: v.toFixed(3),
-      delta: `${diff >= 0 ? '' : '-'}${Math.abs(diff).toFixed(2)} vs ${t}`,
-      deltaGood: diff < 0,
-      note: cdi.verdict(diff >= 0),
-    }
-  }
-
   const th = { textAlign: 'left', padding: '9px 12px', fontSize: 10.5, color: theme.inkMuted,
                fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
                borderBottom: `1px solid ${theme.grid}` }
@@ -227,52 +141,23 @@ export default function Dependency({ product, productLabel }) {
     retrieved_at: current.computed_at, quality_flag: 'ok',
   }] : null
 
+  const verdict = cdi => {
+    const v = current?.inputs?.cdi_values?.[cdi.id], t = thresholds[cdi.id]
+    return v == null || t == null ? cdi.label
+      : `${cdi.label}. Last 12 months: ${v.toFixed(3)} vs threshold ${t} — ${cdi.verdict(v >= t)}.`
+  }
+  const eeaNote = current?.inputs?.top_suppliers?.[0]?.eea_efta_uk &&
+    current?.inputs?.cdi_values?.cdi1_hhi > (thresholds.cdi1_hhi ?? 1)
+    ? ' Concentration is driven by an EEA/EFTA/UK supplier.' : ''
+
   return (
     <>
-      {current && (
-        <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
-          {CDIS.map(c => <StatTile key={c.id} icon="◔" label={c.short} {...tile(c)} />)}
-          <StatTile icon="⚑" label="Classification" value={cls?.label}
-            note={`${cls?.risk} · ${current.value} of 3 criteria met${
-              current.inputs?.top_suppliers?.[0]?.eea_efta_uk &&
-              current.inputs?.cdi_values?.cdi1_hhi > (thresholds.cdi1_hhi ?? 1)
-                ? ' · ⚠ concentration driven by an EEA/EFTA/UK supplier' : ''}`} />
-        </div>
-      )}
-
-      <Card title={`Import markets over the years — ${productLabel}`}
-        subtitle="Extra-EU import value by supplier country, annual, M€. Top 5 suppliers + other."
-        sourceRows={src}
-        right={marketOption && <Legend items={marketOption.legendItems} />}>
-        {marketOption ? <EChart option={marketOption.option} height={280} theme={theme} />
-          : <EmptyState>No annual supplier history yet.</EmptyState>}
-      </Card>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 20 }}>
-        <Card title="Import markets" subtitle="Share of extra-EU import value, last 12 months."
-          sourceRows={src}>
-          {current?.inputs?.top_suppliers?.filter(s => s.share >= 0.001).length
-            ? <EChart option={marketsBar(current.inputs.top_suppliers.filter(s => s.share >= 0.001), 'extra-EU imports')} height={280} theme={theme} />
-            : <EmptyState>No supplier detail.</EmptyState>}
-        </Card>
-        <Card title="Export markets" subtitle="Share of extra-EU export value, last 12 months."
-          sourceRows={src}>
-          {current?.inputs?.top_destinations?.filter(s => s.share >= 0.001).length
-            ? <EChart option={marketsBar(current.inputs.top_destinations.filter(s => s.share >= 0.001), 'extra-EU exports')} height={280} theme={theme} />
-            : <EmptyState>No destination detail yet — re-run comext_suppliers.</EmptyState>}
-        </Card>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 20 }}>
-        {smallMultiples?.map(sm => (
-          <Card key={sm.id} title={sm.short} subtitle={sm.label}>
-            <EChart option={sm.option} height={190} theme={theme} />
-          </Card>
-        ))}
-      </div>
-
+      <SectionHeading title="Import dependency"
+        subtitle="European Commission dependency screening (three criteria, last 12 months) for every basket product, then the detail for the selected product." />
       <Card title="Commission screening — all basket products"
-        subtitle={`Last 12 months. Red = above threshold. HHI on value (€) and tonnage (t) bases; EEA share = extra-EU imports from EEA/EFTA/UK partners (annotation, not risk math). ${current?.inputs?.citation || ''}`}>
+        subtitle={`Last 12 months. Red = above threshold. HHI on value (€) and tonnage (t) bases; EEA share = extra-EU imports from EEA/EFTA/UK partners (annotation, not risk math). Click a product to open it. ${current?.inputs?.citation || ''}`}
+        sourceRows={src}>
+        <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
             <th style={th}>Product</th><th style={th}>HHI €</th><th style={th}>HHI t</th>
@@ -286,9 +171,11 @@ export default function Dependency({ product, productLabel }) {
               const t = r.inputs?.thresholds || {}
               const c = CLASS_STYLE[r.inputs?.class] || {}
               const trusted = r.inputs?.trusted_share
+              const mine = r.product_code === product
               return (
-                <tr key={r.product_code}>
-                  <td style={{ ...td, fontSize: 12 }}>{nameOf(r.product_code)}</td>
+                <tr key={r.product_code} onClick={() => setProduct?.(r.product_code)}
+                    style={{ cursor: 'pointer', background: mine ? theme.accentSoft : 'transparent' }}>
+                  <td style={{ ...td, fontSize: 12, fontWeight: mine ? 700 : 400 }}>{nameOf(r.product_code)}</td>
                   <td style={td}>{num(v.cdi1_hhi, t.cdi1_hhi)}</td>
                   <td style={td}>{vq.cdi1_hhi != null ? num(vq.cdi1_hhi, t.cdi1_hhi) : '—'}</td>
                   <td style={td}>{num(v.cdi2_reliance, t.cdi2_reliance)}</td>
@@ -305,6 +192,27 @@ export default function Dependency({ product, productLabel }) {
             })}
           </tbody>
         </table>
+        </div>
+      </Card>
+
+      <div style={{ fontSize: 13, color: theme.inkSecondary, margin: '4px 0 12px' }}>
+        <strong style={{ color: theme.ink }}>{productLabel}</strong>
+        {cls && <> — <span style={{ color: theme.status[cls.role], fontWeight: 650 }}>{cls.label}</span>
+          {' '}({cls.risk.toLowerCase()}, {current.value} of 3 criteria met).{eeaNote}</>}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 20 }}>
+        {smallMultiples?.map((sm, i) => (
+          <Card key={sm.id} title={sm.short} subtitle={verdict(CDIS[i])} sourceRows={i === 0 ? src : null}>
+            <EChart option={sm.option} height={190} theme={theme} />
+          </Card>
+        ))}
+      </div>
+
+      <Card title={`Export markets — ${productLabel}`} subtitle="Share of extra-EU export value, last 12 months. (Import origins are in the trade-flow chart above.)"
+        sourceRows={src}>
+        {current?.inputs?.top_destinations?.filter(s => s.share >= 0.001).length
+          ? <EChart option={marketsBar(current.inputs.top_destinations.filter(s => s.share >= 0.001), 'extra-EU exports')} height={280} theme={theme} />
+          : <EmptyState>No destination detail yet — re-run comext_suppliers.</EmptyState>}
       </Card>
     </>
   )

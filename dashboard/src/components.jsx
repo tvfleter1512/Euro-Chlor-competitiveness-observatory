@@ -7,12 +7,12 @@ export function Card({ title, subtitle, children, sourceRows, right }) {
   return (
     <div style={{
       background: theme.surface, border: `1px solid ${theme.border}`,
-      borderRadius: 12, padding: '20px 24px 14px', boxShadow: theme.shadow,
+      borderRadius: 12, padding: '20px clamp(14px, 2.5vw, 24px) 14px', boxShadow: theme.shadow,
       marginBottom: 20,
     }}>
       {(title || right) && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-          <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 300px', minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 650, color: theme.ink }}>{title}</div>
             {subtitle && <div style={{ fontSize: 12, color: theme.inkSecondary, marginTop: 3 }}>{subtitle}</div>}
           </div>
@@ -57,14 +57,16 @@ export function SourceChips({ rows }) {
 }
 
 // KPI stat tile (Flup style): icon chip, muted label, big value, signed delta.
-export function StatTile({ label, value, delta, deltaGood, icon, note }) {
+// spark: optional array of numbers, drawn as a small trend line under the value
+export function StatTile({ label, value, delta, deltaGood, icon, note, spark, onClick }) {
   const theme = useTheme()
   const deltaColor = delta == null ? theme.inkMuted : deltaGood ? theme.good : theme.bad
   return (
     <div style={{
       background: theme.surface, border: `1px solid ${theme.border}`,
       borderRadius: 12, padding: '16px 20px', boxShadow: theme.shadow, flex: 1, minWidth: 190,
-    }}>
+      cursor: onClick ? 'pointer' : 'default',
+    }} onClick={onClick}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
           width: 26, height: 26, borderRadius: 8, background: theme.highlight,
@@ -82,9 +84,58 @@ export function StatTile({ label, value, delta, deltaGood, icon, note }) {
         )}
       </div>
       {note && <div style={{ fontSize: 11, color: theme.inkMuted, marginTop: 4 }}>{note}</div>}
+      {spark?.length > 1 && <Sparkline values={spark} />}
     </div>
   )
 }
+
+function Sparkline({ values, height = 30 }) {
+  const theme = useTheme()
+  const v = values.filter(x => x != null && Number.isFinite(x))
+  if (v.length < 2) return null
+  const lo = Math.min(...v), hi = Math.max(...v), span = hi - lo || 1
+  const pts = v.map((x, i) => `${(i / (v.length - 1) * 100).toFixed(2)},${(height - 3 - (x - lo) / span * (height - 6)).toFixed(2)}`)
+  const [lx, ly] = pts.at(-1).split(',')
+  return (
+    <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" width="100%" height={height}
+         style={{ display: 'block', marginTop: 8, overflow: 'visible' }} aria-hidden="true">
+      <polyline points={pts.join(' ')} fill="none" stroke={theme.series.s1} strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      <circle cx={lx} cy={ly} r="2" fill={theme.series.s1} vectorEffect="non-scaling-stroke" />
+    </svg>
+  )
+}
+
+// Two-to-four option pill switch inside a card header (e.g. tonnes | utilisation)
+export function Segmented({ options, value, onChange }) {
+  const theme = useTheme()
+  return (
+    <span style={{ display: 'inline-flex', gap: 3, padding: 3, borderRadius: 999, flexShrink: 0,
+                   background: theme.page, border: `1px solid ${theme.border}` }}>
+      {options.map(([key, label]) => (
+        <button key={key} onClick={() => onChange(key)} style={{
+          padding: '3px 11px', fontSize: 11.5, cursor: 'pointer', borderRadius: 999,
+          border: 'none', fontWeight: 600, fontFamily: FONT,
+          background: value === key ? theme.accent : 'transparent',
+          color: value === key ? '#fff' : theme.inkSecondary,
+        }}>{label}</button>
+      ))}
+    </span>
+  )
+}
+
+// Heading that opens a group of cards within a tab
+export function SectionHeading({ title, subtitle }) {
+  const theme = useTheme()
+  return (
+    <div style={{ margin: '12px 0 14px', paddingLeft: 12, borderLeft: `3px solid ${theme.highlight}` }}>
+      <div style={{ fontSize: 19, fontWeight: 750, color: theme.ink, letterSpacing: '-0.01em' }}>{title}</div>
+      {subtitle && <div style={{ fontSize: 12.5, color: theme.inkSecondary, marginTop: 3 }}>{subtitle}</div>}
+    </div>
+  )
+}
+
+export const grid2 = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 460px), 1fr))', gap: 20 }
 
 export function Legend({ items }) {
   const theme = useTheme()

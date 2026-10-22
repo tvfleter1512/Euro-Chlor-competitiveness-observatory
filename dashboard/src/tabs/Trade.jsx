@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { fetchSeries, fetchIndicators, fetchProducts, fetchAlerts, fetchTradePartners } from '../api'
 import { useTheme, PRODUCT_SLOTS, PARTNER_SLOT, FONT } from '../theme'
 import EChart, { baseOption, lineSeries } from '../EChart'
-import { Card, EmptyState, Legend, StatTile } from '../components'
+import { Card, EmptyState, Legend, SectionHeading, StatTile } from '../components'
+import { groupAlerts } from '../alerts'
 
 const fmtM = v => `${(v / 1e6).toFixed(1)} M€`
 const fmtKt = v => `${(v / 1e3).toFixed(1)} kt`
@@ -40,23 +41,6 @@ function windowSums(rows) {
 const deltaPct = (last, prev) => (prev ? (last - prev) / Math.abs(prev) * 100 : null)
 const pct = d => d == null ? null : `${d >= 0 ? '' : '-'}${Math.abs(d).toFixed(1)} %`
 const x = r => r == null ? '—' : `×${r >= 10 ? r.toFixed(0) : r.toFixed(1)}`
-
-// one entry per product/flow/partner: strongest (high first, then latest) alert leads
-function groupAlerts(rows) {
-  const groups = new Map()
-  for (const a of rows) {
-    const key = `${a.kind}|${a.product_code}|${a.flow}|${a.partner_geo_id}`
-    const g = groups.get(key)
-    if (!g) { groups.set(key, { lead: a, periods: new Set([a.period]) }); continue }
-    g.periods.add(a.period)
-    const stronger = (a.severity === 'high' && g.lead.severity !== 'high') ||
-      (a.severity === g.lead.severity && a.period > g.lead.period)
-    if (stronger) g.lead = a
-  }
-  return [...groups.values()].sort((p, q) =>
-    (p.lead.severity === q.lead.severity ? q.lead.period.localeCompare(p.lead.period)
-      : p.lead.severity === 'high' ? -1 : 1))
-}
 
 export default function Trade({ fromDate, product, productLabel, confirmed, basis = 'value', setProduct }) {
   const theme = useTheme()
@@ -140,26 +124,6 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
     }
   }, [balance, theme, basis])
 
-  const flowOption = useMemo(() => {
-    if (!flows?.length) return null
-    const base = baseOption(theme)
-    const periods = [...new Set(flows.map(r => r.period))].sort()
-    const grab = (flow) => {
-      const m = new Map(flows.filter(r => r.flow === flow).map(r => [r.period, Number(r.value)]))
-      return periods.map(p => m.get(p) ?? null)
-    }
-    return {
-      ...base,
-      xAxis: { ...base.xAxis, data: periods },
-      yAxis: { ...base.yAxis, axisLabel: { ...base.yAxis.axisLabel, formatter: B.axis } },
-      tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : B.fmt(Number(v)) },
-      series: [
-        lineSeries('Exports', grab('export'), theme.series.s1, theme),
-        lineSeries('Imports', grab('import'), theme.series.s8, theme),
-      ],
-    }
-  }, [flows, theme, basis])
-
   // by-partner stacked bars: top-6 partners in fixed entity colours + Other
   const partnerColor = geo => PARTNER_SLOT[geo] ? theme.series[PARTNER_SLOT[geo]] : theme.inkMuted
   const partnerOption = useMemo(() => {
@@ -196,7 +160,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
       byProduct.set(r.product_code, (byProduct.get(r.product_code) || 0) + Number(r.value))
     }
     const items = basket.map((b, i) => ({
-      key: b.key, name: b.name, slot: PRODUCT_SLOTS[i % PRODUCT_SLOTS.length],
+      key: b.key, name: b.name, cn8: b.cn8[0], slot: PRODUCT_SLOTS[i % PRODUCT_SLOTS.length],
       value: b.cn8.reduce((a, c) => a + (byProduct.get(c) || 0), 0),
     })).sort((a, b) => a.value - b.value)
     return { items, months }
@@ -308,6 +272,8 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
         ) : <EmptyState>No open alerts in the last 6 months.</EmptyState>}
       </Card>
 
+      <SectionHeading title={`Trade flows — ${productLabel}`}
+        subtitle="Who supplies the EU and where it sells, month by month. Change the product in the bar above." />
       <Card sourceRows={flows}
         title={`${FLOW_LABEL[pflow]} — ${productLabel}`}
         subtitle={`Monthly extra-EU ${B.label}, top-6 partners by the last 12 months; the rest as Other.${unconfirmedNote}`}
@@ -368,32 +334,23 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
           : <EmptyState>Loading…</EmptyState>}
       </Card>
 
-      <Card sourceRows={flows}
-        title={`Extra-EU trade balance — ${productLabel}`}
-        subtitle={`Monthly exports − imports, ${B.label}. Positive = net exporter.${unconfirmedNote}`}>
-        {balanceOption ? <EChart option={balanceOption} height={300} theme={theme} />
-          : <EmptyState>No balance rows for this product yet.</EmptyState>}
-      </Card>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,3fr) minmax(0,2fr)', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: 20 }}>
         <Card sourceRows={flows}
-          title={`Export and import ${basis === 'volume' ? 'quantities' : 'values'} — ${productLabel}`}
-          subtitle={`Monthly ${B.label}, EU27 vs extra-EU.`}
-          right={<Legend items={[
-            { label: 'Exports', color: theme.series.s1 },
-            { label: 'Imports', color: theme.series.s8 },
-          ]} />}>
-          {flowOption ? <EChart option={flowOption} height={280} theme={theme} />
-            : <EmptyState>No rows yet.</EmptyState>}
+          title={`Extra-EU trade balance — ${productLabel}`}
+          subtitle={`Monthly exports − imports, ${B.label}. Positive = net exporter.${unconfirmedNote}`}>
+          {balanceOption ? <EChart option={balanceOption} height={300} theme={theme} />
+            : <EmptyState>No balance rows for this product yet.</EmptyState>}
         </Card>
 
         <Card
           title="Net balance by product"
-          subtitle={`Last 12 months, extra-EU, ${B.label}.`}>
+          subtitle={`Last 12 months, extra-EU, ${B.label} (switch € value / tonnes in the bar above). Click a product to open it.`}>
           {ranked ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {ranked.items.map(item => (
-                <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div key={item.key} onClick={() => setProduct?.(item.cn8)}
+                     style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+                              fontWeight: item.cn8 === product ? 700 : 400 }}>
                   <span style={{ width: 8, height: 8, borderRadius: 4,
                                  background: theme.series[item.slot], flexShrink: 0 }} />
                   <span style={{ fontSize: 12.5, color: theme.inkSecondary, flex: 1,

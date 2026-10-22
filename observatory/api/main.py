@@ -50,7 +50,12 @@ def mode():
 def health():
     with db.get_conn() as conn:
         rows = conn.execute("SELECT * FROM v_source_health ORDER BY agent").fetchall()
-    return {"agents": rows}
+        # newest data period each agent has landed (what the data covers, not when it ran)
+        public_only = "" if MEMBER_MODE else " WHERE f.redistribution_class = 'public'"
+        latest = {r["agent"]: r["latest_period"] for r in conn.execute(
+            f"""SELECT r.agent, max(f.period) AS latest_period FROM fact_series f
+                JOIN ingestion_run r USING (run_id){public_only} GROUP BY r.agent""").fetchall()}
+    return {"agents": [{**r, "latest_period": latest.get(r["agent"])} for r in rows]}
 
 
 @app.get("/api/series")

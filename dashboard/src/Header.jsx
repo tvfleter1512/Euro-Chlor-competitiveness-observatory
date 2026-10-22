@@ -16,12 +16,12 @@ const ICONS = {
 }
 
 const NAV = [
-  { id: 'Electricity', label: 'Electricity' },
-  { id: 'Trade', label: 'Trade' },
-  { id: 'Dependency', label: 'Dependency (CDI)' },
-  { id: 'Industry', label: 'Industry & margins' },
+  { id: 'Overview', label: 'Overview' },
+  { id: 'Costs', label: 'Costs' },
+  { id: 'Trade', label: 'Trade & dependency' },
+  { id: 'Market', label: 'Market' },
   { id: 'Members', label: 'Member data', members: true },
-  { id: 'Sources', label: 'Sources & provenance' },
+  { id: 'Sources', label: 'Sources' },
 ]
 
 export default function Header({ tab, setTab, dark, setDark, memberMode, alertCount = 0 }) {
@@ -33,7 +33,7 @@ export default function Header({ tab, setTab, dark, setDark, memberMode, alertCo
       position: 'sticky', top: 0, zIndex: 20,
     }}>
       <div style={{
-        maxWidth: 1320, margin: '0 auto', padding: '0 32px', height: 66,
+        maxWidth: 1320, margin: '0 auto', padding: '0 clamp(16px, 3vw, 32px)', minHeight: 66, flexWrap: 'wrap',
         display: 'flex', alignItems: 'center', gap: 14,
       }}>
         <img src={dark ? '/logo-euro-chlor-white.svg' : '/logo-euro-chlor-dark.svg'}
