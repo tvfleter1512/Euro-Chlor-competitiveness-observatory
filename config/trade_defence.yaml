@@ -1,5 +1,6 @@
 # Trade-defence measures on basket products (anti-dumping, anti-subsidy, safeguards),
 # 2015 onwards. Compiled 2026-10-22 from official notices and trade press.
+# 2026-10-28: + 20 cases on the isocyanate, polycarbonate and epoxy routes (all checked against official texts).
 # stage not_imposed = recommended by the investigating authority but never imposed.
 # confirmed: true = checked against the official text (official_url; verification_note
 # says what was checked); false = trade press only or not yet checked. Product keys follow
@@ -1272,3 +1273,598 @@ measures:
   verification_note: 'Anti-Dumping Notice No. 2016/27 read (official ADC PDF via the Wayback copy of industry.gov.au;
     live site not reachable from here): revocation of the notices for JP, KR and US effective 2016-01-01, decision
     dated 13 Apr 2016.'
+
+# Trade-defence measures on isocyanates / polymeric MDI / polyurethanes (HS 292910, 390931, 390950),
+# any imposing jurisdiction, cases with a stage from 2015-01-01. Compiled 2026-10-28.
+# Discovery: WTO Trade Remedies Data Portal API (trade-remedies.wto.org, AD + CVD, all members, product-name
+# searches), DGTR case search, Federal Register API, MOFCOM trade-remedy site (cacs.mofcom.gov.cn), METI, Infoleg.
+- id: in-tdi-cn-jp-kr-2026-09
+  imposing: IN
+  targets: [CN, JP, KR]
+  product: isocyanates
+  hs: ['292910']
+  instrument: anti_dumping
+  stage: expiry_review
+  date: '2026-09-30'
+  expires: '2027-09-20'
+  duty: "In force: USD 0.26/kg (CN, all producers), USD 0.15/kg (JP), KR USD 0.22/kg Hanwha Solutions, 0.31/kg BASF Company, 0.44/kg others"
+  case_ref: "Original 14/36/2016-DGAD; 1st SSR F.No. 7/26/2021-DGTR (Cust. Notf. 28/2022-Customs (ADD), 21.9.2022); 2nd SSR F.No. 7/24/2026-DGTR, SETU AD/SSR/011/2026"
+  source_url: https://dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-toluene-diisocyanate-tdi
+  confirmed: true
+  note: >-
+    TDI with 80:20 isomer ratio, tariff item 2929 10 20 (indicative). Applicant Gujarat Narmada Valley Fertilizers
+    & Chemicals (GNFC), sole Indian producer. Original case initiated 5 Oct 2016 (POI Apr 2015-Mar 2016);
+    provisional duty Cust. Notf. 25/2017-Customs (ADD) of 5 Jun 2017; final findings 13 Dec 2017; definitive duty
+    Cust. Notf. 3/2018-Customs (ADD) of 23 Jan 2018. MTR limited to the Hanwha Chemical -> Hanwha Solutions name
+    change (final findings 29 Oct 2020). 1st sunset review initiated 27 Aug 2021 (POI Apr 2020-Mar 2021), duty
+    first extended to 27 Sep 2022 by Notf. 19/2022-Customs (ADD); final findings 24 Jun 2022 recommended
+    continuing the same rates for 5 years; continued by Notf. 28/2022-Customs (ADD) of 21 Sep 2022, in force till
+    20 Sep 2027. 2nd sunset review initiated 30 Sep 2026 on GNFC application (POI Apr 2025-Mar 2026, injury
+    period from Apr 2022; China treated as non-market economy for initiation). Pending.
+  official_url: https://dgtr.gov.in/sites/default/files/2026-09/Initiation%20Notification_TDI_SSR_English.pdf
+  verified: official
+  verification_note: >-
+    Read DGTR texts: 2017 final findings (duty table), 2020 MTR final findings, 2022 SSR final findings (duty
+    table with 2929 10 20 and per-producer rates, POI), and the scanned 30.09.2026 2nd SSR initiation (page
+    images read: case nos., POI, notification 28/2022 of 21.9.2022, in force till 20.9.2027). The customs
+    notifications themselves were not opened (CBIC search API did not return results).
+- id: in-tdi-eu-sa-2026-02
+  imposing: IN
+  targets: [EU, SA]
+  product: isocyanates
+  hs: ['292910']
+  instrument: anti_dumping
+  stage: extended
+  date: '2026-02-10'
+  expires: null
+  duty: "USD/t: EU Covestro Deutschland 221.04, BorsodChem 102.05, other EU 264.96; SA Sadara 217.55, other SA 344.33"
+  case_ref: "Original ADD (O.I.) 34/2019, F.No. 6/43/2019-DGTR; SSR AD (SSR) 05/2024, F.No. 7/14/2024-DGTR; Cust. Notf. 03/2026-Customs (ADD)"
+  source_url: https://dgtr.gov.in/en/anti-dumping-cases/initiation-sunset-review-anti-dumping-investigation-imports-toluene-di
+  confirmed: true
+  note: >-
+    TDI 80:20, tariff item 2929 10 20 (indicative); other grades out of scope. Applicant GNFC. Original
+    investigation (EU, Saudi Arabia, Chinese Taipei, UAE) initiated 31 Jan 2020 (POI Apr-Sep 2019);
+    provisional duty Notf. 43/2020-Customs (ADD) of 2 Dec 2020; final findings 28 Jan 2021; definitive duty
+    Notf. 28/2021-Customs (ADD) of 27 Apr 2021, due to expire 1 Dec 2025. Sunset review initiated 30 Dec 2024
+    for EU and Saudi Arabia only (POI Apr 2023-Jun 2024); duty extended to 1 Mar 2026 by Notf. 28/2025-Customs
+    (ADD) of 19 Aug 2025; final findings 12 Nov 2025 recommended continuing the original rates for 5 years;
+    Finance Ministry continued the duty by Notf. 03/2026-Customs (ADD) of 10 Feb 2026, for 5 years from Gazette
+    publication (exact end date not checked).
+  official_url: https://dgtr.gov.in/sites/default/files/2025-11/TDI_Final_FF-NCV_12.11.2025.pdf
+  verified: official
+  verification_note: >-
+    Read the DGTR 2021 final findings, the SSR initiation of 30.12.2024, the DGTR notice of 20.08.2025 (Notf.
+    28/2025 extension to 1.3.2026) and the SSR final findings of 12.11.2025 (duty table and POI). The WTO Trade
+    Remedies Data Portal measure records (cases ind-6432019-dgtr-14-2 and -24-2, compiled from India's WTO
+    notifications) confirm the continuation: publication reference 03/2026-Customs (ADD), published and
+    collected from 10/02/2026, at USD 102.05-264.96/MT (EU) and 217.55-344.33/MT (SA). TeamLease RegTech gives
+    the 5-year term. The notification text itself (CBIC) was not opened, so expires is left null.
+- id: in-tdi-ae-gb-tw-2025-12
+  imposing: IN
+  targets: [AE, GB, TW]
+  product: isocyanates
+  hs: ['292910']
+  instrument: anti_dumping
+  stage: expired
+  date: '2025-12-01'
+  expires: '2025-12-01'
+  duty: "USD 274.39/t (TW), USD 368.20/t (AE), USD 102.05-264.96/t (GB, EU rates)"
+  case_ref: "ADD (O.I.) 34/2019, F.No. 6/43/2019-DGTR; Cust. Notf. 28/2021-Customs (ADD)"
+  source_url: https://dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-toluene-di-isocyanate-tdi-european
+  confirmed: true
+  note: >-
+    The 2021 TDI 80:20 duty on Chinese Taipei and the UAE (same case as in-tdi-eu-sa-2026-02) was not reviewed:
+    the Dec 2024 sunset review left them out because there were no imports from them in the POI and no evidence
+    of recurrence. The duty therefore lapsed on 1 Dec 2025. India also notified to the WTO a separate United
+    Kingdom leg (UK split out after Brexit, applicable from 01/01/2021). It ran under the same Notf. 28/2021 at
+    the EU rates (USD 102.05-264.96/MT), in force 27 Apr 2021 to 1 Dec 2025. The sunset review covered only the
+    EU and Saudi Arabia, so the UK leg also lapsed.
+  official_url: https://dgtr.gov.in/sites/default/files/2025-01/TDI%20eng_0001.pdf
+  verified: official
+  verification_note: >-
+    The DGTR SSR initiation (30.12.2024) says the duties are set to expire on 1 Dec 2025 and excludes TW and UAE
+    (para 9); the TW/UAE rates come from the 2021 final findings duty table. The WTO Trade Remedies Data Portal
+    measure record ind-6432019-dgtr-54 (UK) shows Notf. 28/2021-Customs (ADD), USD 102.05-264.96/MT,
+    'Terminated on 01/12/2025'; TW and AE records show the same end date. No Indian text naming the UK was read
+    (the DGTR texts say "European Union").
+- id: in-tpu-cn-2024-10
+  imposing: IN
+  targets: [CN]
+  product: polyurethanes
+  hs: ['390950']
+  instrument: anti_dumping
+  stage: definitive
+  date: '2024-10-22'
+  expires: null
+  duty: "USD/kg: BASF Polyurethane Specialties China nil; Zhejiang Huafon TPU 1.15; Miracll Chemicals 0.93; others 1.58"
+  case_ref: "AD (OI) 22/2023, F.No. 6/23/2023-DGTR; Cust. Notf. 19/2024-Customs (ADD)"
+  source_url: https://dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-thermoplastic-polyurethane-tpu
+  confirmed: true
+  note: >-
+    Thermoplastic polyurethane (polyester- and polyether-based; polycaprolactone-based TPU excluded), tariff item
+    3909 50 00 (indicative). Applicant Covestro (India). Initiated 29/30 Sep 2023 (DGTR page dates the notice 6
+    Oct 2023), POI Apr 2022-Mar 2023. Final findings 6 Aug 2024 recommended 5 years. Imposed 22 Oct 2024 for 5
+    years (exact end date not checked). A separate case on TPU-based paint protection film from China (film,
+    not primary form) is out of scope.
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/FF%20TPU%20English%20NCV%20Final.pdf
+  verified: official
+  verification_note: >-
+    Read the DGTR final findings of 06.08.2024 (duty table, scope, POI). The imposition is confirmed by the WTO
+    Trade Remedies Data Portal measure record (case ind-6232023-dgtr, compiled from India's WTO notifications):
+    publication reference 19/2024-Customs (ADD), published and in force from 22/10/2024, at USD nil-1.58/kg.
+    The CBIC notification text was not opened.
+- id: us-mdi-cn-2026-06
+  imposing: US
+  targets: [CN]
+  product: polymeric_mdi
+  hs: ['390931', '292910']   # 'may also enter' codes (3824.99, 3909.50, 3920.99) left out: see note
+  instrument: anti_dumping
+  stage: definitive
+  date: '2026-06-25'
+  expires: null
+  duty: "87.25% Covestro Polymers (China); 87.25% Wanhua Chemical Group (exp. Shandong Mingko); 161.61% China-wide entity"
+  case_ref: "A-570-200; USITC 731-TA-1733 (Final); 91 FR 38393 (order)"
+  source_url: https://www.federalregister.gov/documents/2026/06/25/2026-12771
+  confirmed: true
+  note: >-
+    MDI (polymeric, monomeric and modified), mainly HTSUS 2929.10.8010 and 3909.31.0000; may also enter under
+    3824.99.2600, 3909.50.1000, 3909.50.2000, 3909.50.5000, 3824.99.2900 and 3920.99.5000. Prepolymers,
+    carbodiimide MDI and some mixtures are excluded. Petitioner: Ad Hoc MDI Fair Trade Coalition (BASF, Dow).
+    Commerce initiated the case 11 Mar 2025 (POI Jul-Dec 2024). Preliminary margins (Sep 2025) were
+    376.12-511.75%. The final determination of 13 Apr 2026 set 85.11% and 159.04% (press). The ITC found injury
+    (91 FR 31743, 28 May 2026). The order of 25 Jun 2026 corrected ministerial errors and raised the margins to
+    87.25% and 161.61%. Provisional measures lapsed 14 Mar 2026. No CVD case.
+  official_url: https://www.govinfo.gov/content/pkg/FR-2026-06-25/pdf/2026-12771.pdf
+  verified: official
+  verification_note: >-
+    Read the Federal Register order 2026-12771 (91 FR 38393): applicable date, amended margins table, ITC
+    notification date, provisional-measures lapse and the scope appendix with HTSUS numbers. The final-
+    determination margins (85.11/159.04%) and preliminary range come from trade.gov and press, not re-read.
+- id: ar-tdi-us-2025-04
+  imposing: AR
+  targets: [US]
+  product: isocyanates
+  hs: ['292910']
+  instrument: anti_dumping
+  stage: terminated
+  date: '2025-04-07'
+  expires: null
+  duty: "Minimum FOB export price USD 2,730.56/t (lifted)"
+  case_ref: "EX-2020-49949942-APN-DGD#MPYT; Res. 526/2021 (ex-MDP); Res. 1130/2024; Res. 397/2025 (MECON)"
+  source_url: https://www.argentina.gob.ar/normativa/nacional/norma-411346/texto
+  confirmed: true
+  note: >-
+    TDI 80:20 (isomer tolerances 82-78 / 18-22), NCM 2929.10.21, from the USA. Initiated 10 Nov 2020 (POI
+    dumping Apr 2019-Oct 2020). Definitive duty Res. 526/2021, published BO 7 Sep 2021, for 5 years, as a minimum
+    FOB price. On request of Petroquímica Río Tercero, Res. 1130/2024 (Nov 2024) opened a changed-circumstances
+    review and suspended the measure. Res. 397/2025 (4 Apr 2025, BO 7 Apr 2025) closed the review and lifted the
+    measure because Petroquímica Río Tercero had stopped producing TDI, leaving no domestic industry.
+  official_url: https://www.argentina.gob.ar/normativa/nacional/norma-411346/texto
+  verified: official
+  verification_note: >-
+    Read the Infoleg text of Res. 397/2025 (product, NCM, origin, Res. 526/2021 minimum FOB price, reason, arts.
+    1-2). The 2021 imposition and POI come from the WTO Trade Remedies Data Portal (Boletín Oficial No. 34742).
+    The text of Res. 1130/2024 was not opened.
+- id: jp-tdi-cn-2020-04
+  imposing: JP
+  targets: [CN]
+  product: isocyanates
+  hs: ['292910']
+  instrument: anti_dumping
+  stage: expired
+  date: '2020-04-24'
+  expires: '2020-04-24'
+  duty: "69.4%"
+  case_ref: "MOF Notice No. 149 (17 Apr 2015); Cabinet Order No. 215 of 2015; MOF Notice No. 108 (27 Apr 2020)"
+  source_url: https://www.meti.go.jp/policy/external_economy/trade_control/boekikanri/trade-remedy/investigation/TDI/index.html
+  confirmed: true
+  note: >-
+    Toluene diisocyanate (tariff heading 2929.10) from China (excluding Hong Kong and Macao), on petition by
+    Mitsui Chemicals. Investigation opened 14 Feb 2014. Provisional duty of 69.4% from 25 Dec 2014. Definitive
+    duty from 25 Apr 2015 to 24 Apr 2020. No extension: the MOF announced on 27 Apr 2020 that the period had
+    expired.
+  official_url: https://www.meti.go.jp/policy/external_economy/trade_control/boekikanri/trade-remedy/investigation/TDI/data/200427kanpo-kokuji.pdf
+  verified: official
+  verification_note: >-
+    Read the METI 7 Apr 2015 release (provisional 69.4% from 25.12.2014, 5-year recommendation), MOF Notice 149
+    and Cabinet Order 215 of 2015 (period 25.4.2015-24.4.2020), and MOF Notice 108 of 27.4.2020 (period expired).
+    The 2015 amending order changes only the title and period, so the 69.4% rate is taken to carry over; the
+    2014 cabinet order with the rate itself was not opened.
+- id: cn-tdi-eu-2018-03
+  imposing: CN
+  targets: [EU]
+  product: isocyanates
+  hs: ['292910']
+  instrument: anti_dumping
+  stage: expired
+  date: '2018-03-13'
+  expires: '2018-03-12'
+  duty: "Bayer MaterialScience 19.2%, BorsodChem 6.6%, Zachem 37.7%, Perstorp France 37.7%, Dow Tarragona 37.7%, others 37.7%"
+  case_ref: "MOFCOM Announcements 2012 No.14 (initiation), 2013 No.16 (final), 2017 No.49 (expiry notice), 2018 No.26 (termination)"
+  source_url: https://cacs.mofcom.gov.cn/cacscms/articleDetail/jkdc?articleId=153096&id=53d8a6e2621d0e2001621d44e6b60210
+  confirmed: true
+  note: >-
+    TDI 80/20 from the EU, Chinese tariff no. 29291010. Initiated 23 Mar 2012; provisional 13 Nov 2012;
+    definitive duties for 5 years from 13 Mar 2013. MOFCOM announced the coming expiry on 7 Sep 2017 (No. 49).
+    No qualified expiry-review request was received and MOFCOM did not self-initiate, so the measure ended
+    from 13 Mar 2018. (China's earlier TDI duties on Japan, Korea and the US ended on 21 Nov 2014, before this
+    file's window.)
+  official_url: https://cacs.mofcom.gov.cn/cacscms/articleDetail/jkdc?articleId=153096&id=53d8a6e2621d0e2001621d44e6b60210
+  verified: official
+  verification_note: >-
+    Read MOFCOM Announcement 2018 No.26 and 2013 No.16 (rates, tariff number, 5-year term) as reproduced on the
+    MOFCOM Trade Remedy Bureau site cacs.mofcom.gov.cn. www.mofcom.gov.cn and m.mofcom.gov.cn did not respond.
+# --- Searched, nothing found or out of scope (2026-10-28) ---
+# - India MDI / polymeric MDI (any origin): DGTR case search (toluene, isocyanate, diisocyanate, MDI, methylene,
+#   diphenyl, polyurethane, TDI, TPU, urethane) and the CVD list show no MDI case; WTO portal shows none either.
+#   The "India AD on MDI" candidate is not supported.
+# - China (MOFCOM) MDI / TPU / other isocyanate cases since 2015: none found (WTO portal China list, web search).
+#   China's TDI duties on JP/KR/US ended 21.11.2014 (MOFCOM 2014 No.73): pre-2015, excluded.
+#   China's case on "toluidine" from the EU (2012/2013; expiry review 2024-25) is a different product.
+# - EU: no anti-dumping, anti-subsidy or safeguard act on isocyanates/polyurethanes (Publications Office SPARQL
+#   title search).
+# - WTO Trade Remedies Data Portal (AD and CVD, all reporting members incl. BR, KR, TR, MX, TH, ID, GCC, RU/EAEU,
+#   GB, EG, PK) product searches for isocyan, diisocyanate, Di-isocyanate, TDI, MDI, toluene, methylene,
+#   polymeric, polyurethane, TPU, diisocianato, isocianato, poliuretano: no further cases in scope. Brazil's
+#   2024 AD case on polyether polyol (US, CN) is HS 390720, outside this basket.
+# - Out of scope by product: India AD on TPU-based surface/paint protection film from China (initiated
+#   16.06.2025, DGTR final findings 12.06.2026; film, not primary form); India AD on PU leather from China (2022).
+# - Safeguards: only a web search for a G/SG safeguard on TDI/MDI/polyurethane (nothing found); the WTO
+#   safeguard notification series was not systematically checked (the WTO portal covers only AD/CVD).
+# - Not searched individually: the Brazil, Türkiye and Korea national sites (covered only via the WTO portal
+#   product-name search).
+
+# Trade-defence measures on the epoxy chain (epichlorohydrin HS 291030, epoxy resins HS 390730), 2015 onwards.
+# Compiled 2026-10-28. Schema as config/trade_defence.yaml.
+- id: eu-epoxy-cn-tw-th-2025-07
+  imposing: EU
+  targets: [CN, TW, TH]
+  product: epoxy_resins
+  hs: ['390730', '291090', '382499']
+  instrument: anti_dumping
+  stage: definitive
+  date: '2025-07-29'
+  expires: '2030-07-29'
+  duty: "CN 17.3% (Jiangsu Sanmu), 23.0% (other cooperating, Annex), 33.0% (Sinochem group and all others); TW 10.8% (Chang Chun), 11.0% (Nan Ya and all others); TH 29.9% (Aditya Birla and all others)"
+  case_ref: "AD711; Implementing Regulation (EU) 2025/1505 of 25.7.2025 (OJ L 28.7.2025); provisional Reg. (EU) 2025/393; registration Reg. (EU) 2024/2714; initiation OJ C/2024/4137"
+  source_url: http://data.europa.eu/eli/reg_impl/2025/1505/oj
+  confirmed: true
+  note: >-
+    Products containing more than 35% by weight of epoxy resins (polymers or prepolymers with reactive epoxy groups,
+    based on epichlorohydrin and an aliphatic or aromatic alcohol such as BPA), solid, semi-solid or liquid, whether or
+    not containing modifiers, curing agents or additives. Excluded: certain paint and coating products (pigment at least
+    10%, resin at most 80%, curing agent 5-40%), pre-pregs, and blends under other CN codes. CN ex 2910 90 00, ex 3824 99 92,
+    ex 3824 99 93, ex 3907 30 00 (TARIC 2910900005, 3824999296, 3824999310, 3907300005, 3907300020, 3907300080).
+    Complaint 6 Jun 2024 by the Ad Hoc Coalition of Epoxy Resin producers; initiated 1 Jul 2024; IP 1 Apr 2023 to 31 Mar
+    2024, period considered from 1 Jan 2020. Registration regulation 2024/2714 published 25 Oct 2024. Provisional duties by
+    Reg. 2025/393 (published 27.2.2025): CN 24.2-40.8%, TW 10.8-11.0%, TH 32.1%. The definitive regulation
+    collects the provisional duties definitively but finds the conditions for retroactive collection not met. Korea was
+    terminated in the same regulation (no dumping found, see eu-epoxy-kr-2025-07). Article 3 allows adding new Chinese
+    exporting producers to the cooperating-company rate. No anti-circumvention, review or amending act found in the
+    Publications Office index as of 2026-10-28. Five-year expiry date is computed (Art. 11(2) of Reg. 2016/1036), not
+    printed in the regulation.
+  official_url: http://publications.europa.eu/resource/celex/32025R1505
+  verified: official
+  verification_note: >-
+    Read the full Regulation 2025/1505 (operative part, recitals on initiation, registration, retroactivity and Korea
+    termination), the provisional Regulation 2025/393 (duty table, publication date) and the notice of initiation
+    C/2024/4137 (IP, complaint date, case number AD711 from the case mailboxes). date = entry into force (day after OJ
+    publication 28.7.2025); WTO G/ADP/N/426/EU lists the duties from 29.07.2025. Expiry date computed, not read.
+- id: eu-epoxy-kr-2025-07
+  imposing: EU
+  targets: [KR]
+  product: epoxy_resins
+  hs: ['390730', '291090', '382499']
+  instrument: anti_dumping
+  stage: terminated
+  date: '2025-07-29'
+  expires: null
+  duty: null
+  case_ref: "AD711; Implementing Regulation (EU) 2025/1505, Article 4"
+  source_url: http://data.europa.eu/eli/reg_impl/2025/1505/oj
+  confirmed: true
+  note: >-
+    Same proceeding as eu-epoxy-cn-tw-th-2025-07 (initiated 1 Jul 2024 against CN, KR, TW, TH). Korea was left out of
+    the provisional measures in Feb 2025 and the proceeding against Korea was terminated by Article 4 of Regulation
+    2025/1505 because no dumping was established (recital 187). Korean imports were covered by the registration regulation published
+    25 Oct 2024 (Reg. 2024/2714). Kept as a separate row so Korea shows as a terminated target, not as a duty.
+  official_url: http://publications.europa.eu/resource/celex/32025R1505
+  verified: official
+  verification_note: Read Article 4 and recital 187 of Regulation 2025/1505 (termination for Korea, no dumping established). date = entry into force of the regulation.
+- id: us-epoxy-kr-tw-th-2025-05
+  imposing: US
+  targets: [KR, TW, TH]
+  product: epoxy_resins
+  hs: ['390730', '390729', '382499', '321410', '291090', '151800']
+  instrument: anti_dumping
+  stage: definitive
+  date: '2025-05-27'
+  expires: null
+  duty: "KR 5.68% Kukdo, 7.60% Kumho P&B, 6.37% all others (cash deposit 5.62/7.59/6.33% after subsidy offset); TW 10.93% Chang Chun, 28.13% Nan Ya, 19.21% all others; TH 5.25% Aditya Birla and all others"
+  case_ref: "A-580-919 (KR), A-583-876 (TW), A-549-850 (TH); ITC 731-TA-1685-1687 (Final); 90 FR 22237 (FR Doc 2025-09454)"
+  source_url: https://www.federalregister.gov/d/2025-09454
+  confirmed: true
+  note: >-
+    Fully or partially uncured epoxy resins (all physical forms), including blends and products with modifiers or
+    additives where the epoxy resin is at least 30% by weight, and resin processed in third countries. Excludes phenoxy
+    resins, certain paint and coating products, pre-pregs and TMBPF-DGE resin. HTSUS 3907.30.0000, also 3907.29.0000,
+    3824.99.9397, 3214.10.0020, 2910.90.9100, 2910.90.9000, 2910.90.2000, 1518.00.4000. Petition 3 Apr 2024 by the
+    U.S. Epoxy Resin Producers Ad Hoc Coalition (Olin, Westlake); initiation 29 Apr 2024; preliminary determinations
+    13 Nov 2024; final determinations 3 Apr 2025 (Taiwan amended for a ministerial error in the order notice); ITC
+    affirmative injury vote 19 May 2025; orders applicable 27 May 2025. First administrative reviews initiated 9 Jul 2026
+    (POR 13 Nov 2024-30 Apr 2026). US orders have no fixed expiry; a five-year sunset review is due around mid-2030.
+    China and India were terminated as negligible (us-epoxy-cn-in-2025-05).
+  official_url: https://www.govinfo.gov/content/pkg/FR-2025-05-27/html/2025-09454.htm
+  verified: official
+  verification_note: >-
+    Read the AD order notice 90 FR 22237 (margins, scope, HTSUS codes, applicable date) and the ITC determination
+    90 FR 21948. Checked the 9 Jul 2026 administrative-review initiation notice (FR Doc 2026-13892) lists Korea, Taiwan
+    and Thailand epoxy. WTO G/ADP/N/426/USA lists the orders from 27.05.2025.
+- id: us-epoxy-kr-tw-2025-05
+  imposing: US
+  targets: [KR, TW]
+  product: epoxy_resins
+  hs: ['390730', '390729', '382499', '321410', '291090', '151800']
+  instrument: anti_subsidy
+  stage: definitive
+  date: '2025-05-27'
+  expires: null
+  duty: "KR 1.01% Kukdo, 1.84% Kumho P&B, 1.30% all others; TW 62.36% Chang Chun, 3.38% Nan Ya, 33.24% all others"
+  case_ref: "C-580-920 (KR), C-583-877 (TW); ITC 701-TA-718-719 (Final); FR Doc 2025-09455 (27 May 2025)"
+  source_url: https://www.federalregister.gov/d/2025-09455
+  confirmed: true
+  note: >-
+    Same scope and HTSUS codes as the AD orders. CVD investigations initiated 29 Apr 2024 against CN, IN, KR, TW. The
+    preliminary determination for Korea was negative (13 Sep 2024) but the final (3 Apr 2025) was affirmative; Taiwan
+    amended for a ministerial error in the order notice. Orders applicable 27 May 2025. First administrative reviews:
+    Taiwan initiated 9 Jul 2026 (POR 13 Sep 2024-31 Dec 2025), Korea added by correction notice 23 Jul 2026 (POR 3 Apr
+    2025-31 Dec 2025). No fixed expiry (sunset review around mid-2030).
+  official_url: https://www.govinfo.gov/content/pkg/FR-2025-05-27/html/2025-09455.htm
+  verified: official
+  verification_note: >-
+    Read the CVD order notice (subsidy rates, applicable date, provisional-measures section) and the ITC determination
+    90 FR 21948. Checked the 2026 review initiation (2026-13892) and correction (2026-14868) notices. The ITC
+    investigation numbers 701-TA-718-719 for Korea and Taiwan are inferred from the 701-TA-716-719 range, not read
+    individually.
+- id: us-epoxy-cn-in-2025-05
+  imposing: US
+  targets: [CN, IN]
+  product: epoxy_resins
+  hs: ['390730']
+  instrument: anti_dumping
+  stage: terminated
+  date: '2025-05-22'
+  expires: null
+  duty: null
+  case_ref: "ITC 731-TA-1683-1687 (Final), USITC Pub. 5619; 90 FR 21948 (FR Doc 2025-09232)"
+  source_url: https://www.federalregister.gov/d/2025-09232
+  confirmed: true
+  note: >-
+    Initiated 29 Apr 2024 alongside KR, TW, TH. Commerce issued affirmative final LTFV determinations for China
+    (with affirmative critical circumstances) and India on 3 Apr 2025, but the ITC (vote 19 May 2025, notice published
+    22 May 2025) found imports from China and India negligible and terminated the investigations. No order. hs lists only
+    3907.30, the code named in the ITC notice; the scope was the same as for the KR/TW/TH orders.
+  official_url: https://www.govinfo.gov/content/pkg/FR-2025-05-22/html/2025-09232.htm
+  verified: official
+  verification_note: Read the ITC final determination notice 90 FR 21948 (negligibility, termination for China and India). Commerce's final margins for China and India were not read.
+- id: us-epoxy-cn-in-2025-05-2
+  imposing: US
+  targets: [CN, IN]
+  product: epoxy_resins
+  hs: ['390730']
+  instrument: anti_subsidy
+  stage: terminated
+  date: '2025-05-22'
+  expires: null
+  duty: null
+  case_ref: "ITC 701-TA-716-719 (Final), USITC Pub. 5619; 90 FR 21948 (FR Doc 2025-09232)"
+  source_url: https://www.federalregister.gov/d/2025-09232
+  confirmed: true
+  note: >-
+    CVD investigations on China and India initiated 29 Apr 2024; preliminary affirmative 13 Sep 2024 and final
+    affirmative 3 Apr 2025 (China with critical circumstances). The ITC found imports from China and India negligible and
+    terminated both CVD investigations (vote 19 May 2025, notice 22 May 2025). No order. hs lists only 3907.30, the
+    code named in the ITC notice; the scope was the same as for the KR/TW/TH orders.
+  official_url: https://www.govinfo.gov/content/pkg/FR-2025-05-22/html/2025-09232.htm
+  verified: official
+  verification_note: Read the ITC final determination notice 90 FR 21948. Commerce final subsidy rates for China and India not read.
+- id: in-epoxy-cn-kr-sa-tw-th-2025-11
+  imposing: IN
+  targets: [CN, KR, SA, TW, TH]
+  product: epoxy_resins
+  hs: ['390730']
+  instrument: anti_dumping
+  stage: definitive
+  date: '2025-11-17'
+  expires: '2030-11-16'
+  duty: "USD/t: CN 37 (Jiangsu Kumho Yangnong, Nantong Xingchen), 258 others; KR 286 Kukdo, 184 Kumho P&B, 483 others; TH 119 Aditya Birla, 331 others; SA 175; TW 115"
+  case_ref: "DGTR AD(OI)-22/2024, F. No. 6/24/2024-DGTR; final findings 18.8.2025; Customs Notification 33/2025-Customs (ADD) of 17.11.2025"
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-liquid-epoxy-resins-originating-or
+  confirmed: true
+  note: >-
+    Liquid epoxy resins (CAS 25068-38-6; EU REACH CAS 1675-54-3) with equivalent weight of 250 g/eq or less; excludes
+    solid, semi-solid, solution and waterborne epoxy resins, blended and modified LERs and brominated solvent epoxy resin.
+    Tariff items 3907 30 10 and 3907 30 90. Applicants Atul Ltd and Hindusthan Speciality Chemicals. Initiated 29 Jun 2024;
+    POI calendar 2023, injury period from 2020-21. The duty table covers subject-origin goods exported from any country and goods of any other origin exported from a subject country. Five years from 17 Nov 2025; the expiry date is computed.
+  official_url: https://dgtr.gov.in/sites/default/files/2025-08/LER%20FF%20NCV.pdf
+  verified: official
+  verification_note: >-
+    Read the DGTR final findings (header, POI, recommendation and duty table pp. 69-72, product footnote). Notification
+    number and date confirmed by WTO G/ADP/N/419/IND and N/426/IND (duties 17.11.2025, 33/2025-Customs (ADD)). The
+    notified rates (equal to the recommended rates) come from a taxguru.in copy of the notification; the CBIC original was
+    not reachable (TLS error).
+- id: in-epichlorohydrin-cn-kr-th-2024-11
+  imposing: IN
+  targets: [CN, KR, TH]
+  product: epichlorohydrin
+  hs: ['291030']
+  instrument: anti_dumping
+  stage: definitive
+  date: '2024-11-11'
+  expires: '2029-11-10'
+  duty: "USD/t: TH 298 AGC Vinythai, 327 others; KR 274 Hanwha Solutions, 506 Lotte Fine Chemical, 557 others; CN 108 Jiangsu Ruixiang, nil Ningbo Huanyang, 216 others"
+  case_ref: "DGTR AD(OI)-14/2023, F. No. 6/15/2023-DGTR; final findings 14.8.2024; Customs Notification 24/2024-Customs (ADD) of 11.11.2024"
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-epichlorohydrin-originating-or
+  confirmed: true
+  note: >-
+    Epichlorohydrin, tariff subheading 2910 30 00. Applicant Epigral Ltd (formerly Meghmani Finechem). The application
+    also named Taiwan, but the investigation was initiated on 26 Sep 2023 for China, Korea and Thailand only. POI 1 Apr
+    2022 to 31 Mar 2023. The duty table covers subject-origin goods exported from any country and goods of any other origin exported from a subject country. Five years from
+    11 Nov 2024; the expiry date is computed. Press reports a Thai exporter appeal before CESTAT (not checked).
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/FF%20ECH%20NCV_0001.pdf
+  verified: official
+  verification_note: >-
+    Read the DGTR final findings (header, POI, initiation, duty table pp. 71-73). Notification number and date confirmed
+    by WTO G/ADP/N/405/IND and N/426/IND (duties 11.11.2024, 24/2024-Customs (ADD)). The notified rates were not read
+    (CBIC not reachable); they are the recommended rates, and press reports a maximum of USD 557/t, which matches.
+- id: in-epoxy-cn-eu-kr-tw-th-2019-01
+  imposing: IN
+  targets: [CN, EU, KR, TW, TH]
+  product: epoxy_resins
+  hs: ['390730']
+  instrument: anti_dumping
+  stage: terminated
+  date: '2019-01-15'
+  expires: null
+  duty: null
+  case_ref: "DGAD Case O.I. 7/2018, F. No. 6/10/2018-DGAD; initiation 4.4.2018; termination order 15.1.2019"
+  source_url: https://www.dgtr.gov.in/en/anti-dumping-cases/anti-dumping-investigation-concerning-imports-certain-epoxy-resins-originating
+  confirmed: true
+  note: >-
+    "Certain epoxy resins": BPA/epichlorohydrin liquid resin (EEW 175-200), solution epoxy resin (solids under 95%,
+    EEW 300-600) and solid resin (EEW 650-1000); HS 3907 30 10 and 3907 30 90. Applicant Atul Ltd. POI 1 Oct 2016 to
+    30 Sep 2017. EU exporters that responded: Hexion B.V. (NL), Huntsman Advanced Materials (CH, via its Belgian exporter).
+    Terminated under Rule 14(a) at the applicant's written request at the final stage (the order notes the request but
+    calls the reasons weak). The termination order dates the request letter 27.2.2018, which is before the initiation,
+    probably a typo.
+  official_url: https://dgtr.gov.in/sites/default/files/2024-08/English_termination_order.pdf
+  verified: official
+  verification_note: >-
+    Read the DGTR initiation notification (4.4.2018, product scope) and the termination order (15.1.2019). WTO
+    G/ADP/N/328/IND lists the termination on 15.01.2019 for all five origins including the EU.
+- id: cn-epichlorohydrin-jp-kr-ru-us-2017-06
+  imposing: CN
+  targets: [JP, KR, RU, US]
+  product: epichlorohydrin
+  hs: ['291030']
+  instrument: anti_dumping
+  stage: expired
+  date: '2017-06-27'
+  expires: '2017-06-27'
+  duty: null
+  case_ref: "MOFCOM investigation ID 04-0024; original duties MOFCOM Announcement 44/2006 (from 28.6.2006); extended by Announcement 32/2012"
+  source_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N300CHN.pdf
+  confirmed: true
+  note: >-
+    Epichlorohydrin (HS 2910 30 00) from Japan, Korea, Russia and the United States, imposed 28 Jun 2006 and extended
+    for five years after an expiry review (started 27 Jun 2011, petition by Shandong Haili Chemical). Lapsed on
+    27 Jun 2017 because no application for an expiry review was received. Company rates per press only (antidumping.vn, not verified, so duty left null): RU Kaustik 17.9%,
+    Usoliekhimprom 5.4%; KR Hanwha 4.0%, Samsung Fine Chemicals 3.8%; JP Kashima 4.7%, Daiso 0%; US Dow 4.3%; all others
+    71.5%. The EU was not a target.
+  official_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N300CHN.pdf
+  verified: official
+  verification_note: >-
+    WTO G/ADP/N/300/CHN (H1 2017), section "Termination of measures": epichlorohydrin 04-0024, terminated 27.06.2017 for
+    JP, KR, RU, US, because the authority received no review application. G/ADP/N/272-294/CHN list the measure in force
+    (original imposition 28.06.2006). Announcement numbers and duty rates are from antidumping.vn; the MOFCOM texts were
+    not read.
+# Searched, nothing found or not verifiable:
+# - EU: Publications Office title search 2015-2026 ("epoxy", "epichlorohydrin", "2025/1505", "2025/393") finds only
+#   AD711 (initiation, registration, provisional, definitive). No EU case on epichlorohydrin, no anti-circumvention,
+#   review, amendment or General Court challenge with these terms in the title.
+# - WTO semi-annual AD reports (G/ADP/N/272 to 426, H1 2015 to H1 2026) grepped for epoxy/epichlorohydrin for ARG, AUS,
+#   BRA, CAN, CHN, EGY, EU, GBR, IDN, IND, ISR, JPN, KOR, MEX, MYS, PAK, PHL, RUS, THA, TPKM (Taiwan), TUR, UKR, USA, VNM,
+#   ZAF (plus ARM, CHL, COL, KAZ, MAR, NZL, PER partly). Only CHN, EU, IND and USA mention them (Mexico lists only
+#   epoxidized soybean oil, out of scope). Some halves were not available for BRA, THA, TPKM, PAK and RUS, so a case
+#   opened and closed entirely within one of those halves could be missed; any measure in force would still show in
+#   the next report.
+# - Korea, Taiwan, Thailand, Brazil, Turkey, UK, Indonesia, Vietnam, Pakistan, Saudi Arabia/GCC: no epoxy or
+#   epichlorohydrin case found (WTO reports, web search). Saudi Arabia's own report (G/ADP/N/426/SAU) was not available.
+# - Brazil: press mentions a 2013 investigation of liquid epoxy resins from China; it is not in any Brazilian WTO report
+#   from H1 2015 onwards (no measure in force), so it ended before 2015. Outside scope.
+# - India: DGTR site search finds only the three cases above (certain epoxy 2018, ECH 2023, LER 2024). No sunset,
+#   anti-circumvention or CVD case on either product.
+# - US: no case on epichlorohydrin. No anti-circumvention or scope ruling on epoxy found in the Federal Register.
+# - No safeguard measure on either product found.
+
+- id: cn-pc-tw-2024-04
+  imposing: CN
+  targets: [TW]
+  product: polycarbonate
+  hs: ['390740']
+  instrument: anti_dumping
+  stage: definitive
+  date: '2024-04-20'
+  expires: '2029-04-19'
+  duty: 'Formosa Chemicals & Fibre Corp. 9.0%; Idemitsu Chemicals Taiwan Corp. 9.0%; Chimei Corp. 12.2%; Chilin Technology Co., Ltd. 12.2%; all other Taiwanese companies 22.4% (ad valorem on customs value)'
+  case_ref: "MOFCOM Announcement No. 13 of 2024 (final ruling, 19 Apr 2024); initiation MOFCOM Announcement No. 35 of 2022 (30 Nov 2022); WTO case ID 22-0002"
+  source_url: http://www.mofcom.gov.cn/zcfb/zgdwjjmywg/art/2024/art_ead5e0f4810c4a6a9fd02a86e72421dd.html
+  confirmed: true
+  note: >-
+    Polycarbonate (PC), bisphenol-A type, China tariff line 39074000; BPA-type PC with less than 99% PC content by
+    weight is excluded. Origin: Taiwan only (Chinese Taipei). Application 8 Oct 2022 by Luxi, Zhetie Dafeng, Zhonglan
+    Guosu, Shengtong Juyuan and Wanhua (supported by Lihuayi Weiyuan, Sinopec Yanshan PC, Zhejiang Petrochemical).
+    Dumping IP 1 Jul 2021-30 Jun 2022; injury period 1 Jan 2018-30 Jun 2022. Preliminary ruling 14 Aug 2023,
+    provisional deposits from 15 Aug 2023 (16.9%-17.0% named firms, 22.4% others, per WTO G/ADP/N/391/CHN).
+    Definitive duties from 20 Apr 2024 for 5 years; deposits for 15 Aug-14 Dec 2023 converted at final rates,
+    deposits for 15 Dec 2023-19 Apr 2024 refunded; no retroactive duty on imports before 15 Aug 2023. Politically
+    linked to the ECFA early-harvest list (Taiwan press). No review recorded in China's WTO reports up to
+    G/ADP/N/426/CHN (Jan-Jun 2026).
+  official_url: http://www.mofcom.gov.cn/zcfb/zgdwjjmywg/art/2024/art_ead5e0f4810c4a6a9fd02a86e72421dd.html
+  verified: official
+  verification_note: >-
+    Read the full MOFCOM Announcement 2024 No. 13 (Chinese) on mofcom.gov.cn: dates of initiation (30.11.2022),
+    preliminary (14.08.2023) and final (19.04.2024, in force 20.04.2024), product description and 39074000 with the
+    <99% exclusion, company rates, retroactivity rules and the 5-year term. Cross-checked against WTO semi-annual
+    reports G/ADP/N/377, 391, 399 and 426/CHN (case 22-0002, DIPTI 90.39%). Expiry derived as 20.04.2024 + 5 years
+    - 1 day.
+- id: br-pc-th-2015-12
+  imposing: BR
+  targets: [TH]
+  product: polycarbonate
+  hs: ['390740']
+  instrument: anti_dumping
+  stage: terminated
+  date: '2015-12-18'
+  expires: null
+  duty: null
+  case_ref: "Resolução CAMEX nº 43, de 19/06/2013 (DOU 20/06/2013); SECEX investigation ID 1112776"
+  source_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N280BRA.pdf
+  confirmed: true
+  note: >-
+    Polycarbonate resin from Thailand (NCM 3907.40.90 per secondary transcription of CAMEX 43/2013; optical-media and
+    ophthalmic-lens grades reportedly excluded). Investigation opened 27 Dec 2011 against Korea and Thailand; definitive
+    duty on Thailand only, in force 20 Jun 2013 for up to 5 years, but suspended for public interest from about
+    Dec 2013 (Global Trade Alert gives 19 Dec 2013). On 18 Dec 2015 the suspension ended without the duty being
+    reapplied, so the measure ended early. Pre-2015 history is context only; the termination is the in-scope stage.
+  official_url: https://docs.wto.org/dol2fe/Pages/SS/directdoc.aspx?filename=q:/G/ADP/N280BRA.pdf
+  verified: official
+  verification_note: >-
+    Read Brazil's WTO semi-annual reports G/ADP/N/272/BRA (measures in force: "Polycarbonate resin **, ID 1112776,
+    Duty 20/06/2013, Resolução CAMEX 43/2013", ** = duties in force but suspended) and G/ADP/N/280/BRA (Jul-Dec 2015:
+    terminated 18/12/2015, "Termination of the suspension without reapplication of the duty"). Could not read the
+    Brazilian resolutions themselves (CAMEX 43/2013 text 403 at okai.com.br via WebFetch and curl, not on
+    normasbrasil/legisweb; the Dec 2013 suspension and Dec 2015
+    acts not located), so the duty rate, the exact NCM and the suspension resolution number are not confirmed.
+# Searched, nothing found / out of scope (checked 2026-10-28):
+# - Full-text sweep of WTO semi-annual AD reports G/ADP/N/272 (Jan-Jun 2015) to G/ADP/N/426 (Jan-Jun 2026) for
+#   'polycarbonat'/'policarbonat': CHN, IND, BRA, TUR, KOR, USA, EU, GBR, IDN, ARG, ZAF, AUS, CAN, MEX, THA, EGY, PAK,
+#   VNM, UKR, RUS/KAZ/ARM (EAEU), JPN, TPKM, MYS, PER, COL, CHL, MAR, NZL, ISR, PHL and the GCC report (21 of 23
+#   periods, filed under the ARE code). Also swept for 'poly carbonate'/'PC resin' variants and tariff code
+#   3907.40/390740 (only China's own reports hit). Only hits: China-Taiwan PC (above), Brazil-Thailand PC (above), Mexico PC sheets (below). A few single
+#   reports did not download (BRA 308, THA 280, EGY 364, PAK 294, RUS 384, TPKM 294, ARG 350); coverage for COL,
+#   CHL and GBR is partial (GBR reports only exist from 2021).
+# - China AD on PC from Korea/Taiwan/Thailand/Saudi Arabia around 2018-2019: does not exist. China's reports
+#   2015-2026 show only the 2022 Taiwan case (the 2018-2019 MOFCOM cases on those origins were phenol, MEK, etc.).
+# - India: no DGTR polycarbonate investigation, recommendation or 'not imposed' case 2015-2026 (WTO IND reports,
+#   dgtr.gov.in site search returned nothing). India's Polycarbonate (Quality Control) Order 2021 is a BIS standard
+#   measure, not trade defence.
+# - EU (imposer or target), US, UK, Korea, Japan, Turkey, Indonesia, GCC, Saudi Arabia: no PC resin case found.
+#   Safeguards and countervailing: WTO G/SG/N and G/SCM/N series NOT swept; checked by web search only, nothing
+#   found on PC resin (the Philippines 2020 resin safeguard covered HDPE/LLDPE only).
+# - Out of scope (PC sheets, not primary PC): Mexico AD on polycarbonate sheets from China (HS 3916.90.91,
+#   3920.61.01, 3921.19.91, 3925.90.99), initiated 14.02.2025, provisional 07.10.2025 (USD 3.6502-3.6654/kg, per WTO
+#   G/ADP/N/426/MEX), final reported 08.07.2026 at USD 4.2301/kg (trade press only, not verified).
+# - Not in window: Brazil's 2011-2013 PC resin investigation also covered Korea; duty applied to Thailand only per
+#   the WTO report (Korea's outcome in 2013 not checked; nothing on Korea after 2015).
+# - Related upstream: Japan AD investigation on bisphenol A from Korea/Taiwan (initiated 20.08.2025) is BPA, not PC.

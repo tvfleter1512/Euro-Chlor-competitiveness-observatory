@@ -16,6 +16,8 @@ const INSTRUMENT = { anti_dumping: 'anti-dumping', anti_subsidy: 'anti-subsidy',
 const PRODUCT = {
   caustic_soda: 'Caustic soda', chlorine: 'Chlorine', hydrochloric_acid: 'Hydrochloric acid',
   hypochlorite: 'Sodium hypochlorite', sodium_chlorate: 'Sodium chlorate', edc: 'EDC', vcm: 'VCM', pvc: 'PVC',
+  isocyanates: 'Isocyanates (TDI/MDI)', polymeric_mdi: 'Polymeric MDI', polyurethanes: 'Polyurethanes',
+  polycarbonate: 'Polycarbonate', epichlorohydrin: 'Epichlorohydrin', epoxy_resins: 'Epoxy resins',
 }
 const REGION = new Intl.DisplayNames(['en'], { type: 'region' })
 const geo = g => {
