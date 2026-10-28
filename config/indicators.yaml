@@ -104,6 +104,45 @@ indicators:
     note: >
       Licensed (Argus non-power costs): member view only. Complete years only.
 
+  ecu_cash_cost_country:
+    methodology_version: "v1.0"
+    name: "ECU cash cost by EU country — power as paid + Argus EU4 non-power costs"
+    formula: >
+      Per member state: mwh_per_ecu × that country's Eurostat nrg_pc_205 price
+      (MWH_GE150000, X_TAX, mean of S1 and S2) + the Argus EU4 salt, other variable
+      and fixed costs, the same for every country. Only electricity differs between
+      countries. A country appears for the years Eurostat publishes both halves.
+    inputs: ["power.industrial_delivered", "cost.ecu_cash_cost_argus"]
+    unit: "EUR/t ECU"
+    params:
+      mwh_per_ecu: 2.629
+      tax_treatment: X_TAX
+      countries: [AT, BE, BG, CY, CZ, DE, DK, EE, EL, ES, FI, FR, HR, HU, IE, IT,
+                  LT, LU, LV, MT, NL, PL, PT, RO, SE, SI, SK]
+    params_confirmed: false       # owner asked for "as many EU countries as possible" 2026-10-28
+    note: >
+      Licensed (Argus non-power costs): member view only. Eurostat publishes no
+      large-user price for CZ, LU, MT and SI.
+
+  ecu_cash_cost_wholesale_country:
+    methodology_version: "v1.0"
+    name: "ECU cash cost by EU country — Argus basis (wholesale power) + Argus EU4 non-power costs"
+    formula: >
+      As ecu_cash_cost_country, with power at the ENTSO-E day-ahead price of the
+      country's bidding zone (mean of the 12 monthly averages). Several-zone
+      countries use one zone: DK1, Italy North, SE3. Luxembourg shares DE-LU.
+    inputs: ["power.wholesale_day_ahead", "cost.ecu_cash_cost_argus"]
+    unit: "EUR/t ECU"
+    params:
+      mwh_per_ecu: 2.629
+      zones: {AT: AT, BE: BE, BG: BG, CZ: CZ, DE: DE_LU, DK: DK_1, EE: EE, EL: EL,
+              ES: ES, FI: FI, FR: FR, HR: HR, HU: HU, IE: IE_SEM, IT: IT_NORD, LT: LT,
+              LU: DE_LU, LV: LV, NL: NL, PL: PL, PT: PT, RO: RO, SE: SE_3, SI: SI, SK: SK}
+    params_confirmed: false
+    note: >
+      Licensed (Argus non-power costs): member view only. No day-ahead zone for
+      Cyprus and Malta.
+
   labour_cost:
     methodology_version: "v1.0"
     name: "Labour costs per employee — check on the Argus fixed costs"

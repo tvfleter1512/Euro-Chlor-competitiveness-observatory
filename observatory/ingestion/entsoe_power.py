@@ -59,9 +59,15 @@ class EntsoePowerAgent(IngestionAgent):
                         "periodEnd": f"{year}12312300",
                     }
                     # ENTSO-E intermittently answers 400 to a request it accepts
-                    # seconds later; one flake must not fail the whole 4x12-year run.
+                    # seconds later, or times out; one flake must not fail the whole run.
                     for attempt in range(3):
-                        resp = client.get(URL, params=params)
+                        try:
+                            resp = client.get(URL, params=params)
+                        except httpx.TimeoutException:
+                            if attempt == 2:
+                                raise
+                            time.sleep(10 * (attempt + 1))
+                            continue
                         if resp.status_code < 400 or attempt == 2:
                             break
                         time.sleep(10 * (attempt + 1))

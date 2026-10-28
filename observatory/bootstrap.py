@@ -100,6 +100,11 @@ GEOS = [
     ("NL", "Netherlands", "country"), ("BE", "Belgium", "country"),
     ("ES", "Spain", "country"), ("IT", "Italy", "country"), ("PL", "Poland", "country"),
     ("DE_LU", "Germany-Luxembourg bidding zone", "bidding_zone"),
+    ("EL", "Greece", "country"),   # Eurostat's code (GR elsewhere)
+    ("DK_1", "Denmark West bidding zone (DK1)", "bidding_zone"),
+    ("IE_SEM", "Ireland Single Electricity Market", "bidding_zone"),
+    ("IT_NORD", "Italy North bidding zone", "bidding_zone"),
+    ("SE_3", "Sweden SE3 bidding zone", "bidding_zone"),
     ("EU4", "Germany, France, Belgium, Spain (Argus study average)", "region"),
     ("US_LA", "Louisiana (US)", "region"), ("US_TX", "Texas (US)", "region"),
     ("US_GULF", "US Gulf Coast (Louisiana + Texas)", "region"),

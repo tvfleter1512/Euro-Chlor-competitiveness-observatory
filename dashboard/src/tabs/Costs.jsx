@@ -408,13 +408,77 @@ function SaltCard({ theme, memberMode, fromDate }) {
 const BUILD_UP = [['power', 'Electricity (as paid)', 's8'], ['salt', 'Salt', 's7'],
                   ['other', 'Other variable costs', 's5'], ['fixed', 'Fixed costs', 's3']]
 
+const EU_NAME = {
+  AT: 'Austria', BE: 'Belgium', BG: 'Bulgaria', CY: 'Cyprus', CZ: 'Czechia', DE: 'Germany', DK: 'Denmark',
+  EE: 'Estonia', EL: 'Greece', ES: 'Spain', FI: 'Finland', FR: 'France', HR: 'Croatia', HU: 'Hungary',
+  IE: 'Ireland', IT: 'Italy', LT: 'Lithuania', LU: 'Luxembourg', LV: 'Latvia', MT: 'Malta', NL: 'Netherlands',
+  PL: 'Poland', PT: 'Portugal', RO: 'Romania', SE: 'Sweden', SI: 'Slovenia', SK: 'Slovakia',
+}
+// several-zone countries: the zone used for the wholesale basis (config/indicators.yaml)
+const ZONE_NOTE = { DK: 'DK1', IT: 'North', SE: 'SE3', IE: 'SEM' }
+const COUNTRY_INDICATOR = { paid: 'ecu_cash_cost_country', wholesale: 'ecu_cash_cost_wholesale_country' }
+
+// One year, every member state with a price: electricity differs, salt/other/fixed are the EU4 average
+function byCountryOption(rows, eu4, theme, basis) {
+  const items = [...rows].sort((a, b) => a.value - b.value)       // most expensive on top
+  const base = baseOption(theme)
+  const label = r => `${EU_NAME[r.geo_id] || r.geo_id}${basis === 'wholesale' && ZONE_NOTE[r.geo_id] ? ` (${ZONE_NOTE[r.geo_id]})` : ''}`
+  const nonPower = r => r.inputs.salt + r.inputs.other + r.inputs.fixed
+  return {
+    ...base,
+    grid: { left: 130, right: 64, top: 6, bottom: 30 },
+    xAxis: { type: 'value', splitLine: { lineStyle: { color: theme.grid, width: 1 } },
+             splitNumber: 4, axisLabel: { color: theme.inkMuted, fontSize: 11, formatter: v => `€${v}`, hideOverlap: true } },
+    yAxis: { type: 'category', data: items.map(label), axisTick: { show: false }, axisLine: { show: false },
+             axisLabel: { color: theme.inkSecondary, fontSize: 12 } },
+    tooltip: { ...base.tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+               formatter: ps => { const r = items[ps[0].dataIndex]
+                 return `${label(r)}<br/>Electricity: €${Math.round(r.inputs.power)}/t (${r.inputs.power_price_eur_mwh} €/MWh)` +
+                        `<br/>Salt, other, fixed (EU4): €${Math.round(nonPower(r))}/t<br/><b>Total: €${Math.round(r.value)}/t</b>` } },
+    series: [
+      { name: 'Electricity', type: 'bar', stack: 'c', barMaxWidth: 16, data: items.map(r => r.inputs.power),
+        itemStyle: { color: theme.series.s8, borderColor: theme.surface, borderWidth: 1 } },
+      { name: 'Salt, other and fixed costs (EU4 average)', type: 'bar', stack: 'c', barMaxWidth: 16,
+        data: items.map(nonPower),
+        itemStyle: { color: theme.series.s5, borderColor: theme.surface, borderWidth: 1, borderRadius: [0, 4, 4, 0] },
+        label: { show: true, position: 'right', color: theme.inkSecondary, fontSize: 11,
+                 formatter: p => `€${Math.round(items[p.dataIndex].value)}` },
+        markLine: eu4 == null ? undefined : { silent: true, symbol: 'none', data: [{ xAxis: eu4 }],
+          lineStyle: { color: theme.ink, type: 'dashed', width: 1 },
+          label: { formatter: 'EU4', position: 'start', color: theme.inkMuted, fontSize: 10 } } },
+    ],
+  }
+}
+
 function CashCostBuildUpCard({ theme, fromDate }) {
   const [d, setD] = useState(null)
+  const [view, setView] = useState('eu4')
+  const [basis, setBasis] = useState('paid')
+  const [year, setYear] = useState(null)
   useEffect(() => {
-    Promise.all([fetchIndicators({ indicator_id: 'ecu_cash_cost' }), fetchIndicators({ indicator_id: 'ecu_margin_proxy' })])
-      .then(([cost, margin]) => setD({ cost: cost.rows, margin: margin.rows }))
-      .catch(() => setD({ cost: [], margin: [] }))
+    Promise.all([fetchIndicators({ indicator_id: 'ecu_cash_cost' }), fetchIndicators({ indicator_id: 'ecu_margin_proxy' }),
+                 fetchIndicators({ indicator_id: COUNTRY_INDICATOR.paid }),
+                 fetchIndicators({ indicator_id: COUNTRY_INDICATOR.wholesale }),
+                 fetchIndicators({ indicator_id: 'ecu_cash_cost_wholesale' })])
+      .then(([cost, margin, paidC, wholeC, whole]) => setD({ cost: cost.rows, margin: margin.rows,
+        country: { paid: paidC.rows, wholesale: wholeC.rows }, eu4: { paid: cost.rows, wholesale: whole.rows } }))
+      .catch(() => setD({ cost: [], margin: [], country: { paid: [], wholesale: [] }, eu4: { paid: [], wholesale: [] } }))
   }, [])
+
+  const countries = useMemo(() => {
+    const rows = d?.country?.[basis] || []
+    if (!rows.length) return null
+    const years = [...new Set(rows.map(r => r.period))].sort()
+    // default: the latest year that most countries have (the newest year is often thin)
+    const count = y => rows.filter(r => r.period === y).length
+    const best = years.reduce((a, y) => count(y) >= count(a) * 0.9 ? y : a, years[0])
+    const y = years.includes(year) ? year : best
+    const shown = rows.filter(r => r.period === y)
+    const missing = Object.keys(EU_NAME).filter(c => !shown.some(r => r.geo_id === c)).map(c => EU_NAME[c])
+    const eu4 = d.eu4[basis].find(r => r.period === y)?.value
+    return { years: years.slice(-6), year: y, missing, n: shown.length,
+             option: byCountryOption(shown, eu4 == null ? null : Number(eu4), theme, basis) }
+  }, [d, basis, year, theme])
 
   const built = useMemo(() => {
     if (!d?.cost?.length) return null
@@ -445,13 +509,33 @@ function CashCostBuildUpCard({ theme, fromDate }) {
     }
   }, [d, theme, fromDate])
 
+  const byCountry = view === 'country'
   return (
-    <Card title="ECU cash cost — what a tonne costs to make, by component"
-      subtitle="€ per tonne ECU, annual, Germany, France, Belgium and Spain. Bars: plant-gate cash cost (member view, licensed). Line: what the tonne earns."
-      method="Electricity: Eurostat price for the largest users, excluding recoverable taxes, mean of the four countries × 2.629 MWh per tonne ECU. Salt, other variable costs (utilities incl. steam, net of co-product credits) and fixed costs (manpower, maintenance, overheads, insurance, tax): Argus Media 2023 study for Euro Chlor, Fig 5-4, licensed. No depreciation or financing. Revenue: export unit values as in the card below."
-      sourceRows={[{ source: 'Eurostat nrg_pc_205 + Argus Media Consulting 2023 (licensed)', source_dataset: 'ecu_cash_cost v1.0',
+    <Card title={byCountry ? `ECU cash cost by EU country, ${countries?.year || ''}`
+                           : 'ECU cash cost — what a tonne costs to make, by component'}
+      subtitle={byCountry
+        ? `€ per tonne ECU. Only electricity differs between countries; salt, other and fixed costs are the Argus EU4 average for all (member view, licensed).`
+        : '€ per tonne ECU, annual, Germany, France, Belgium and Spain. Bars: plant-gate cash cost (member view, licensed). Line: what the tonne earns.'}
+      right={<Segmented options={[['eu4', 'EU4 average'], ['country', 'By country']]} value={view} onChange={setView} />}
+      method={byCountry
+        ? `Electricity × 2.629 MWh per tonne ECU. As paid: Eurostat nrg_pc_205, largest users (≥ 150 GWh), excluding recoverable taxes, mean of the two half-years — a country is shown for the years Eurostat publishes both with a price above zero (Estonia, Latvia, Lithuania and some years for Cyprus show 0: no consumer that large). Wholesale (the Argus basis): ENTSO-E day-ahead price of the country's bidding zone, mean of the 12 months; Denmark DK1, Italy North, Sweden SE3, Ireland SEM, Luxembourg = Germany-Luxembourg. Salt, other variable and fixed costs: Argus Media 2023 study, EU4 average (Fig 5-4), licensed — real plants differ by country on these too. Dashed line: the EU4 average with the same electricity basis.${countries?.missing?.length ? ` No price for ${countries.year}: ${countries.missing.join(', ')}.` : ''}`
+        : 'Electricity: Eurostat price for the largest users, excluding recoverable taxes, mean of the four countries × 2.629 MWh per tonne ECU. Salt, other variable costs (utilities incl. steam, net of co-product credits) and fixed costs (manpower, maintenance, overheads, insurance, tax): Argus Media 2023 study for Euro Chlor, Fig 5-4, licensed. No depreciation or financing. Revenue: export unit values as in the card below.'}
+      sourceRows={[{ source: byCountry && basis === 'wholesale' ? 'ENTSO-E day-ahead + Argus Media Consulting 2023 (licensed)'
+                                                                 : 'Eurostat nrg_pc_205 + Argus Media Consulting 2023 (licensed)',
+                     source_dataset: byCountry ? `${COUNTRY_INDICATOR[basis]} v1.0` : 'ecu_cash_cost v1.0',
                      retrieved_at: d?.cost?.at(-1)?.computed_at, quality_flag: 'estimated' }]}>
-      {built ? (<>
+      {byCountry ? (countries ? (<>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+          <Segmented options={[['paid', 'Electricity as paid'], ['wholesale', 'Wholesale (Argus basis)']]}
+                     value={basis} onChange={setBasis} />
+          <Segmented options={countries.years.map(y => [y, y])} value={countries.year} onChange={setYear} />
+        </div>
+        <Legend items={[{ label: 'Electricity', color: theme.series.s8 },
+                        { label: 'Salt, other and fixed costs (EU4 average)', color: theme.series.s5 },
+                        { label: 'EU4 average', color: theme.ink, dashed: true }]} />
+        <EChart option={countries.option} height={Math.max(220, countries.n * 24 + 40)} theme={theme} />
+      </>) : <EmptyState>{d ? 'No by-country series yet.' : 'Loading…'}</EmptyState>)
+      : built ? (<>
         <Legend items={[...BUILD_UP.map(([, name, slot]) => ({ label: name, color: theme.series[slot] })),
                         { label: 'What a tonne earns (export prices)', color: theme.ink }]} />
         <EChart option={built.option} height={300} theme={theme} />

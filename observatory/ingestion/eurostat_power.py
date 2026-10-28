@@ -22,7 +22,7 @@ class EurostatPowerAgent(IngestionAgent):
 
     def fetch(self):
         regions = load_config("regions")
-        geos = [regions["eu"]["geo_id"]] + regions["eu"]["detail_countries"]
+        geos = [regions["eu"]["geo_id"]] + regions["eu"]["power_countries"]
         geo_params = "&".join(f"geo={g}" for g in geos)
         url = (f"{BASE}?format=JSON&lang=en&currency=EUR&{geo_params}"
                f"&sinceTimePeriod={HISTORY_START}")

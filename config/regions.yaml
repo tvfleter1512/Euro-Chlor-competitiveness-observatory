@@ -5,6 +5,10 @@ eu:
   name: "European Union (27, 2020 composition)"
   # Member states pulled individually from Eurostat nrg_pc_205 for the country detail view
   detail_countries: [DE, FR, NL, BE, ES, IT, PL]
+  # All member states, for the ECU cash cost by country (eurostat_power only;
+  # Eurostat has no large-user price for CZ, LU, MT, SI)
+  power_countries: [AT, BE, BG, CY, CZ, DE, DK, EE, EL, ES, FI, FR, HR, HU, IE, IT,
+                    LT, LU, LV, MT, NL, PL, PT, RO, SE, SI, SK]
 
 comparators:
   - geo_id: US
@@ -39,6 +43,28 @@ entsoe_bidding_zones:
   - geo_id: ES
     name: "Spain"
     eic: "10YES-REE------0"
+  # Added 2026-10-28 for the ECU cash cost by country. Where a country has several
+  # zones, the one with most chlor-alkali capacity: DK1 (Jutland), IT North, SE3.
+  # All zones deliver CET days (checked), so Brussels-time months are right.
+  - {geo_id: AT, name: "Austria", eic: "10YAT-APG------L"}
+  - {geo_id: BG, name: "Bulgaria", eic: "10YCA-BULGARIA-R"}
+  - {geo_id: CZ, name: "Czechia", eic: "10YCZ-CEPS-----N"}
+  - {geo_id: DK_1, name: "Denmark West (DK1)", eic: "10YDK-1--------W"}
+  - {geo_id: EE, name: "Estonia", eic: "10Y1001A1001A39I"}
+  - {geo_id: FI, name: "Finland", eic: "10YFI-1--------U"}
+  - {geo_id: EL, name: "Greece", eic: "10YGR-HTSO-----Y"}
+  - {geo_id: HR, name: "Croatia", eic: "10YHR-HEP------M"}
+  - {geo_id: HU, name: "Hungary", eic: "10YHU-MAVIR----U"}
+  - {geo_id: IE_SEM, name: "Ireland (Single Electricity Market)", eic: "10Y1001A1001A59C"}
+  - {geo_id: IT_NORD, name: "Italy North", eic: "10Y1001A1001A73I"}
+  - {geo_id: LT, name: "Lithuania", eic: "10YLT-1001A0008Q"}
+  - {geo_id: LV, name: "Latvia", eic: "10YLV-1001A00074"}
+  - {geo_id: PL, name: "Poland", eic: "10YPL-AREA-----S"}
+  - {geo_id: PT, name: "Portugal", eic: "10YPT-REN------W"}
+  - {geo_id: RO, name: "Romania", eic: "10YRO-TEL------P"}
+  - {geo_id: SE_3, name: "Sweden SE3 (Stockholm)", eic: "10Y1001A1001A46L"}
+  - {geo_id: SI, name: "Slovenia", eic: "10YSI-ELES-----O"}
+  - {geo_id: SK, name: "Slovakia", eic: "10YSK-SEPS-----K"}
 
 # Comtrade numeric reporter/partner codes (UN M49) for the comparator set
 comtrade_reporters:

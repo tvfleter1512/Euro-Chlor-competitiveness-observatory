@@ -242,14 +242,14 @@ def ecu_cash_cost_rows(power: dict, argus: dict, params: dict) -> list[dict]:
     return out
 
 
-def _insert_ecu_cash_cost(conn, run_id, indicator_id, spec, rows, power_source) -> int:
+def _insert_ecu_cash_cost(conn, run_id, indicator_id, spec, rows, power_source, geo="EU4") -> int:
     for row in rows:
         conn.execute(
             """INSERT INTO fact_indicator
                (indicator_id, methodology_version, geo_id, period, period_start,
                 value, unit, inputs, run_id)
-               VALUES (%s,%s,'EU4',%s,%s,%s,'EUR/t ECU',%s,%s)""",
-            (indicator_id, spec["methodology_version"], row["year"], f"{row['year']}-01-01",
+               VALUES (%s,%s,%s,%s,%s,%s,'EUR/t ECU',%s,%s)""",
+            (indicator_id, spec["methodology_version"], geo, row["year"], f"{row['year']}-01-01",
              row["total"],
              json.dumps({**row, "licensed": True, "params": spec["params"],
                          "power_source": power_source,
@@ -275,26 +275,41 @@ def compute_ecu_cash_cost(conn, run_id: int, cfg: dict) -> int:
     for r in conn.execute(
             """SELECT geo_id, period, value FROM v_series_latest
                WHERE series_id = 'power.industrial_delivered' AND band = 'MWH_GE150000'
-                 AND tax_treatment = %s AND geo_id = ANY(%s)""",
-            (p["tax_treatment"], p["countries"])).fetchall():
+                 AND tax_treatment = %s AND geo_id = ANY(%s)
+                 AND value > 0   -- Eurostat writes 0 where no consumer is that large (EE, LV, LT)""",
+            (p["tax_treatment"], p["countries"] + cfg["ecu_cash_cost_country"]["params"]["countries"])).fetchall():
         paid[r["geo_id"]][r["period"]] = float(r["value"])
-    n = _insert_ecu_cash_cost(
-        conn, run_id, "ecu_cash_cost", spec,
-        ecu_cash_cost_rows({c: annual_means(v, SEMESTERS) for c, v in paid.items()}, argus, p),
-        "Eurostat nrg_pc_205, MWH_GE150000, " + p["tax_treatment"])
+    paid = {c: annual_means(v, SEMESTERS) for c, v in paid.items()}
+    paid_source = "Eurostat nrg_pc_205, MWH_GE150000, " + p["tax_treatment"]
+    n = _insert_ecu_cash_cost(conn, run_id, "ecu_cash_cost", spec,
+                              ecu_cash_cost_rows(paid, argus, p), paid_source)
+    # one country at a time: a country without a year must not drop it for the others
+    spec = cfg["ecu_cash_cost_country"]
+    for c in spec["params"]["countries"]:
+        n += _insert_ecu_cash_cost(conn, run_id, "ecu_cash_cost_country", spec,
+                                   ecu_cash_cost_rows(paid, argus, {**p, "countries": [c]}),
+                                   paid_source, geo=c)
 
     spec = cfg["ecu_cash_cost_wholesale"]
     p = spec["params"]
     zone_of = p["zones"]                     # country -> ENTSO-E bidding zone
+    zone_country = cfg["ecu_cash_cost_wholesale_country"]["params"]["zones"]
     wholesale = defaultdict(dict)
     for r in conn.execute(
             """SELECT geo_id, period, value FROM v_series_latest
                WHERE series_id = 'power.wholesale_day_ahead' AND geo_id = ANY(%s)""",
-            (list(zone_of.values()),)).fetchall():
+            (list({**zone_of, **zone_country}.values()),)).fetchall():
         wholesale[r["geo_id"]][r["period"]] = float(r["value"])
+    wholesale_source = "ENTSO-E Transparency Platform, day-ahead prices (monthly means)"
     annual = {c: annual_means(wholesale.get(z, {}), MONTHS) for c, z in zone_of.items()}
     n += _insert_ecu_cash_cost(
         conn, run_id, "ecu_cash_cost_wholesale", spec,
-        ecu_cash_cost_rows(annual, argus, {**p, "countries": list(zone_of)}),
-        "ENTSO-E Transparency Platform, day-ahead prices (monthly means)")
+        ecu_cash_cost_rows(annual, argus, {**p, "countries": list(zone_of)}), wholesale_source)
+
+    spec = cfg["ecu_cash_cost_wholesale_country"]
+    for c, z in zone_country.items():
+        rows = ecu_cash_cost_rows({c: annual_means(wholesale.get(z, {}), MONTHS)}, argus,
+                                  {**p, "countries": [c]})
+        n += _insert_ecu_cash_cost(conn, run_id, "ecu_cash_cost_wholesale_country", spec,
+                                   [{**r, "zone": z} for r in rows], wholesale_source, geo=c)
     return n

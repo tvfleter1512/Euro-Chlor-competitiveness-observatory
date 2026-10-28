@@ -33,3 +33,10 @@ def test_country_average_is_unweighted():
     power = {c: {"2024": v} for c, v in prices.items()}
     (row,) = ecu_cash_cost_rows(power, ARGUS, PARAMS)
     assert row["power_price_eur_mwh"] == 90.0
+
+
+def test_by_country_uses_one_country_and_the_common_non_power_costs():
+    power = {"PL": {"2024": 150.0}, "SE": {}}
+    (row,) = ecu_cash_cost_rows(power, ARGUS, {**PARAMS, "countries": ["PL"]})
+    assert row["total"] == round(2.629 * 150.0 + 100 + 20 + 150, 1)
+    assert ecu_cash_cost_rows(power, ARGUS, {**PARAMS, "countries": ["SE"]}) == []

@@ -85,5 +85,7 @@ export default function EChart({ option, height = 300, theme, onClick }) {
     if (chart.current && option) chart.current.setOption(option, { notMerge: true })
   }, [option, theme])
 
+  useEffect(() => { chart.current?.resize() }, [height])   // e.g. a ranked list grows by a row
+
   return <div ref={ref} style={{ width: '100%', height }} />
 }
