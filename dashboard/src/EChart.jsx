@@ -43,12 +43,39 @@ export function lineSeries(name, data, color, theme) {
   }
 }
 
-export default function EChart({ option, height = 300, theme }) {
+// '2026-S1' -> 'H1 2026' for half-yearly axes and tooltips
+export const fmtPeriod = p => /^\d{4}-S[12]$/.test(p) ? `H${p.slice(-1)} ${p.slice(0, 4)}` : p
+
+// monthly category axis: one label per year (January), shown as the year
+export const yearTicks = (base) => ({
+  ...base.xAxis,
+  axisLabel: { ...base.xAxis.axisLabel, hideOverlap: false,
+               interval: (i, v) => String(v).endsWith('-01'), formatter: v => String(v).slice(0, 4) },
+})
+
+// Multi-line comparison: the focus entity drawn bold, the others thinner; each line
+// carries its name at its right end; hovering a line fades the rest
+export function directLabel(series, theme, bold = false) {
+  return {
+    ...series,
+    lineStyle: { ...series.lineStyle, width: bold ? 3 : 1.6 },
+    endLabel: { show: true, formatter: '{a}', color: theme.inkSecondary, fontSize: 10.5, distance: 6,
+                fontWeight: bold ? 700 : 400 },
+    labelLayout: { moveOverlap: 'shiftY' },
+    emphasis: { focus: 'series' },
+  }
+}
+
+// onClick: optional handler for clicks on a data item (e.g. a bar opens its product)
+export default function EChart({ option, height = 300, theme, onClick }) {
   const ref = useRef(null)
   const chart = useRef(null)
+  const click = useRef(onClick)
+  click.current = onClick
 
   useEffect(() => {
     chart.current = echarts.init(ref.current, null, { renderer: 'canvas' })
+    chart.current.on('click', p => click.current?.(p))
     const onResize = () => chart.current?.resize()
     window.addEventListener('resize', onResize)
     return () => { window.removeEventListener('resize', onResize); chart.current?.dispose() }

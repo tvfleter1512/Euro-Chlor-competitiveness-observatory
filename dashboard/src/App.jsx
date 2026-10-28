@@ -6,23 +6,23 @@ import Header from './Header'
 import Overview from './tabs/Overview'
 import Costs from './tabs/Costs'
 import Trade from './tabs/Trade'
-import Dependency from './tabs/Dependency'
 import Market from './tabs/Market'
 import Members from './tabs/Members'
 import Sources from './tabs/Sources'
 
 const TITLE = {
   Overview: 'Overview', Costs: 'Costs', Trade: 'Trade & dependency', Market: 'Market',
-  Members: 'Member data', Sources: 'Sources',
+  Members: 'Member data', Sources: 'About the data',
 }
 
+// one plain question per tab; the arc runs cause (costs) -> symptom (trade) -> outcome (market)
 const SUBTITLE = {
-  Overview: 'Headline indicators, the latest trade alerts and capacity events',
-  Costs: 'Electricity, gas and carbon, and the full cost of a tonne of chlorine and caustic soda',
-  Trade: 'Extra-EU trade in the chlor-alkali product basket and import dependency',
-  Market: 'Production, operating rates, prices, customer industries and capacity events',
+  Overview: 'Is Europe losing ground? The latest signals on costs, trade and the market',
+  Costs: 'How much more does a tonne of chlorine and caustic soda cost to make in Europe?',
+  Trade: 'Which products does the EU import more than it exports, and where are imports surging?',
+  Market: 'Are EU plants running, closing or expanding, and at what prices?',
   Members: 'Euro Chlor member survey data — restricted',
-  Sources: 'Source health, product basket and reference library',
+  Sources: 'Where each figure comes from and how current it is',
 }
 
 const NO_RANGE_TABS = ['Overview', 'Sources']   // tabs whose content ignores the date range
@@ -110,19 +110,6 @@ export default function App() {
                   ))}
                 </span>
               )}
-              {tab === 'Trade' && basket.length > 0 && (
-                <select value={product || ''} onChange={e => setProduct(e.target.value)}
-                  style={{ padding: '7px 12px', fontSize: 12.5, fontFamily: FONT,
-                           background: 'rgba(255,255,255,0.10)', color: '#fff', fontWeight: 600,
-                           border: '1px solid rgba(255,255,255,0.28)', borderRadius: 999 }}>
-                  {basket.map(b => (
-                    <option key={b.product_code} value={b.product_code}
-                            style={{ color: theme.ink, background: theme.surface }}>
-                      {b.name} ({b.product_code})
-                    </option>
-                  ))}
-                </select>
-              )}
             </div>
           </div>
         </section>
@@ -133,9 +120,8 @@ export default function App() {
           {tab === 'Costs' && <Costs fromDate={range.from} memberMode={memberMode} />}
           {tab === 'Trade' && (
             <>
-              <Trade fromDate={range.from} product={product} basis={basis} setProduct={setProduct}
+              <Trade fromDate={range.from} product={product} basis={basis} setProduct={setProduct} products={basket}
                      productLabel={selected?.name || product} confirmed={selected?.confirmed} />
-              <Dependency product={product} productLabel={selected?.name || product} setProduct={setProduct} />
             </>
           )}
           {tab === 'Market' && <Market fromDate={range.from} memberMode={memberMode} />}

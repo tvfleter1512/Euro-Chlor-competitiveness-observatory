@@ -44,7 +44,8 @@ export default function TradeDefence({ hs6, measures }) {
 
   return (
     <Card title="Trade-defence measures — anti-dumping, anti-subsidy, safeguards"
-      subtitle={`Measures in force or under investigation on the selected product (switch to all products or the full history since 2015), newest first. In the wider views the selected product is highlighted; EU-related rows are in bold. ✓ = checked against the official notice. The same measures are marked on the trade-flow charts below and tagged in the alert and partner tables.`}
+      subtitle="Who protects their market against whom: measures in force or under investigation on the selected product, newest first. ✓ = checked against the official notice."
+      method="Switch to all products or the full history since 2015; in the wider views the selected product is highlighted. EU-related rows are in bold. The same measures are marked on the trade-flow charts and tagged in the alert and partner tables. Source list: config/trade_defence.yaml, checked against the EU Official Journal, the US Federal Register, the UK Trade Remedies Authority and national gazettes."
       right={<Segmented value={scope} onChange={setScope}
         options={[['product', `this product (${forProduct.length})`], ['live', `all products, live (${live.length})`], ['all', `history (${all.length})`]]} />}>
       {!measures ? <EmptyState>Loading…</EmptyState> : rows.length ? (

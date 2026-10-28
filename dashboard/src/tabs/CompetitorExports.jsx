@@ -4,7 +4,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { fetchSeries } from '../api'
 import { useTheme, GEO_LABEL } from '../theme'
-import EChart, { baseOption } from '../EChart'
+import EChart, { baseOption, lineSeries, yearTicks } from '../EChart'
 import { Card, EmptyState, Legend, Segmented } from '../components'
 import { forProduct, markers } from '../tdlinks'
 
@@ -15,6 +15,7 @@ const name = g => GEO_LABEL[g] || (() => { try { return REGION.of(g) } catch { r
 export default function CompetitorExports({ hs6, productLabel, fromDate, basis, measures }) {
   const theme = useTheme()
   const [reporter, setReporter] = useState('US')
+  const [view, setView] = useState('share')   // share of exports going to the EU | volumes
   const [rows, setRows] = useState(null)
   const volume = basis === 'volume'
 
@@ -48,32 +49,50 @@ export default function CompetitorExports({ hs6, productLabel, fromDate, basis, 
     const unit = volume ? 'kt' : 'M€'
     const bar = (nm, data, color, last) => ({ name: nm, type: 'bar', stack: 'x', data, barMaxWidth: 22,
       itemStyle: { color, borderColor: theme.surface, borderWidth: 1, borderRadius: last ? [3, 3, 0, 0] : 0 } })
+    // measures any market imposed on this exporter's product (e.g. EU or Brazil duties on US PVC)
+    const marks = markers(forProduct(measures, hs6).filter(m => m.targets?.includes(reporter)
+      && !['expired', 'terminated'].includes(m.stage)), periods, theme, true)
+    // 3-month rolling share: single months swing with one cargo
+    const share = periods.map((p, i) => {
+      const win = periods.slice(Math.max(0, i - 2), i + 1)
+      const w = win.reduce((a, q) => a + (world.get(q) || 0), 0)
+      return i >= 2 && w ? win.reduce((a, q) => a + (eu.get(q) ?? 0), 0) / w * 100 : null
+    })
     return {
       latest: periods.at(-1), euShare: worldSum ? euSum / worldSum : null, worldSum, top, unit, scale,
       sources: [...new Set(rows.map(r => r.source))],
-      option: {
+      option: view === 'share' ? {
         ...base,
-        xAxis: { ...base.xAxis, data: periods },
+        xAxis: { ...yearTicks(base), data: periods },
+        yAxis: { ...base.yAxis, axisLabel: { ...base.yAxis.axisLabel, formatter: v => `${v} %` } },
+        tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : `${v.toFixed(0)} % to the EU27` },
+        series: [{ ...lineSeries('Share to the EU27', share, theme.series.s1, theme), showSymbol: true, symbolSize: 5 }, ...marks],
+      } : {
+        ...base,
+        xAxis: { ...yearTicks(base), data: periods },
         tooltip: { ...base.tooltip, axisPointer: { type: 'shadow' },
                    valueFormatter: v => v == null ? '—' : `${v.toFixed(1)} ${unit}` },
-        series: [bar('To the EU27', toEu, theme.series.s1, false), bar('Rest of world', rest, theme.axis, true),
-                 // measures any market imposed on this exporter's product (e.g. EU or Brazil duties on US PVC)
-                 ...markers(forProduct(measures, hs6).filter(m => m.targets?.includes(reporter)
-                   && !['expired', 'terminated'].includes(m.stage)), periods, theme, true)],
+        series: [bar('To the EU27', toEu, theme.series.s1, false), bar('Rest of world', rest, theme.axis, true), ...marks],
       },
     }
-  }, [rows, theme, volume, measures, hs6, reporter])
+  }, [rows, theme, volume, measures, hs6, reporter, view])
 
   const td = { padding: '5px 8px', fontSize: 12.5, borderBottom: `1px solid ${theme.grid}`, color: theme.ink }
   return (
     <Card title={`Where competitors export — ${productLabel}`}
-      subtitle={`Monthly exports of the selected country, ${volume ? 'tonnes' : '€ (converted from USD at the ECB monthly rate)'}, split into the EU27 and the rest of the world; top destinations over the last 12 months. UN Comtrade${built?.sources.includes('US Census Bureau') ? ' and US Census' : ''}. Dashed markers: trade-defence steps by other markets against this exporter (code of the imposing country; see the table above). Coverage depends on each country's filing: in Oct 2026 the US and India ran to mid-2026, Saudi Arabia lagged a quarter, China stopped at Dec 2024.`}
+      subtitle={view === 'share'
+        ? `Share of the selected country's exports that goes to the EU27, 3-month rolling (${volume ? 'tonnes' : '€'}); top destinations over the last 12 months on the right.`
+        : `Monthly exports of the selected country, ${volume ? 'tonnes' : '€'}, to the EU27 and the rest of the world.`}
+      method={`UN Comtrade${built?.sources.includes('US Census Bureau') ? ' and US Census' : ''}, as reported by the exporting country; values converted from USD at the ECB monthly rate. Dashed markers: trade-defence steps by other markets against this exporter (code of the imposing country; see the trade-defence table). Coverage depends on each country's filing: in Oct 2026 the US and India ran to mid-2026, Saudi Arabia lagged a quarter, China stopped at Dec 2024.`}
       sourceRows={rows?.slice(-1)}
-      right={<Segmented value={reporter} onChange={setReporter} options={REPORTERS} />}>
+      right={<span style={{ display: 'inline-flex', gap: 8, flexWrap: 'wrap' }}>
+        <Segmented value={view} onChange={setView} options={[['share', 'share to EU'], ['volume', 'volumes']]} />
+        <Segmented value={reporter} onChange={setReporter} options={REPORTERS} />
+      </span>}>
       {!rows ? <EmptyState>Loading…</EmptyState> : built ? (
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           <div style={{ flex: '3 1 480px', minWidth: 0 }}>
-            <Legend items={[{ label: 'To the EU27', color: theme.series.s1 }, { label: 'Rest of world', color: theme.axis }]} />
+            {view === 'volume' && <Legend items={[{ label: 'To the EU27', color: theme.series.s1 }, { label: 'Rest of world', color: theme.axis }]} />}
             <EChart option={built.option} height={260} theme={theme} />
           </div>
           <div style={{ flex: '1 1 260px', minWidth: 0 }}>

@@ -2,7 +2,8 @@
 import React, { useState } from 'react'
 import { useTheme, FONT } from './theme'
 
-export function Card({ title, subtitle, children, sourceRows, right }) {
+// method: optional 'How calculated' text, folded away so the subtitle stays one plain line
+export function Card({ title, subtitle, method, children, sourceRows, right }) {
   const theme = useTheme()
   return (
     <div style={{
@@ -18,6 +19,12 @@ export function Card({ title, subtitle, children, sourceRows, right }) {
           </div>
           {right}
         </div>
+      )}
+      {method && (
+        <details style={{ marginTop: 6 }}>
+          <summary style={{ cursor: 'pointer', fontSize: 11.5, color: theme.inkMuted, fontWeight: 600 }}>How calculated</summary>
+          <div style={{ fontSize: 11.5, color: theme.inkSecondary, marginTop: 4, lineHeight: 1.5, maxWidth: 900 }}>{method}</div>
+        </details>
       )}
       <div style={{ marginTop: 14 }}>{children}</div>
       <SourceChips rows={sourceRows} />
@@ -60,7 +67,9 @@ export function SourceChips({ rows }) {
 // spark: optional array of numbers, drawn as a small trend line under the value
 export function StatTile({ label, value, delta, deltaGood, icon, note, spark, onClick }) {
   const theme = useTheme()
-  const deltaColor = delta == null ? theme.inkMuted : deltaGood ? theme.good : theme.bad
+  // arrow = direction, colour = good/bad; no change is neutral grey
+  const flat = delta != null && /^-?0(\.0+)?\s/.test(delta)
+  const deltaColor = delta == null || flat ? theme.inkMuted : deltaGood ? theme.good : theme.bad
   return (
     <div style={{
       background: theme.surface, border: `1px solid ${theme.border}`,
@@ -79,7 +88,7 @@ export function StatTile({ label, value, delta, deltaGood, icon, note, spark, on
         <span style={{ fontSize: 26, fontWeight: 700, color: theme.ink }}>{value ?? '—'}</span>
         {delta != null && (
           <span style={{ fontSize: 12.5, fontWeight: 600, color: deltaColor }}>
-            {delta.startsWith('-') ? '↘' : '↗'} {delta.replace('-', '')}
+            {flat ? '→' : delta.startsWith('-') ? '↘' : '↗'} {delta.replace('-', '')}
           </span>
         )}
       </div>
@@ -110,7 +119,7 @@ function Sparkline({ values, height = 30 }) {
 export function Segmented({ options, value, onChange }) {
   const theme = useTheme()
   return (
-    <span style={{ display: 'inline-flex', gap: 3, padding: 3, borderRadius: 999, flexShrink: 0,
+    <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 3, padding: 3, borderRadius: 16, maxWidth: '100%',
                    background: theme.page, border: `1px solid ${theme.border}` }}>
       {options.map(([key, label]) => (
         <button key={key} onClick={() => onChange(key)} style={{
@@ -125,13 +134,28 @@ export function Segmented({ options, value, onChange }) {
 }
 
 // Heading that opens a group of cards within a tab
-export function SectionHeading({ title, subtitle }) {
+export function SectionHeading({ title, subtitle, right }) {
   const theme = useTheme()
   return (
-    <div style={{ margin: '12px 0 14px', paddingLeft: 12, borderLeft: `3px solid ${theme.highlight}` }}>
-      <div style={{ fontSize: 19, fontWeight: 750, color: theme.ink, letterSpacing: '-0.01em' }}>{title}</div>
-      {subtitle && <div style={{ fontSize: 12.5, color: theme.inkSecondary, marginTop: 3 }}>{subtitle}</div>}
+    <div style={{ margin: '12px 0 14px', paddingLeft: 12, borderLeft: `3px solid ${theme.highlight}`,
+                  display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+      <div style={{ flex: '1 1 300px' }}>
+        <div style={{ fontSize: 19, fontWeight: 750, color: theme.ink, letterSpacing: '-0.01em' }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 12.5, color: theme.inkSecondary, marginTop: 3 }}>{subtitle}</div>}
+      </div>
+      {right}
     </div>
+  )
+}
+
+// One-line written takeaway at the top of a tab or section
+export function Headline({ children }) {
+  const theme = useTheme()
+  if (!children) return null
+  return (
+    <div style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderLeft: `4px solid ${theme.accent}`,
+                  borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: 14, lineHeight: 1.55,
+                  color: theme.ink, boxShadow: theme.shadow }}>{children}</div>
   )
 }
 
@@ -141,10 +165,11 @@ export function Legend({ items }) {
   const theme = useTheme()
   return (
     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-      {items.map(({ label, color }) => (
+      {items.map(({ label, color, dashed }) => (
         <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
           fontSize: 12, color: theme.inkSecondary }}>
-          <span style={{ width: 12, height: 3, background: color, borderRadius: 2 }} />
+          <span style={{ width: 12, height: 3, borderRadius: 2,
+                         background: dashed ? `repeating-linear-gradient(90deg, ${color} 0 4px, transparent 4px 6px)` : color }} />
           {label}
         </span>
       ))}

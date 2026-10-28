@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { fetchSeries, fetchCapacityEvents, fetchFx } from '../api'
+import { fetchSeries, fetchIndicators, fetchCapacityEvents, fetchFx } from '../api'
 import { useTheme, GEO_LABEL, GEO_SLOT } from '../theme'
-import EChart, { baseOption, lineSeries } from '../EChart'
+import EChart, { baseOption, lineSeries, directLabel } from '../EChart'
 import { Card, EmptyState, Legend, Segmented, SectionHeading, StatTile, grid2 } from '../components'
 
 const LYE_DRY_FACTOR = 2.0      // conversions.yaml: 50% lye -> 100% NaOH price basis
@@ -66,7 +66,8 @@ export default function Market({ fromDate, memberMode }) {
       fetchSeries({ series_id: 'demand.chemicals_production', from: fromDate }),
       fetchCapacityEvents(),
       fetchSeries({ series_id: 'price.ppi_domestic', from: fromDate }),
-    ]).then(([prod, util, stocks, caustic, cn, lyeVal, lyeQty, fxCny, pvcVal, pvcQty, pvcCn, constr, paper, chem, events, ppi]) => {
+      fetchIndicators({ indicator_id: 'import_penetration' }).catch(() => ({ rows: [] })),
+    ]).then(([prod, util, stocks, caustic, cn, lyeVal, lyeQty, fxCny, pvcVal, pvcQty, pvcCn, constr, paper, chem, events, ppi, pen]) => {
       // member stocks carry band='TOTAL'; the public scrape has band=null —
       // prefer the member split's total when present, else the public rows
       const stockTotal = stocks.rows.some(r => r.band === 'TOTAL')
@@ -84,6 +85,7 @@ export default function Market({ fromDate, memberMode }) {
         demand: { constr: constr.rows, paper: paper.rows, chem: chem.rows },
         events: events.events,
         ppi: ppi.rows,
+        penetration: [...pen.rows].sort((a, b) => a.period.localeCompare(b.period)),
       })
     }).catch(e => setError(String(e)))
   }, [fromDate, memberMode])
@@ -140,12 +142,15 @@ export default function Market({ fromDate, memberMode }) {
       xAxis: { ...base.xAxis, data: periods },
       tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : `${Number(v).toFixed(0)} €/t` },
       series: [
-        lineSeries('EU export UV', periods.map(p => s.exp.get(p) ?? null), theme.series.s1, theme),
-        lineSeries('EU import UV', periods.map(p => s.imp.get(p) ?? null), theme.series.s8, theme),
-        lineSeries('China spot', periods.map(p => s.cn.get(p) ?? null), theme.series.s5, theme),
+        lineSeries('EU export price', periods.map(p => s.exp.get(p) ?? null), theme.series.s1, theme),
+        { ...lineSeries('EU import price', periods.map(p => s.imp.get(p) ?? null), theme.series.s1, theme),
+          lineStyle: { width: 2, color: theme.series.s1, type: 'dashed' } },
+        lineSeries('China spot', periods.map(p => s.cn.get(p) ?? null), theme.series.s3, theme),
       ],
     })
-    return { caustic: option(caustic), pvc: option(pvc) }
+    const cnMonths = [...caustic.cn.keys()].sort()
+    return { caustic: option(caustic), pvc: option(pvc),
+             cnLast: cnMonths.length ? { period: cnMonths.at(-1), value: caustic.cn.get(cnMonths.at(-1)) } : null }
   }, [data, theme, fromDate])
 
   // EU domestic producer prices, other basic inorganic chemicals (C20.13); C20 dashed for context
@@ -160,15 +165,15 @@ export default function Market({ fromDate, memberMode }) {
       return periods.map(p => m.get(p) ?? null)
     }
     return {
-      legend: [...geos.map(g => ({ label: `${GEO_LABEL[g] || g}${g === 'EU27_2020' ? ' — inorganic basics' : ''}`, color: theme.series[GEO_SLOT[g]] })),
-               { label: 'EU27 — all chemicals (dashed)', color: theme.inkMuted }],
       option: {
         ...base,
+        grid: { ...base.grid, right: 96 },
         xAxis: { ...base.xAxis, data: periods },
+        yAxis: { ...base.yAxis, scale: true },
         tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : Number(v).toFixed(1) },
         series: [
-          ...geos.map(g => ({ ...lineSeries(GEO_LABEL[g] || g, grab(g, 'C2013'), theme.series[GEO_SLOT[g]], theme),
-                              lineStyle: { width: g === 'EU27_2020' ? 3 : 1.5, color: theme.series[GEO_SLOT[g]] } })),
+          ...geos.map(g => directLabel(lineSeries(g === 'EU27_2020' ? 'EU27' : GEO_LABEL[g] || g, grab(g, 'C2013'),
+                                                  theme.series[GEO_SLOT[g]], theme), theme, g === 'EU27_2020')),
           { ...lineSeries('EU27 all chemicals', grab('EU27_2020', 'C20'), theme.inkMuted, theme),
             lineStyle: { width: 1.5, color: theme.inkMuted, type: 'dashed' } },
           { type: 'line', data: [], markLine: { silent: true, symbol: 'none', data: [{ yAxis: 100 }],
@@ -190,12 +195,14 @@ export default function Market({ fromDate, memberMode }) {
     }
     return {
       ...base,
+      grid: { ...base.grid, right: 96 },
       xAxis: { ...base.xAxis, data: periods },
+      yAxis: { ...base.yAxis, scale: true },
       tooltip: { ...base.tooltip, valueFormatter: v => v == null ? '—' : Number(v).toFixed(1) },
       series: [
-        lineSeries('Construction (PVC demand)', grab(constr), theme.series.s1, theme),
-        lineSeries('Paper (caustic demand)', grab(paper), theme.series.s2, theme),
-        lineSeries('Chemicals (context)', grab(chem), theme.series.s5, theme),
+        directLabel(lineSeries('Construction', grab(constr), theme.series.s8, theme), theme),
+        directLabel(lineSeries('Paper', grab(paper), theme.series.s7, theme), theme),
+        directLabel(lineSeries('Chemicals', grab(chem), theme.series.s5, theme), theme),
         { type: 'line', data: [], markLine: {
             silent: true, symbol: 'none', data: [{ yAxis: 100 }],
             lineStyle: { color: theme.axis, type: 'dashed', width: 1 }, label: { show: false } } },
@@ -212,16 +219,17 @@ export default function Market({ fromDate, memberMode }) {
     const l = last(rows), prev = yearEarlier(rows, l)
     return prev ? (Number(l.value) / Number(prev.value) - 1) * 100 : null
   }
-  const lp = last(data.prod), lu = last(data.util), ls = last(data.stocks), lcn = last(data.cn)
+  const lp = last(data.prod), lu = last(data.util), ls = last(data.stocks)
   const prodYoy = yoy(data.prod), stockYoy = yoy(data.stocks)
   const utilPrev = yearEarlier(data.util, lu)
   const utilDelta = lu && utilPrev ? Number(lu.value) - Number(utilPrev.value) : null
   const spark = rows => rows.slice(-24).map(r => Number(r.value))
   const priceLegend = <Legend items={[
-    { label: 'EU export UV', color: theme.series.s1 },
-    { label: 'EU import UV', color: theme.series.s8 },
-    { label: 'China spot', color: theme.series.s5 },
+    { label: 'EU export price', color: theme.series.s1 },
+    { label: 'EU import price', color: theme.series.s1, dashed: true },
+    { label: 'China spot', color: theme.series.s3 },
   ]} />
+  const pen = data.penetration
 
   return (
     <>
@@ -237,64 +245,89 @@ export default function Market({ fromDate, memberMode }) {
         <StatTile icon="🧪" label="Caustic soda stocks"
           value={ls ? fmtKt(Number(ls.value)) : null} note={ls ? `${ls.period} · vs year earlier` : ''}
           delta={pct(stockYoy)} deltaGood={stockYoy < 0} spark={spark(data.stocks)} />
-        <StatTile icon="🇨🇳" label="China caustic spot"
-          value={lcn ? `${Number(lcn.value).toFixed(0)} RMB/t` : null}
-          note={lcn ? `${lcn.period} · 32% ion-membrane` : 'SunSirs — accumulating'} />
+        <StatTile icon="🇨🇳" label="China caustic soda spot"
+          value={prices.cnLast ? `€${Math.round(prices.cnLast.value)} /t` : null}
+          note={prices.cnLast ? `${prices.cnLast.period} · 100 % NaOH basis, same as the chart below` : 'SunSirs — accumulating'} />
       </div>
 
-      <SectionHeading title="Production" subtitle="EU-27 + Norway, Switzerland and the UK (Euro Chlor reporting area)." />
-      <Card title="Market balance — production, operating rate, stocks"
+      <Card title="Capacity events — who is closing and who is building"
+        subtitle="Closures, curtailments, conversions and expansions worldwide, newest first. Each row links its source; ◐ = pending confirmation.">
+        {data.events?.length ? (<>
+          <CapacityTable events={data.events.slice(0, 8)} />
+          {data.events.length > 8 && (
+            <details style={{ marginTop: 10 }}>
+              <summary style={{ cursor: 'pointer', fontSize: 12.5, fontWeight: 650, color: theme.ink }}>
+                {data.events.length - 8} earlier events</summary>
+              <CapacityTable events={data.events.slice(8)} />
+            </details>
+          )}
+        </>) : <EmptyState>No events in config/capacity_events.yaml yet.</EmptyState>}
+      </Card>
+
+      <SectionHeading title="Demand" subtitle="Output of the EU industries that buy chlorine derivatives and caustic soda." />
+      <Card title="Customer industries"
+        subtitle="EU27 output, 2021 level = 100, seasonally adjusted. Falling demand can mask competitiveness moves in the trade balance."
+        method="Eurostat short-term statistics: construction output (sts_copr_m, PVC demand), paper and chemicals production (sts_inpr_m, NACE C17 and C20)."
+        sourceRows={[...(data.demand?.constr || []), ...(data.demand?.paper || [])]}>
+        {demandOption ? <EChart option={demandOption} height={260} theme={theme} />
+          : <EmptyState>No demand data.</EmptyState>}
+      </Card>
+
+      <SectionHeading title="Supply" subtitle="EU-27 + Norway, Switzerland and the UK (Euro Chlor reporting area); imports against EU consumption." />
+      <Card title="How much are EU plants producing?"
         subtitle={{
-          production: `Monthly tonnes. Chlorine from Euro Chlor public monthly statistics.${data.caustic.length ? ' Caustic soda production from the member survey (not published publicly).' : ''}`,
-          utilisation: 'Monthly operating rate (production ÷ nameplate capacity), %. Idle capacity is the EU’s real substitution margin.',
-          stocks: 'Caustic soda stocks at month end, tonnes (Euro Chlor monthly statistics). Rising stocks with falling production signal weak demand.',
+          production: `Monthly tonnes.${data.caustic.length ? ' Caustic soda production from the member survey (not published publicly).' : ''}`,
+          utilisation: 'Share of installed capacity in use, monthly. Idle capacity is the EU’s real substitution margin.',
+          stocks: 'Caustic soda stocks at month end, tonnes. Rising stocks with falling production signal weak demand.',
         }[view]}
+        method="Euro Chlor public monthly statistics (chlorine production, operating rate = production ÷ nameplate capacity, caustic soda stocks)."
         sourceRows={{ production: [...data.prod, ...data.caustic], utilisation: data.util, stocks: data.stocks }[view]}
         right={<Segmented value={view} onChange={setView}
           options={[['production', 'production'], ['utilisation', 'operating rate'], ['stocks', 'caustic stocks']]} />}>
         {balanceOption.legend.length > 1 && <Legend items={balanceOption.legend} />}
         <EChart option={balanceOption.option} height={280} theme={theme} />
       </Card>
+      <Card title="Import penetration — caustic soda"
+        subtitle="Share of EU caustic soda consumption met by imports from outside the EU, annual."
+        method="Extra-EU imports ÷ apparent consumption (PRODCOM sold production + imports − exports), dry basis. Estimated: PRODCOM excludes captive use, so the share is overstated."
+        sourceRows={pen.slice(-1).map(r => ({ source: 'Eurostat PRODCOM + Comext', source_dataset: `import_penetration ${r.methodology_version || ''}`,
+                                              retrieved_at: r.computed_at, quality_flag: 'estimated' }))}>
+        {pen.length ? (() => {
+          const base = baseOption(theme)
+          return <EChart height={200} theme={theme} option={{
+            ...base,
+            xAxis: { ...base.xAxis, data: pen.map(r => r.period) },
+            yAxis: { ...base.yAxis, axisLabel: { ...base.yAxis.axisLabel, formatter: v => `${(v * 100).toFixed(0)} %` } },
+            tooltip: { ...base.tooltip, valueFormatter: v => `${(v * 100).toFixed(1)} %` },
+            series: [{ ...lineSeries('Import penetration', pen.map(r => Number(r.value)), theme.series.s1, theme), showSymbol: true }],
+          }} />
+        })() : <EmptyState>Awaiting PRODCOM data.</EmptyState>}
+      </Card>
 
-      <SectionHeading title="Prices" subtitle="EU trade unit values against the Chinese domestic spot price, € per tonne, same time axis." />
+      <SectionHeading title="Prices" subtitle="EU trade prices against the Chinese domestic spot price, € per tonne, same time axis." />
       <div style={grid2}>
         <Card title="Caustic soda"
-          subtitle="€/t on 100% NaOH basis, monthly. EU lines = extra-EU lye trade unit values (mix effects; imports are CIF, freight included). China = SunSirs 32% spot ÷ 0.32, ECB monthly FX — history accumulates from July 2026 (SunSirs archive is paywalled)."
+          subtitle="€/t, 100 % NaOH basis, monthly."
+          method="EU lines = average prices of extra-EU lye trade (value ÷ tonnes; mix effects; imports include freight to the EU). China = SunSirs 32 % spot ÷ 0.32, ECB monthly rate — history accumulates from July 2026 (the SunSirs archive is paywalled)."
           sourceRows={[...data.lyeVal.slice(-1), ...data.cn.slice(-1)]}>
           {priceLegend}
           <EChart height={250} theme={theme} option={prices.caustic} />
         </Card>
         <Card title="PVC"
-          subtitle="€/t, monthly, extra-EU trade in unmixed PVC (CN8 39041000). Unit values carry grade-mix effects; imports are CIF (freight included). China = SunSirs daily spot, ECB monthly FX — accumulates from July 2026 (archive paywalled)."
+          subtitle="€/t, monthly."
+          method="Extra-EU trade in unmixed PVC (CN8 39041000), value ÷ tonnes: grade-mix effects; imports include freight to the EU. China = SunSirs daily spot, ECB monthly rate — accumulates from July 2026 (archive paywalled)."
           sourceRows={[...data.pvcVal.slice(-1), ...data.pvcCn.slice(-1)]}>
           {priceLegend}
           <EChart height={250} theme={theme} option={prices.pvc} />
         </Card>
       </div>
 
-      <Card title="EU producer prices — other basic inorganic chemicals"
-        subtitle="Domestic output price index, 2021 = 100, monthly, not seasonally adjusted (Eurostat sts_inppd_m, NACE C20.13: chlorine, caustic soda, hydrochloric acid, chlorates and other inorganics). What EU producers charge at home, beyond the trade unit values above. Country gaps = Eurostat confidentiality."
+      <Card title="EU producer prices — inorganic basic chemicals"
+        subtitle="What EU producers charge at home, 2021 level = 100, monthly. EU27 in bold; dashed: all chemicals."
+        method="Eurostat domestic output price index (sts_inppd_m), not seasonally adjusted, NACE C20.13: chlorine, caustic soda, hydrochloric acid, chlorates and other inorganics. Country gaps = Eurostat confidentiality."
         sourceRows={data.ppi}>
-        {ppi ? (<><Legend items={ppi.legend} /><EChart option={ppi.option} height={260} theme={theme} /></>)
+        {ppi ? <EChart option={ppi.option} height={280} theme={theme} />
           : <EmptyState>No producer-price data yet.</EmptyState>}
-      </Card>
-
-      <SectionHeading title="Customers and capacity" subtitle="Demand from the industries that buy chlorine derivatives and caustic soda, and plant decisions worldwide." />
-      <Card title="Customer industries"
-        subtitle="EU27 output indices, 2021 = 100, seasonally adjusted (Eurostat STS). Falling demand can mask competitiveness moves in the trade balance."
-        sourceRows={[...(data.demand?.constr || []), ...(data.demand?.paper || [])]}
-        right={demandOption && <Legend items={[
-          { label: 'Construction (PVC demand)', color: theme.series.s1 },
-          { label: 'Paper (caustic demand)', color: theme.series.s2 },
-          { label: 'Chemicals (context)', color: theme.series.s5 },
-        ]} />}>
-        {demandOption ? <EChart option={demandOption} height={260} theme={theme} />
-          : <EmptyState>No demand data.</EmptyState>}
-      </Card>
-
-      <Card title="Capacity events"
-        subtitle="Curated tracker: closures, curtailments, conversions, expansions. Each row links its source; entries pending human confirmation are marked ◐.">
-        {data.events?.length ? <CapacityTable events={data.events} /> : <EmptyState>No events in config/capacity_events.yaml yet.</EmptyState>}
       </Card>
     </>
   )

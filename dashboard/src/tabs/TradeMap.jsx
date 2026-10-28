@@ -142,7 +142,8 @@ export default function TradeMap({ product, productLabel, basis }) {
                 border: `1px solid ${theme.border}`, background: 'transparent', color: theme.ink }
   return (
     <Card title={`Trade map — ${productLabel}`}
-      subtitle={`Extra-EU ${flow === 'import' ? 'imports by origin' : 'exports by destination'}, ${volume ? 'tonnes' : '€ value'} (Eurostat Comext). Arrows for the ${TOP_ARROWS} largest partners, width by volume; countries shaded by volume. Drag to pan, scroll to zoom; play to run through the years.`}
+      subtitle={`Extra-EU ${flow === 'import' ? 'imports by origin' : 'exports by destination'}, ${volume ? 'tonnes' : '€ value'}. Press play to run through the years.`}
+      method={`Eurostat Comext, extra-EU trade by partner. Arrows for the ${TOP_ARROWS} largest partners, width by volume; countries shaded by volume. Drag to pan, scroll to zoom. The ranked list shows the change vs the previous full year.`}
       right={<Segmented value={flow} onChange={setFlow} options={[['import', 'Imports'], ['export', 'Exports']]} />}
       sourceRows={rows?.slice(-1)}>
       {!rows ? <EmptyState>Loading…</EmptyState> : !built ? <EmptyState>No partner data for this product.</EmptyState> : (

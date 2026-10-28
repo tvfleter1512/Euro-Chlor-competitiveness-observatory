@@ -12,6 +12,9 @@ const STATUS = {
   running: { icon: '◌', role: 'warning', label: 'running' },
 }
 
+// run notes may carry server paths: show only the last folder name
+const cleanNote = n => (n || '').replace(/\/(?:home|srv|opt|var|tmp)\/[^\s)]*\/([^\s/)]+)/g, '$1')
+
 export default function Sources() {
   const theme = useTheme()
   const [health, setHealth] = useState(null)
@@ -44,44 +47,22 @@ export default function Sources() {
 
   return (
     <>
-      <Card title="Source health"
-        subtitle="Each source is isolated — a broken source marks its own metrics stale, never the observatory. 'Data up to' is the newest period the source has delivered (forecast sources reach into the future).">
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead><tr>
-            <th style={th}>Agent</th><th style={th}>Status</th><th style={th}>Data up to</th><th style={th}>Last run</th>
-            <th style={th}>Rows</th><th style={th}>Quarantined</th><th style={th}>Notes</th>
-          </tr></thead>
-          <tbody>
-            {health.map(a => {
-              const s = STATUS[a.status] || STATUS.running
-              return (
-                <tr key={a.agent}>
-                  <td style={{ ...td, fontFamily: 'monospace', fontSize: 12 }}>{a.agent}</td>
-                  <td style={td}>
-                    <span style={{ color: theme.status[s.role], marginRight: 6 }}>{s.icon}</span>
-                    {s.label}
-                  </td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 650 }}>
-                    {a.latest_period || '—'}
-                  </td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', color: theme.inkSecondary }}>
-                    {a.started_at ? String(a.started_at).slice(0, 16).replace('T', ' ') : '—'}
-                  </td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{a.rows_ingested}</td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{a.rows_quarantined}</td>
-                  <td style={{ ...td, fontSize: 11, color: theme.inkSecondary, maxWidth: 360,
-                               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {a.notes || ''}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+      <Card title="Reference library"
+        subtitle="Citable reports and statistics used alongside the data series.">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {references.map((r, i) => (
+            <div key={i} style={{ fontSize: 12.5, lineHeight: 1.5 }}>
+              <a href={r.url} target="_blank" rel="noreferrer"
+                 style={{ color: theme.accentText, fontWeight: 650 }}>{r.title} ↗</a>
+              <span style={{ color: theme.inkMuted }}> · {r.cadence}</span>
+              <div style={{ color: theme.inkSecondary }}>{r.what}</div>
+            </div>
+          ))}
+        </div>
       </Card>
-
       <Card title="Product basket — code confirmation & CBAM status"
-        subtitle="Codes are configuration, surfaced for review (spec §3.5). CBAM: whole basket excluded from Regulation (EU) 2023/956 Annex I at launch — Commission review of extension to organic chemicals/polymers due end-2027; EU carbon costs currently face no border adjustment.">
+        subtitle="The products tracked and their customs codes. None is covered by the EU carbon border levy (CBAM) today."
+        method="CBAM: the whole basket is excluded from Regulation (EU) 2023/956 Annex I at launch — the Commission's review of an extension to organic chemicals and polymers is due end-2027, so EU carbon costs currently face no border adjustment. Codes are configuration, surfaced for review.">
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead><tr>
             <th style={th}>Product</th><th style={th}>CN8 (Comext)</th><th style={th}>HS6 (Comtrade)</th>
@@ -124,19 +105,43 @@ export default function Sources() {
         )}
       </Card>
 
-      <Card title="Reference library"
-        subtitle="Citable qualitative sources that are not ingestible as series (config/references.yaml).">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {references.map((r, i) => (
-            <div key={i} style={{ fontSize: 12.5, lineHeight: 1.5 }}>
-              <a href={r.url} target="_blank" rel="noreferrer"
-                 style={{ color: theme.accentText, fontWeight: 650 }}>{r.title} ↗</a>
-              <span style={{ color: theme.inkMuted }}> · {r.cadence}</span>
-              <div style={{ color: theme.inkSecondary }}>{r.what}</div>
-            </div>
-          ))}
-        </div>
+      <Card title="Source status — technical"
+        subtitle="Each data feed ('agent') runs on its own schedule. 'Data up to' is the newest period the source has delivered (forecast sources reach into the future)."
+        method="Each source is isolated — a broken source marks its own metrics stale, never the observatory. Rows = figures loaded in the last run; quarantined = rows rejected because their source or date was missing.">
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+          <thead><tr>
+            <th style={th}>Agent</th><th style={th}>Status</th><th style={th}>Data up to</th><th style={th}>Last run</th>
+            <th style={th}>Rows</th><th style={th}>Quarantined</th><th style={th}>Notes</th>
+          </tr></thead>
+          <tbody>
+            {health.map(a => {
+              const s = STATUS[a.status] || STATUS.running
+              return (
+                <tr key={a.agent}>
+                  <td style={{ ...td, fontFamily: 'monospace', fontSize: 12 }}>{a.agent}</td>
+                  <td style={td}>
+                    <span style={{ color: theme.status[s.role], marginRight: 6 }}>{s.icon}</span>
+                    {s.label}
+                  </td>
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 650 }}>
+                    {a.latest_period || '—'}
+                  </td>
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', color: theme.inkSecondary }}>
+                    {a.started_at ? String(a.started_at).slice(0, 16).replace('T', ' ') : '—'}
+                  </td>
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{a.rows_ingested}</td>
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{a.rows_quarantined}</td>
+                  <td style={{ ...td, fontSize: 11, color: theme.inkSecondary, maxWidth: 360,
+                               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {cleanNote(a.notes)}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </Card>
+
     </>
   )
 }

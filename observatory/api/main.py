@@ -10,6 +10,7 @@ from datetime import date
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
@@ -19,6 +20,7 @@ from observatory.settings import DASHBOARD_PASSWORD, PROJECT_ROOT, load_config
 
 app = FastAPI(title="Euro Chlor Competitiveness Observatory", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(GZipMiddleware, minimum_size=1000)   # JSON and the JS bundle compress ~3-10x
 
 # MEMBER_MODE: while the password gate is up, member-restricted (licensed)
 # series are served. Replace with per-user entitlements on the cloud deployment.
@@ -59,6 +61,11 @@ def health():
     return {"agents": [{**r, "latest_period": latest.get(r["agent"])} for r in rows]}
 
 
+# dedup key of v_series_latest / v_series_latest_public (db/schema.sql) — keep in step
+LATEST_KEY = ("series_id, geo_id, COALESCE(partner_geo_id, ''), COALESCE(product_code, ''), "
+              "COALESCE(flow, ''), COALESCE(band, ''), COALESCE(tax_treatment, ''), period")
+
+
 @app.get("/api/series")
 def series(
     series_id: str,
@@ -73,28 +80,36 @@ def series(
     limit: int = Query(20000, le=100000),
     eur: bool = Query(False, description="convert non-EUR money values to EUR (ECB monthly average; annual mean for annual periods)"),
 ):
-    # member mode sees the full latest view; public mode uses the view that
-    # dedupes AFTER restricting to public rows (licensed vintages must not
-    # shadow public data)
-    table = "v_series_latest" if MEMBER_MODE else "v_series_latest_public"
-    q = f"SELECT * FROM {table} WHERE series_id = %s"
+    # Same rows as v_series_latest(_public), but the filters are applied to
+    # fact_series BEFORE the latest-vintage dedup: the views sort the whole table
+    # first (~1.2 M trade rows, 6-10 s per call); scoped, the indexes answer in
+    # ~0.1 s. Safe because every filter is on a dedup-key column (period_start
+    # follows period). Public mode restricts to public rows before deduping, as
+    # v_series_latest_public does, so licensed vintages never shadow public data.
+    where = ["series_id = %s"]
     params: list = [series_id]
+    if not MEMBER_MODE:
+        where.append("redistribution_class = 'public'")
     for col, val in (("geo_id", geo), ("partner_geo_id", partner),
                      ("product_code", product), ("flow", flow),
                      ("band", band), ("tax_treatment", tax)):
         if val is not None:
-            q += f" AND {col} = %s"
+            where.append(f"{col} = %s")
             params.append(val)
     # one series can hold annual (survey) and monthly (statistics) periods for
     # the same geo — charts must pick one periodicity, never mix magnitudes
     if freq == "M":
-        q += " AND period LIKE '%%-%%'"
+        where.append("period LIKE '%%-%%'")
     elif freq == "A":
-        q += " AND period NOT LIKE '%%-%%'"
+        where.append("period NOT LIKE '%%-%%'")
     if date_from:
-        q += " AND period_start >= %s"
+        where.append("period_start >= %s")
         params.append(date_from)
-    q += " ORDER BY period_start LIMIT %s"
+    q = f"""SELECT * FROM (
+              SELECT DISTINCT ON ({LATEST_KEY}) * FROM fact_series
+              WHERE {" AND ".join(where)}
+              ORDER BY {LATEST_KEY}, run_id DESC, id DESC) latest
+            ORDER BY period_start LIMIT %s"""
     params.append(limit)
     with db.get_conn() as conn:
         rows = conn.execute(q, params).fetchall()

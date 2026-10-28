@@ -21,7 +21,7 @@ const NAV = [
   { id: 'Trade', label: 'Trade & dependency' },
   { id: 'Market', label: 'Market' },
   { id: 'Members', label: 'Member data', members: true },
-  { id: 'Sources', label: 'Sources' },
+  { id: 'Sources', label: 'About the data' },
 ]
 
 export default function Header({ tab, setTab, dark, setDark, memberMode, alertCount = 0 }) {
