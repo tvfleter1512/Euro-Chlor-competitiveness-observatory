@@ -143,6 +143,29 @@ indicators:
       Licensed (Argus non-power costs): member view only. No day-ahead zone for
       Cyprus and Malta.
 
+  freight_cost:
+    methodology_version: "v1.0"
+    name: "Freight cost per tonne on EU trade routes, measured from trade statistics"
+    formula: >
+      Trailing 12 months, summed values and tonnes. EU -> US: US Census import
+      charges (freight, insurance, other charges from the foreign port) / tonnes.
+      Other routes, mirror method: importer's unit value on arrival (CIF) minus
+      exporter's unit value at departure (FOB; FAS for US exports), so freight +
+      insurance (+ loading). US -> EU: Comext vs US Census; CN/IN/SA <-> EU: Comext
+      vs UN Comtrade monthly. Needs 9 of 12 months traded on both sides and
+      1,000 t arriving; mirror windows also need both sides' tonnes within
+      2/3-1.5x of each other and freight between 0 and 50 % of the landed price,
+      at most 600 EUR/t.
+    inputs: ["trade.value", "trade.quantity", "trade.import_charges"]
+    unit: "EUR/t"
+    params: {window_months: 12, min_months: 9, min_tonnes: 1000, tonnes_ratio: [0.667, 1.5],
+             max_share_of_landed_price: 0.5, max_eur_t: 600}
+    params_confirmed: false
+    note: >
+      Mirror figures carry reporting noise (timing, valuation, misattributed
+      partners); windows failing the checks are left out. Comtrade monthly covers the
+      last 36 months; China's monthly data stops at 2024-12.
+
   labour_cost:
     methodology_version: "v1.0"
     name: "Labour costs per employee — check on the Argus fixed costs"

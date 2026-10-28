@@ -17,6 +17,8 @@ SERIES = [
      "Context series — never conflated with delivered."),
     ("trade.value", "Trade value", "trade", "Import/export value per product/partner/period."),
     ("trade.quantity", "Trade quantity (tonnes)", "trade", "Normalised to tonnes at ingestion."),
+    ("trade.import_charges", "Import charges (freight, insurance)", "trade",
+     "US Census GEN_CHA_MO: freight, insurance and other charges from the foreign port to the US."),
     ("production.capacity", "Chlorine capacity", "production", "Euro Chlor authoritative for EU."),
     ("production.production", "Chlorine production", "production", ""),
     ("production.utilisation", "Capacity utilisation", "production", ""),

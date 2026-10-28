@@ -8,6 +8,7 @@ import { forProduct, euMeasureOn, measureAgainstEU, markers, shortLabel } from '
 import TradeDefence from './TradeDefence'
 import CompetitorExports from './CompetitorExports'
 import TradeMap from './TradeMap'
+import Freight from './Freight'
 import { DependencyScreening, DependencyDetail } from './Dependency'
 
 const fmtM = v => `${(v / 1e6).toFixed(1)} M€`
@@ -426,6 +427,8 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
       </Card>
 
       <CompetitorExports hs6={hs6} productLabel={productLabel} fromDate={fromDate} basis={basis} measures={measures} />
+
+      <Freight product={product} productLabel={productLabel} fromDate={fromDate} />
 
       <TradeDefence hs6={hs6} measures={measures} />
 
