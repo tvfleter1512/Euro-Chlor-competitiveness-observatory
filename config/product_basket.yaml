@@ -65,3 +65,38 @@ products:
     hs6: "282911"
     cn8: ["28291100"]
     confirmed: true
+  # Isocyanate (phosgene) route and other routes where chlorine is used but not
+  # carried in the product — added 2026-10-28 after a member suggestion. CN labels
+  # checked against Comext the same day; owner to confirm. 2929 10 10/90 (TDI split)
+  # ended in 2008: TDI and monomeric MDI share 29291000.
+  - key: isocyanates
+    name: "Isocyanates (TDI and monomeric MDI)"
+    hs6: "292910"
+    cn8: ["29291000"]
+    confirmed: false
+  - key: polymeric_mdi
+    name: "Polymeric MDI (crude MDI)"
+    hs6: "390931"
+    cn8: ["39093100"]
+    confirmed: false
+  - key: polyurethanes
+    name: "Polyurethanes, primary forms"
+    hs6: "390950"
+    cn8: ["39095090"]
+    confirmed: false
+    note: "Excludes 39095010, a niche polyurethane solution. Downstream of isocyanates."
+  - key: polycarbonate
+    name: "Polycarbonate"
+    hs6: "390740"
+    cn8: ["39074000"]
+    confirmed: false
+  - key: epichlorohydrin
+    name: "Epichlorohydrin"
+    hs6: "291030"
+    cn8: ["29103000"]
+    confirmed: false
+  - key: epoxy_resins
+    name: "Epoxy resins"
+    hs6: "390730"
+    cn8: ["39073000"]
+    confirmed: false

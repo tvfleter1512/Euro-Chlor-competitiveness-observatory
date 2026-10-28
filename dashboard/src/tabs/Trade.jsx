@@ -188,7 +188,7 @@ export default function Trade({ fromDate, product, productLabel, confirmed, basi
       grid: { left: 250, right: 70, top: 6, bottom: 24 },
       // headroom on the negative side so the value labels of the largest importer stay clear of the names
       xAxis: { type: 'value', splitLine: { lineStyle: { color: theme.grid, width: 1 } },
-               min: v => v.min < 0 ? v.min * 1.3 : 0,
+               min: v => v.min < 0 ? v.min - 0.12 * (v.max - v.min) : 0,
                axisLabel: { color: theme.inkMuted, fontSize: 11, formatter: B.axis, showMinLabel: false } },
       yAxis: { type: 'category', data: items.map(i => i.name), axisTick: { show: false },
                axisLine: { show: false },

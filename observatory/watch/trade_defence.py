@@ -42,14 +42,21 @@ PRODUCTS = {
     "hydrochloric_acid": r"hydrochloric acid",
     "hypochlorite": r"sodium hypochlorite",
     "sodium_chlorate": r"sodium chlorate",
+    "isocyanates": r"isocyanate|\bmdi\b|\btdi\b",
+    "polyurethanes": r"polyurethane",
+    "polycarbonate": r"polycarbonate",
+    "epichlorohydrin": r"epichlorohydrin",
+    "epoxy_resins": r"epoxy resin|epoxide resin",
 }
 INSTRUMENT = r"anti-?dumping|antidumping|dumping|countervailing|anti-?subsidy|safeguard|trade remed"
 NEWS_QUERIES = ['"anti-dumping" "caustic soda"', '"anti-dumping" PVC', '"anti-dumping" "polyvinyl chloride"',
                 '"anti-dumping" "ethylene dichloride"', '"anti-dumping" "vinyl chloride"',
                 '"countervailing" PVC', '"safeguard" PVC', '"anti-dumping" "sodium chlorate"',
-                '"anti-dumping" chlorine']
+                '"anti-dumping" chlorine', '"anti-dumping" MDI', '"anti-dumping" "toluene diisocyanate"',
+                '"anti-dumping" polycarbonate', '"anti-dumping" "epoxy resins"', '"anti-dumping" epichlorohydrin']
 FR_TERMS = ["polyvinyl chloride", "sodium hydroxide", "caustic soda", "ethylene dichloride",
-            "vinyl chloride", "sodium chlorate", "chlorinated isocyanurates"]
+            "vinyl chloride", "sodium chlorate", "chlorinated isocyanurates",
+            "diisocyanate", "polycarbonate", "epoxy resins", "epichlorohydrin"]
 
 
 def match_products(title: str) -> list[str]:
